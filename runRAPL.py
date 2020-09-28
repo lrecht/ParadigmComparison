@@ -6,7 +6,7 @@ import subprocess
 
 parser = argparse.ArgumentParser()
 becnhmarks_path = "./benchmarks"
-all_paradigms = ["functional", "oop"]
+all_paradigms = ["functional", "oop", "procedual"]
 all_languages = ["c#", "f#"]
 language_discover_funcs = {}
 
@@ -55,6 +55,8 @@ class C_Sharp_Program(Program):
             return command + "functional_c#"
         elif self.paradigm == "oop":
             return command + "oop_c#"
+        elif self.paradigm == "procedual":
+            return command + "procedual_c#"
 
 
 class F_Sharp_Program(C_Sharp_Program):
@@ -69,6 +71,8 @@ class F_Sharp_Program(C_Sharp_Program):
             return command + "functional_f#"
         elif self.paradigm == "oop":
             return command + "oop_f#"
+        elif self.paradigm == "procedual":
+            return command + "procedual_f#"
 
 
 #Fetches programs to run based on arguments
@@ -110,6 +114,8 @@ def discover_csharp_program(path):
                 results.append(C_Sharp_Program(program_path, "oop"))
             elif fnmatch.fnmatch(name, "functional_c#"):
                 results.append(C_Sharp_Program(program_path, "functional"))
+            elif fnmatch.fnmatch(name, "procedual_c#"):
+                results.append(C_Sharp_Program(program_path, "procedual"))
 
     return results
 
@@ -129,6 +135,8 @@ def discover_fsharp_program(path):
                 results.append(F_Sharp_Program(program_path, "oop"))
             elif fnmatch.fnmatch(name, "functional_f#"):
                 results.append(F_Sharp_Program(program_path, "functional"))
+            elif fnmatch.fnmatch(name, "procedual_f#"):
+                results.append(C_Sharp_Program(program_path, "procedual"))
 
     return results
 
