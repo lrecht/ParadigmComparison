@@ -15,9 +15,9 @@ let rec merge xs ys res =
      else merge xs ys' (List.append res [(a',b',y)])
 
 let getNewMoves graph (visited:Map<string,string>) position cost =
-    List.filter (fun (a,b,c) -> not (visited.ContainsKey b)) 
-        (List.filter (fun (a,b,c) -> a = position) 
-            (List.map(fun (a,b,c: int) -> (a,b,c+cost)) graph))
+    List.map(fun (a,b,c: int) -> (a,b,c+cost)) 
+        (List.filter (fun (a,b,c) -> not (visited.ContainsKey b)) 
+            (List.filter (fun (a,b,c) -> a = position) graph))
 
 let rec backtrack (visited:Map<string,string>) curr res start =
     if curr = start then (curr::res)
