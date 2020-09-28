@@ -40,17 +40,6 @@ class Program:
         return None #Override
 
 
-class PythonProgram(Program):
-    def __init__(self, path, paradigm):
-        self.path = path
-        self.paradigm = paradigm
-
-    def get_build_command(self):
-        return None
-
-    def get_run_command(self):
-        return "python3.8 " + self.path
-
 class C_Sharp_Program(Program):
     def __init__(self, path, paradigm):
         self.path = path
