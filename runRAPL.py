@@ -88,12 +88,14 @@ def get_benchmark_programs(benchmarks, paradigms, languages):
 def discover_csharp_program(path):
     results = []
 
-    for _, dirs, _ in os.walk(path):
-        for name in dirs:
-            program_path = path + '/' + name
+    for name in os.listdir(path):
+        if not os.path.isdir(path + '/' + name):
+            continue
 
-            if fnmatch.fnmatch(name, "*_c#"):
-                results.append(C_Sharp_Program(program_path, name.split('_')[0]))
+        program_path = path + '/' + name
+
+        if fnmatch.fnmatch(name, "*_c#"):
+            results.append(C_Sharp_Program(program_path, name.split('_')[0]))
 
     return results
 
@@ -105,12 +107,14 @@ language_discover_funcs["c#"] = discover_csharp_program
 def discover_fsharp_program(path):
     results = []
 
-    for _, dirs, _ in os.walk(path):
-        for name in dirs:
-            program_path = path + '/' + name
+    for name in os.listdir(path):
+        if not os.path.isdir(path + '/' + name):
+            continue
+        
+        program_path = path + '/' + name
 
-            if fnmatch.fnmatch(name, "*_f#"):
-                results.append(F_Sharp_Program(program_path, name.split('_')[0]))
+        if fnmatch.fnmatch(name, "*_f#"):
+            results.append(F_Sharp_Program(program_path, name.split('_')[0]))
 
     return results
 
