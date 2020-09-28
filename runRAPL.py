@@ -40,39 +40,21 @@ class Program:
         raise NotImplementedError("Please Implement this method")
 
 
-class C_Sharp_Program(Program):
-    def __init__(self, path, paradigm):
-        self.path = path
-        self.paradigm = paradigm
-
+class Dotnet_Program(Program):
     def get_build_command(self):
         return "dotnet build --configuration Release --nologo --verbosity quiet " + self.path
 
+
+class C_Sharp_Program(Dotnet_Program):
     def get_run_command(self):
         command = self.path + '/bin/Release/netcoreapp3.1/'
-
-        if self.paradigm == "functional":
-            return command + "functional_c#"
-        elif self.paradigm == "oop":
-            return command + "oop_c#"
-        elif self.paradigm == "procedual":
-            return command + "procedual_c#"
+        return command + self.paradigm + "_c#"
 
 
-class F_Sharp_Program(C_Sharp_Program):
-    def __init__(self, path, paradigm):
-        self.path = path
-        self.paradigm = paradigm
-
+class F_Sharp_Program(Dotnet_Program):
     def get_run_command(self):
         command = self.path + '/bin/Release/netcoreapp3.1/'
-
-        if self.paradigm == "functional":
-            return command + "functional_f#"
-        elif self.paradigm == "oop":
-            return command + "oop_f#"
-        elif self.paradigm == "procedual":
-            return command + "procedual_f#"
+        return command + self.paradigm + "_f#"
 
 
 #Fetches programs to run based on arguments
@@ -110,12 +92,8 @@ def discover_csharp_program(path):
         for name in dirs:
             program_path = path + '/' + name
 
-            if fnmatch.fnmatch(name, "oop_c#"):
-                results.append(C_Sharp_Program(program_path, "oop"))
-            elif fnmatch.fnmatch(name, "functional_c#"):
-                results.append(C_Sharp_Program(program_path, "functional"))
-            elif fnmatch.fnmatch(name, "procedual_c#"):
-                results.append(C_Sharp_Program(program_path, "procedual"))
+            if fnmatch.fnmatch(name, "*_c#"):
+                results.append(C_Sharp_Program(program_path, name.split('_')[0]))
 
     return results
 
@@ -131,12 +109,8 @@ def discover_fsharp_program(path):
         for name in dirs:
             program_path = path + '/' + name
 
-            if fnmatch.fnmatch(name, "oop_f#"):
-                results.append(F_Sharp_Program(program_path, "oop"))
-            elif fnmatch.fnmatch(name, "functional_f#"):
-                results.append(F_Sharp_Program(program_path, "functional"))
-            elif fnmatch.fnmatch(name, "procedual_f#"):
-                results.append(C_Sharp_Program(program_path, "procedual"))
+            if fnmatch.fnmatch(name, "*_f#"):
+                results.append(F_Sharp_Program(program_path, name.split('_')[0]))
 
     return results
 
