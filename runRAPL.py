@@ -10,11 +10,6 @@ all_paradigms = ["functional", "oop"]
 all_languages = ["Python"]
 language_discover_funcs = {}
 
-#Setupsies
-pyRAPL.setup()
-csv_output = pyRAPL.outputs.CSVOutput('result.csv')
-experimentIterations = 10
-
 
 #Used to validate benchmark folders
 class readable_dir(argparse.Action):
@@ -103,7 +98,12 @@ def discover_python_program(path):
 language_discover_funcs["Python"] = discover_python_program
 
 
-def perform_benchmarks(benchmarks, skip_build):
+def perform_benchmarks(benchmarks, output_file, skip_build):
+    #Setupsies
+    pyRAPL.setup()
+    csv_output = pyRAPL.outputs.CSVOutput(output_file)
+    experimentIterations = 10
+
     benchmark_count = len(benchmarks)
     current_benchmark = 0
 
@@ -132,6 +132,7 @@ if __name__ == '__main__':
     parser.add_argument("-b", "--benchmarks", action=readable_dir, nargs='+', help="Run only specified benchmarks")
     parser.add_argument("-p", "--paradigm", choices=all_paradigms, help="Run only benchmarks for paradigm")
     parser.add_argument("-l", "--language", choices=all_languages, help="Run only benchmarks for language")
+    parser.add_argument("-o", "--output", default="results.csv", help="Output csv file for results. Default is results.csv")
 
     args = parser.parse_args()
 
@@ -158,7 +159,8 @@ if __name__ == '__main__':
         languages = all_languages
 
     skip_build = args.nobuild
+    output_file = args.output
 
     benchmark_programs = get_benchmark_programs(benchmarks, paradigms, languages)
 
-    perform_benchmarks(benchmark_programs, skip_build)
+    perform_benchmarks(benchmark_programs, output_file, skip_build)
