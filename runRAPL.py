@@ -149,10 +149,10 @@ def perform_benchmarks(benchmarks, output_file, skip_build):
     for b in benchmarks:
         current_benchmark += 1
 
-        print("Performing benchmark " + str(current_benchmark) + " of " + str(benchmark_count))
+        print('\r' + "Performing benchmark " + str(current_benchmark) + " of " + str(benchmark_count), end='', flush=True)
 
         if(not skip_build and b.get_build_command()):
-            subprocess.run(b.get_build_command(), shell=True, check=True)
+            subprocess.run(b.get_build_command(), shell=True, check=True, stdout=subprocess.DEVNULL)
 
         #The measuring equipment
         for _ in range(0, experimentIterations):
