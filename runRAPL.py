@@ -5,8 +5,8 @@ import fnmatch
 import subprocess
 
 parser = argparse.ArgumentParser()
-becnhmarks_path = "./benchmarks"
-all_paradigms = ["functional", "oop", "procedual"]
+benchmarks_path = "./benchmarks"
+all_paradigms = ["functional", "oop", "procedural"]
 all_languages = ["c#", "f#"]
 language_discover_funcs = {}
 
@@ -110,7 +110,7 @@ def discover_fsharp_program(path):
     for name in os.listdir(path):
         if not os.path.isdir(path + '/' + name):
             continue
-        
+
         program_path = path + '/' + name
 
         if fnmatch.fnmatch(name, "*_f#"):
@@ -170,7 +170,7 @@ if __name__ == '__main__':
     if args.benchmarks:
         benchmarks = args.benchmarks
     else:
-        benchmarks = [f.path for f in os.scandir(becnhmarks_path) if f.is_dir()]
+        benchmarks = [f.path for f in os.scandir(benchmarks_path) if f.is_dir()]
     
     #If no paradigm is given, then all paradigms are to be run
     if args.paradigm:
