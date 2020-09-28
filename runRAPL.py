@@ -103,7 +103,7 @@ def discover_python_program(path):
 language_discover_funcs["Python"] = discover_python_program
 
 
-def perform_benchmarks(benchmarks):
+def perform_benchmarks(benchmarks, skip_build):
     benchmark_count = len(benchmarks)
     current_benchmark = 0
 
@@ -112,7 +112,7 @@ def perform_benchmarks(benchmarks):
 
         print("Performing benchmark " + str(current_benchmark) + " of " + str(benchmark_count))
 
-        if(b.get_build_command()):
+        if(not skip_build and b.get_build_command()):
             subprocess.run(b.get_build_command(), check=True)
 
         #The measuring equipment
@@ -128,7 +128,7 @@ def perform_benchmarks(benchmarks):
 
 
 if __name__ == '__main__':
-    parser.add_argument("-n", "--nobuild", help="Skips build step for benchmarks") #TODO: this
+    parser.add_argument("-n", "--nobuild", action='store_true', help="Skips build step for benchmarks")
     parser.add_argument("-b", "--benchmarks", action=readable_dir, nargs='+', help="Run only specified benchmarks")
     parser.add_argument("-p", "--paradigm", choices=all_paradigms, help="Run only benchmarks for paradigm")
     parser.add_argument("-l", "--language", choices=all_languages, help="Run only benchmarks for language")
@@ -144,7 +144,6 @@ if __name__ == '__main__':
         benchmarks = args.benchmarks
     else:
         benchmarks = [f.path for f in os.scandir(becnhmarks_path) if f.is_dir()]
-
     
     #If no paradigm is given, then all paradigms are to be run
     if args.paradigm:
@@ -158,7 +157,8 @@ if __name__ == '__main__':
     else:
         languages = all_languages
 
+    skip_build = args.nobuild
 
     benchmark_programs = get_benchmark_programs(benchmarks, paradigms, languages)
 
-    perform_benchmarks(benchmark_programs)
+    perform_benchmarks(benchmark_programs, skip_build)
