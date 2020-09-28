@@ -71,7 +71,7 @@ class F_Sharp_Program(C_Sharp_Program):
             return command + "oop_f#"
 
 
-
+#Fetches programs to run based on arguments
 def discover_programs(path, paradigms, languages):
     programs = []
     
@@ -86,18 +86,19 @@ def discover_programs(path, paradigms, languages):
     return programs
 
 
+#Goes through benchmark folders to find benchmarks
 def get_benchmark_programs(benchmarks, paradigms, languages):
     benchmark_programs = []
     
     for benchmark_path in benchmarks:
-        sub_dirs = [f.path for f in os.scandir(benchmark_path) if f.is_dir()]
-        program_paths = []
-        program_paths = program_paths + (discover_programs(benchmark_path, paradigms, languages))
+        program_paths = discover_programs(benchmark_path, paradigms, languages)
 
         benchmark_programs = benchmark_programs + program_paths
 
     return benchmark_programs
 
+
+#Discovers c# project folders based on naming convention (functional_c# or oop_c#)
 def discover_csharp_program(path):
     results = []
 
@@ -112,9 +113,11 @@ def discover_csharp_program(path):
 
     return results
 
+# Adds function to discover functions dictionary
 language_discover_funcs["c#"] = discover_csharp_program
 
 
+#Discovers f# project folders based on naming convention (functional_f# or oop_f#)
 def discover_fsharp_program(path):
     results = []
 
@@ -124,21 +127,21 @@ def discover_fsharp_program(path):
 
             if fnmatch.fnmatch(name, "oop_f#"):
                 results.append(F_Sharp_Program(program_path, "oop"))
-                print(program_path)
             elif fnmatch.fnmatch(name, "functional_f#"):
                 results.append(F_Sharp_Program(program_path, "functional"))
-                print(program_path)
 
     return results
 
+# Adds function to discover functions dictionary
 language_discover_funcs["f#"] = discover_fsharp_program
 
 
+#Performs the list of benchmarks and saves to results to output csv file
 def perform_benchmarks(benchmarks, output_file, skip_build):
     #Setupsies
+    experimentIterations = 10
     pyRAPL.setup()
     csv_output = pyRAPL.outputs.CSVOutput(output_file)
-    experimentIterations = 10
 
     benchmark_count = len(benchmarks)
     current_benchmark = 0
@@ -160,7 +163,8 @@ def perform_benchmarks(benchmarks, output_file, skip_build):
 
             meter.end()
             csv_output.add(meter.result)
-            csv_output.save()
+
+        csv_output.save()
 
 
 if __name__ == '__main__':
