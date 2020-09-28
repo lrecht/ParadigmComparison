@@ -7,7 +7,7 @@ import subprocess
 parser = argparse.ArgumentParser()
 becnhmarks_path = "./benchmarks"
 all_paradigms = ["functional", "oop"]
-all_languages = ["Python"]
+all_languages = ["c#", "f#"]
 language_discover_funcs = {}
 
 
@@ -51,6 +51,36 @@ class PythonProgram(Program):
     def get_run_command(self):
         return "python3.8 " + self.path
 
+class C_Sharp_Program(Program):
+    def __init__(self, path, paradigm):
+        self.path = path
+        self.paradigm = paradigm
+
+    def get_build_command(self):
+        return "dotnet build --configuration Release --nologo --verbosity quiet " + self.path
+
+    def get_run_command(self):
+        command = self.path + '/bin/Release/netcoreapp3.1/'
+
+        if self.paradigm == "functional":
+            return command + "functional_c#"
+        elif self.paradigm == "oop":
+            return command + "oop_c#"
+
+
+class F_Sharp_Program(C_Sharp_Program):
+    def __init__(self, path, paradigm):
+        self.path = path
+        self.paradigm = paradigm
+
+    def get_run_command(self):
+        command = self.path + '/bin/Release/netcoreapp3.1/'
+
+        if self.paradigm == "functional":
+            return command + "functional_f#"
+        elif self.paradigm == "oop":
+            return command + "oop_f#"
+
 
 
 def discover_programs(path, paradigms, languages):
@@ -74,28 +104,45 @@ def get_benchmark_programs(benchmarks, paradigms, languages):
         sub_dirs = [f.path for f in os.scandir(benchmark_path) if f.is_dir()]
         program_paths = []
         program_paths = program_paths + (discover_programs(benchmark_path, paradigms, languages))
-        #program_paths = program_paths + [discover_programs(path, paradigms, languages) for path in sub_dirs]
 
         benchmark_programs = benchmark_programs + program_paths
 
     return benchmark_programs
 
-
-def discover_python_program(path):
+def discover_csharp_program(path):
     results = []
 
-    for _, _, files in os.walk(path):
-        for name in files:
-            programPath = path + '/' + name
+    for _, dirs, _ in os.walk(path):
+        for name in dirs:
+            program_path = path + '/' + name
 
-            if fnmatch.fnmatch(name, "oop_py.py"):
-                results.append(PythonProgram(programPath, "oop"))
-            elif fnmatch.fnmatch(name, "functional_py.py"):
-                results.append(PythonProgram(programPath, "functional"))
+            if fnmatch.fnmatch(name, "oop_c#"):
+                results.append(C_Sharp_Program(program_path, "oop"))
+            elif fnmatch.fnmatch(name, "functional_c#"):
+                results.append(C_Sharp_Program(program_path, "functional"))
 
     return results
 
-language_discover_funcs["Python"] = discover_python_program
+language_discover_funcs["c#"] = discover_csharp_program
+
+
+def discover_fsharp_program(path):
+    results = []
+
+    for _, dirs, _ in os.walk(path):
+        for name in dirs:
+            program_path = path + '/' + name
+
+            if fnmatch.fnmatch(name, "oop_f#"):
+                results.append(F_Sharp_Program(program_path, "oop"))
+                print(program_path)
+            elif fnmatch.fnmatch(name, "functional_f#"):
+                results.append(F_Sharp_Program(program_path, "functional"))
+                print(program_path)
+
+    return results
+
+language_discover_funcs["f#"] = discover_fsharp_program
 
 
 def perform_benchmarks(benchmarks, output_file, skip_build):
@@ -113,7 +160,7 @@ def perform_benchmarks(benchmarks, output_file, skip_build):
         print("Performing benchmark " + str(current_benchmark) + " of " + str(benchmark_count))
 
         if(not skip_build and b.get_build_command()):
-            subprocess.run(b.get_build_command(), check=True)
+            subprocess.run(b.get_build_command(), shell=True, check=True)
 
         #The measuring equipment
         for _ in range(0, experimentIterations):
