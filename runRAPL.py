@@ -34,7 +34,7 @@ class Program:
         self.paradigm = paradigm
 
     def get_build_command(self):
-        return None #Override
+        raise NotImplementedError("Please Implement this method")
 
     def get_run_command(self):
         return None #Override
