@@ -118,8 +118,6 @@ namespace oop_c_
         public int CompareTo(object obj)
         {
             Vertex other = (Vertex)obj;
-            if (dist == other.dist)
-                return name.CompareTo(other.name);
 
             return dist.CompareTo(other.dist);
         }
