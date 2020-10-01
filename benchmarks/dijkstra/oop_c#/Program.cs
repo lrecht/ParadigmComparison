@@ -63,7 +63,8 @@ namespace oop_c_
             {
                 current = vertex_queue.First();
                 vertex_queue.Remove(current);
-                if (current.dist == Int32.MaxValue || current.Equals(dest))
+                if (current.Equals(dest))
+
                     break;
 
                 foreach (var n in current.neighbours)
