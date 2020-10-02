@@ -32,18 +32,6 @@ let initEdges =
     edges.Add('e', [|('f', 9)|])
     edges
 
-let findMin (vertices: Dictionary<char, int32>) =
-    let mutable min = Int32.MaxValue
-    let mutable minElm: Nullable<char> = Nullable()
-    for vertex in vertices do
-        if (vertex.Value < min) then
-            min <- vertex.Value
-            minElm <- Nullable(vertex.Key)
-    if minElm = Nullable() then
-        raise (Exception("There are no vertices with a value of less then Int32.MaxValue"))
-    else
-        minElm
-
 let remove (array: char array) (elm: char) =
     let rec loop i (newArray: char array) =
         if i >= (array.Length) then
@@ -80,7 +68,7 @@ let main argv =
     let mutable vertex_queue: char array = [| source |]
     
     while vertex_queue.Length > 0 do 
-        let current = vertex_queue.[0] //findMin vertices
+        let current = vertex_queue.[0]
         vertex_queue <- remove vertex_queue current
         let mutable fail = false
         if not (edges.ContainsKey current) then
