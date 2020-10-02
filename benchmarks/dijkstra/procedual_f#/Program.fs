@@ -26,26 +26,33 @@ let initEdges =
     edges
 
 let remove (array: char array) (elm: char) =
-    let rec loop i (newArray: char array) =
+    let rec loop i =
         if i >= (array.Length) then
-            newArray
+            i
         else if array.[i] = elm then
-            let rest = array.[(i+1) .. (array.Length-1)]
-            Array.append newArray rest
+            i
         else 
-            loop (i+1) (Array.append newArray [| array.[i] |])
-    loop 0 [|  |]
+            loop (i+1)
+    let index = loop 0
+    Array.append array.[0 .. (index-1)] array.[(index+1) .. (array.Length-1)]
 
 let insertSort (array: char array) (costMap: Dictionary<char, int32>) (newValue: char) =
-    let rec loop i newArray =
+    let rec loop i =
         if i >= array.Length then
-            Array.append newArray [| newValue |]
+            i
         else if costMap.[newValue] < costMap.[array.[i]] then
-            let rest = Array.append [| newValue |] array.[i .. (array.Length-1)]
-            Array.append newArray rest
+            i
         else 
-            loop (i+1) (Array.append newArray [| array.[i] |])
-    loop 0 [|  |]
+            loop (i+1)
+    let index = loop 0
+    
+    if index = (array.Length-1) then
+        Array.append array [| newValue |]
+    else if index = 0 then
+        Array.append [| newValue |] array
+    else
+        let start = Array.append array.[0 .. (index-1)] [| newValue |]
+        Array.append start array.[index .. (array.Length-1)]
 
 [<EntryPoint>]
 let main argv =
