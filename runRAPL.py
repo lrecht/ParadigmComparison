@@ -145,7 +145,7 @@ def perform_benchmarks(benchmarks, output_file, skip_build):
             meter = pyRAPL.Measurement(label=b.get_run_command())
             meter.begin()
             
-            subprocess.run(b.get_run_command(), shell=True, check=True)
+            subprocess.run(b.get_run_command(), shell=True, check=True, stdout=subprocess.DEVNULL)
 
             meter.end()
             csv_output.add(meter.result)
