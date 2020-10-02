@@ -75,10 +75,9 @@ let main argv =
     vertices.[source] <- 0
     
     let mutable vertex_queue: char array = [| source |]
-    let mutable current: char = 'x'
-
+    
     while vertex_queue.Length > 0 do 
-        current <- vertex_queue.[0] //findMin vertices
+        let current = vertex_queue.[0] //findMin vertices
         vertex_queue <- remove vertex_queue current
         let mutable fail = false
         if not (edges.ContainsKey current) then
