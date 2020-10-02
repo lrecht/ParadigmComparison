@@ -8,18 +8,18 @@ namespace oop_c_
     {
         static readonly List<Edge> EDGES = new List<Edge>
         {
-            new Edge("a", "b", 7),
-            new Edge("a", "c", 9),
-            new Edge("a", "f", 14),
-            new Edge("b", "c", 10),
-            new Edge("b", "d", 15),
-            new Edge("c", "d", 11),
-            new Edge("c", "f", 2),
-            new Edge("d", "e", 6),
-            new Edge("e", "f", 9)
+            new Edge('a', 'b', 7),
+            new Edge('a', 'c', 9),
+            new Edge('a', 'f', 14),
+            new Edge('b', 'c', 10),
+            new Edge('b', 'd', 15),
+            new Edge('c', 'd', 11),
+            new Edge('c', 'f', 2),
+            new Edge('d', 'e', 6),
+            new Edge('e', 'f', 9)
         };
-        static readonly string START = "a";
-        static readonly string END = "e";
+        static readonly char START = 'a';
+        static readonly char END = 'e';
         static void Main(string[] args)
         {
             Graph graph = new Graph(EDGES);
@@ -32,7 +32,7 @@ namespace oop_c_
     {
         List<Edge> _edges { get; set; }
         // mapping of vertex names to Vertex objects, built from a set of Edges
-        readonly Dictionary<string, Vertex> graph = new Dictionary<string, Vertex>();
+        readonly Dictionary<char, Vertex> graph = new Dictionary<char, Vertex>();
         public Graph(List<Edge> edges)
         {
             _edges = edges;
@@ -50,7 +50,7 @@ namespace oop_c_
                 graph[edge.start].neighbours.Add(graph[edge.end], edge.cost);
         }
 
-        public List<string> dijkstra(string start, string end)
+        public List<char> dijkstra(char start, char end)
         {
             if (!graph.ContainsKey(start))
                 throw new Exception("Graph doesn't contain start vertex");
@@ -81,7 +81,7 @@ namespace oop_c_
                 }
             }
 
-            List<string> shortestPath = new List<string>();
+            List<char> shortestPath = new List<char>();
             Vertex previous = dest;
             while (previous != null)
             {
@@ -94,9 +94,9 @@ namespace oop_c_
 
     public class Edge
     {
-        public string start, end;
+        public char start, end;
         public int cost;
-        public Edge(string start, string end, int cost)
+        public Edge(char start, char end, int cost)
         {
             this.start = start;
             this.end = end;
@@ -106,11 +106,11 @@ namespace oop_c_
 
     public class Vertex : IComparable
     {
-        public readonly string name;
+        public readonly char name;
         public readonly Dictionary<Vertex, int> neighbours = new Dictionary<Vertex, int>();
         public int dist = int.MaxValue;
         public Vertex previous = null;
-        public Vertex(string name)
+        public Vertex(char name)
         {
             this.name = name;
         }
