@@ -3,24 +3,16 @@
 open System
 open System.Collections.Generic
 
-let initVertices =
+let initVertices (edges: Dictionary<char, (char*int) array>) =
     let vertices = new Dictionary<char, int32>()
-    vertices.Add('a', Int32.MaxValue)
-    vertices.Add('b', Int32.MaxValue)
-    vertices.Add('c', Int32.MaxValue)
-    vertices.Add('d', Int32.MaxValue)
-    vertices.Add('e', Int32.MaxValue)
-    vertices.Add('f', Int32.MaxValue)
+    for edge in edges.Keys do
+        vertices.Add(edge, Int32.MaxValue)
     vertices
 
-let initPrevDic =
+let initPrevDic (edges: Dictionary<char, (char*int) array>) =
     let prevDic = new Dictionary<char, Nullable<char>>()
-    prevDic.Add('a', Nullable())
-    prevDic.Add('b', Nullable())
-    prevDic.Add('c', Nullable())
-    prevDic.Add('d', Nullable())
-    prevDic.Add('e', Nullable())
-    prevDic.Add('f', Nullable())
+    for edge in edges.Keys do
+        prevDic.Add(edge, Nullable())
     prevDic
 
 let initEdges =
@@ -30,6 +22,7 @@ let initEdges =
     edges.Add('c', [|('d', 11);('f', 2)|])
     edges.Add('d', [|('e', 6)|])
     edges.Add('e', [|('f', 9)|])
+    edges.Add('f', [| |])
     edges
 
 let remove (array: char array) (elm: char) =
@@ -56,9 +49,9 @@ let insertSort (array: char array) (costMap: Dictionary<char, int32>) (newValue:
 
 [<EntryPoint>]
 let main argv =
-    let mutable vertices = initVertices
     let mutable edges = initEdges
-    let mutable prevDic = initPrevDic
+    let mutable vertices = initVertices edges
+    let mutable prevDic = initPrevDic edges
 
     let source = 'a'
     let mutable destination: Nullable<char> = Nullable('e')
@@ -70,10 +63,12 @@ let main argv =
     while vertex_queue.Length > 0 do 
         let current = vertex_queue.[0]
         vertex_queue <- vertex_queue.[1 .. (vertex_queue.Length-1)]
-        let mutable fail = false
-        if not (edges.ContainsKey current) then
-            fail <- true
-        if not fail then
+        let mutable continueNow = false
+        
+        //Destination found
+        if current = destination.Value then
+            vertex_queue <- [|  |]
+        else
             let neighbors = edges.[current]
             for (key, value) in neighbors do
                 let alt: int32 = vertices.[current] + value
