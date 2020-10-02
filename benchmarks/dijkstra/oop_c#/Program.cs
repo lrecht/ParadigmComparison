@@ -64,7 +64,6 @@ namespace oop_c_
                 current = vertex_queue.First();
                 vertex_queue.Remove(current);
                 if (current.Equals(dest))
-
                     break;
 
                 foreach (var n in current.neighbours)
@@ -78,7 +77,6 @@ namespace oop_c_
                         neighbour.previous = current;
                         vertex_queue.Add(neighbour);
                     }
-
                 }
             }
 
@@ -116,11 +114,21 @@ namespace oop_c_
             this.name = name;
         }
 
+        public override bool Equals(object obj)
+        {
+            Vertex other = (Vertex)obj;
+            return this.name.Equals(other.name);
+        }
+
         public int CompareTo(object obj)
         {
             Vertex other = (Vertex)obj;
-
             return dist.CompareTo(other.dist);
+        }
+
+        public override int GetHashCode()
+        {
+            return name.GetHashCode();
         }
     }
 }
