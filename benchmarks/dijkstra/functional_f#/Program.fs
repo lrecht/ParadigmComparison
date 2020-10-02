@@ -14,9 +14,13 @@ let rec merge xs ys res =
      else merge xs ys' (List.append res [(a',b',y)])
 
 let getNewMoves (edgeMap:Map<char,(char*char*int) list>) (visited:Map<char,char>) position cost =
-    List.map (fun (a,b,c: int) -> (a,b,c+cost)) 
-        (List.filter (fun (a,b,c) -> not (visited.ContainsKey b)) 
-            (if edgeMap.ContainsKey position then edgeMap.[position] else []))
+    List.sortBy 
+        (fun (a,b,c) -> c)
+        (List.map 
+            (fun (a,b,c: int) -> (a,b,c+cost)) 
+            (List.filter 
+                (fun (a,b,c) -> not (visited.ContainsKey b)) 
+                (if edgeMap.ContainsKey position then edgeMap.[position] else [])))
 
 let rec backtrack (visited:Map<char,char>) curr res start =
     if curr = start then (curr::res)
@@ -26,12 +30,16 @@ let rec findPath edgeMap (moves:(char * char * int) list) (visited:Map<char,char
     let from,target,cost = moves.Head in
         if target = dest then
             visited.Add(target,from)
-            else
-            findPath edgeMap (merge (moves.Tail) 
-                                    (getNewMoves edgeMap visited target cost)
-                                    []) 
-                             (visited.Add(target,from)) 
-                             dest
+        elif (visited.ContainsKey target) then
+            findPath edgeMap moves.Tail visited dest
+        else findPath 
+                edgeMap 
+                (merge 
+                    (moves.Tail) 
+                    (getNewMoves edgeMap visited target cost)
+                    []) 
+                (visited.Add(target,from))
+                dest
 
 let dijkstraPath edgeMap start dest = 
     if start = dest then [start] else
