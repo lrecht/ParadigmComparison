@@ -123,9 +123,8 @@ language_discover_funcs["f#"] = discover_fsharp_program
 
 
 #Performs the list of benchmarks and saves to results to output csv file
-def perform_benchmarks(benchmarks, output_file, skip_build):
+def perform_benchmarks(benchmarks, experiment_iterations, output_file, skip_build):
     #Setupsies
-    experimentIterations = 10
     pyRAPL.setup()
     csv_output = pyRAPL.outputs.CSVOutput(output_file)
 
@@ -141,7 +140,7 @@ def perform_benchmarks(benchmarks, output_file, skip_build):
             subprocess.run(b.get_build_command(), shell=True, check=True, stdout=subprocess.DEVNULL)
 
         #The measuring equipment
-        for _ in range(0, experimentIterations):
+        for _ in range(0, experiment_iterations):
             meter = pyRAPL.Measurement(label=b.get_run_command())
             meter.begin()
             
@@ -151,6 +150,8 @@ def perform_benchmarks(benchmarks, output_file, skip_build):
             csv_output.add(meter.result)
 
         csv_output.save()
+    
+    print('\n')
 
 
 if __name__ == '__main__':
@@ -159,6 +160,7 @@ if __name__ == '__main__':
     parser.add_argument("-p", "--paradigm", choices=all_paradigms, help="Run only benchmarks for paradigm")
     parser.add_argument("-l", "--language", choices=all_languages, help="Run only benchmarks for language")
     parser.add_argument("-o", "--output", default="results.csv", help="Output csv file for results. Default is results.csv")
+    parser.add_argument("-i", "--iterations", default=10, type=int, help="Number of iterations for each benchmark")
 
     args = parser.parse_args()
 
@@ -186,7 +188,8 @@ if __name__ == '__main__':
 
     skip_build = args.nobuild
     output_file = args.output
+    iterations = args.iterations
 
     benchmark_programs = get_benchmark_programs(benchmarks, paradigms, languages)
 
-    perform_benchmarks(benchmark_programs, output_file, skip_build)
+    perform_benchmarks(benchmark_programs, iterations, output_file, skip_build)
