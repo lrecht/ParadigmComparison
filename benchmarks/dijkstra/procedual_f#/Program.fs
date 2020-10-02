@@ -34,12 +34,15 @@ let initEdges =
 
 let findMin (vertices: Dictionary<char, int32>) =
     let mutable min = Int32.MaxValue
-    let mutable minElm = 'x'
+    let mutable minElm: Nullable<char> = Nullable()
     for vertex in vertices do
         if (vertex.Value < min) then
             min <- vertex.Value
-            minElm <- vertex.Key
-    minElm
+            minElm <- Nullable(vertex.Key)
+    if minElm = Nullable() then
+        raise (Exception("There are no vertices with a value of less then Int32.MaxValue"))
+    else
+        minElm
 
 let remove (array: char array) (elm: char) =
     let rec loop i (newArray: char array) =
