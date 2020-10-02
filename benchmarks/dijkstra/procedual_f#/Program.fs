@@ -69,7 +69,7 @@ let main argv =
     
     while vertex_queue.Length > 0 do 
         let current = vertex_queue.[0]
-        vertex_queue <- remove vertex_queue current
+        vertex_queue <- vertex_queue.[1 .. (vertex_queue.Length-1)]
         let mutable fail = false
         if not (edges.ContainsKey current) then
             fail <- true
