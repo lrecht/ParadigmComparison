@@ -1,19 +1,28 @@
 ﻿// Learn more about F# at http://fsharp.org
 
 open System
+open System.IO
 
-let graph = [('a', 'b', 7);  ('a', 'c', 9);  ('a', 'f', 14); ('b', 'c', 10);
-               ('b', 'd', 15); ('c', 'd', 11); ('c', 'f', 2);  ('d', 'e', 6);
-               ('e', 'f', 9)]
+let filePath = "../soc-sign-bitcoinotc.csv"
+let lines = seq {
+    use sr = new StreamReader (filePath)
+    while not sr.EndOfStream do
+        yield sr.ReadLine ()
+}
+let graph = Seq.map 
+                (fun (a:string) -> 
+                    let words = (a.Split ',') 
+                    in (words.[0],words.[1],(words.[2] |> int))) 
+                lines
 
 let rec merge xs ys res = 
   match xs,ys with
   | [],l | l,[] -> List.append res l
   | (a,b,x)::xs', (a',b',y)::ys' -> 
-     if x < y then merge xs' ys (List.append res [(a,b,x)])
+     if x <= y then merge xs' ys (List.append res [(a,b,x)])
      else merge xs ys' (List.append res [(a',b',y)])
 
-let getNewMoves (edgeMap:Map<char,(char*char*int) list>) (visited:Map<char,char>) position cost =
+let getNewMoves (edgeMap:Map<string,(string*string*int) list>) (visited:Map<string,string>) position cost =
     List.sortBy 
         (fun (a,b,c) -> c)
         (List.map 
@@ -22,13 +31,14 @@ let getNewMoves (edgeMap:Map<char,(char*char*int) list>) (visited:Map<char,char>
                 (fun (a,b,c) -> not (visited.ContainsKey b)) 
                 (if edgeMap.ContainsKey position then edgeMap.[position] else [])))
 
-let rec backtrack (visited:Map<char,char>) curr res start =
+let rec backtrack (visited:Map<string,string>) curr res start =
     if curr = start then (curr::res)
     else backtrack visited (visited.[curr]) (curr::res) start
 
-let rec findPath edgeMap (moves:(char * char * int) list) (visited:Map<char,char>) dest =
+let rec findPath edgeMap (moves:(string * string * int) list) (visited:Map<string,string>) dest =
     let from,target,cost = moves.Head in
         if target = dest then
+            printfn "%A" cost
             visited.Add(target,from)
         elif (visited.ContainsKey target) then
             findPath edgeMap moves.Tail visited dest
@@ -50,8 +60,8 @@ let dijkstraPath edgeMap start dest =
 
 [<EntryPoint>]
 let main argv =
-    let edgeMap = List.fold (fun (acc:Map<char,(char*char*int) list>) (from,dest,cost) -> 
+    let edgeMap = Seq.fold (fun (acc:Map<string,(string*string*int) list>) (from,dest,cost) -> 
         if acc.ContainsKey from then acc.Add(from,((from,dest,cost)::(acc.[from])))
         else acc.Add(from,[from,dest,cost])) Map.empty graph in
-    printfn "%A" (dijkstraPath edgeMap 'a' 'e')
+    let meh = List.map (fun a -> printfn "%O" a) (dijkstraPath edgeMap "257" "5525")
     0 // return an integer exit code
