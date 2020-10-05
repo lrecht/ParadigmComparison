@@ -1,28 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
+using System.Diagnostics;
 
 namespace oop_c_
 {
     class Program
     {
-        static readonly List<Edge> EDGES = new List<Edge>
-        {
-            new Edge('a', 'b', 7),
-            new Edge('a', 'c', 9),
-            new Edge('a', 'f', 14),
-            new Edge('b', 'c', 10),
-            new Edge('b', 'd', 15),
-            new Edge('c', 'd', 11),
-            new Edge('c', 'f', 2),
-            new Edge('d', 'e', 6),
-            new Edge('e', 'f', 9)
-        };
-        static readonly char START = 'a';
-        static readonly char END = 'e';
+        static readonly string START = "257";
+        static readonly string END = "5525";
         static void Main(string[] args)
         {
-            Graph graph = new Graph(EDGES);
+            string directory = System.IO.Directory.GetParent(Environment.CurrentDirectory).ToString();
+            List<Edge> edges = File.ReadAllLines($"{directory}/soc-sign-bitcoinotc.csv")
+                                           .Select(v => Edge.FromCsv(v))
+                                           .ToList();
+            Graph graph = new Graph(edges);
             var shortestPath = graph.dijkstra(START, END);
             System.Console.WriteLine(String.Join(' ', shortestPath));
         }
@@ -32,7 +26,7 @@ namespace oop_c_
     {
         List<Edge> _edges { get; set; }
         // mapping of vertex names to Vertex objects, built from a set of Edges
-        readonly Dictionary<char, Vertex> graph = new Dictionary<char, Vertex>();
+        readonly Dictionary<string, Vertex> graph = new Dictionary<string, Vertex>();
         public Graph(List<Edge> edges)
         {
             _edges = edges;
@@ -50,7 +44,7 @@ namespace oop_c_
                 graph[edge.start].neighbours.Add(graph[edge.end], edge.cost);
         }
 
-        public List<char> dijkstra(char start, char end)
+        public List<string> dijkstra(string start, string end)
         {
             if (!graph.ContainsKey(start))
                 throw new Exception("Graph doesn't contain start vertex");
@@ -80,12 +74,14 @@ namespace oop_c_
                     }
                 }
             }
+            if (dest.previous is null)
+                throw new Exception("No path found");
 
-            List<char> shortestPath = new List<char>();
+            List<string> shortestPath = new List<string>();
             Vertex previous = dest;
             while (previous != null)
             {
-                shortestPath.Insert(0,previous.name);
+                shortestPath.Insert(0, previous.name);
                 previous = previous.previous;
             }
             return shortestPath;
@@ -94,23 +90,30 @@ namespace oop_c_
 
     public class Edge
     {
-        public char start, end;
+        public string start, end;
         public int cost;
-        public Edge(char start, char end, int cost)
+        public Edge(string start, string end, int cost)
         {
             this.start = start;
             this.end = end;
             this.cost = cost;
         }
+
+        public static Edge FromCsv(string csvLine)
+        {
+            string[] values = csvLine.Split(',');
+            Edge edge = new Edge(Convert.ToString(values[0]), Convert.ToString(values[1]), Convert.ToInt32(values[2]));
+            return edge;
+        }
     }
 
     public class Vertex : IComparable
     {
-        public readonly char name;
+        public readonly string name;
         public readonly Dictionary<Vertex, int> neighbours = new Dictionary<Vertex, int>();
         public int dist = int.MaxValue;
         public Vertex previous = null;
-        public Vertex(char name)
+        public Vertex(string name)
         {
             this.name = name;
         }
@@ -124,6 +127,8 @@ namespace oop_c_
         public int CompareTo(object obj)
         {
             Vertex other = (Vertex)obj;
+            if (dist == other.dist)
+			    return name.CompareTo(other.name);
             return dist.CompareTo(other.dist);
         }
 
