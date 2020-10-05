@@ -74,8 +74,8 @@ let main argv =
     let mutable vertices = initVertices edges
     let mutable prevDic = initPrevDic edges
 
-    let source = "257"
-    let mutable destination: string = "5525"
+    let source: string = "257"
+    let destination: string = "5525"
 
     vertices.[source] <- 0
     
