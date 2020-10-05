@@ -41,10 +41,9 @@ let initEdges =
     toDictionary edgeMap
 
 let remove (array: string array) (elm: string) =
+    let arrayLength = array.Length
     let rec loop i =
-        if i >= (array.Length) then
-            i
-        else if array.[i] = elm then
+        if i >= arrayLength || array.[i] = elm then
             i
         else 
             loop (i+1)
@@ -52,16 +51,15 @@ let remove (array: string array) (elm: string) =
     Array.append array.[0 .. (index-1)] array.[(index+1) .. (array.Length-1)]
 
 let insertSort (array: string array) (costMap: Dictionary<string, int32>) (newValue: string) =
+    let arrayLength = array.Length 
+    let costNew = costMap.[newValue]
     let rec loop i =
-        if i >= array.Length then
-            i
-        //Try to change this
-        else if costMap.[newValue] < costMap.[array.[i]] then
+        if i >= arrayLength || costNew < costMap.[array.[i]] then
             i
         else 
             loop (i+1)
     let index = loop 0
-    
+
     if index = (array.Length-1) then
         Array.append array [| newValue |]
     else if index = 0 then
@@ -79,7 +77,6 @@ let main argv =
     let source = "257"
     let mutable destination: string = "5525"
 
-    let stopWatch = System.Diagnostics.Stopwatch.StartNew()
     vertices.[source] <- 0
     
     let mutable vertex_queue: string array = [| source |]
@@ -112,14 +109,11 @@ let main argv =
         shortestPath <- Array.append [| previous |] shortestPath
         previous <- prevDic.[previous]
 
-    stopWatch.Stop()
     for part in shortestPath do
         printf "%s " part
     printfn ""
     printfn "Steps: %i" shortestPath.Length
     printfn "End weigth: %i" vertices.[destination]
-    printfn "Milliseconds: %i" stopWatch.ElapsedMilliseconds
-
     0 // return an integer exit code
 
 
