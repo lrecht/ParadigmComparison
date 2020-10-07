@@ -24,8 +24,7 @@ namespace functional_c_
 
         static void Main(string[] args)
         {
-            string directory = System.IO.Directory.GetParent(System.Environment.CurrentDirectory).ToString();
-            ImmutableList<(string, string, int)> EDGES = getEdgesFromCsv($"{directory}/graph.csv");
+            ImmutableList<(string, string, int)> EDGES = getEdgesFromCsv($"benchmarks/dijkstra/graph.csv");
             string START = "257";
             string END = "5525";
 
