@@ -19,7 +19,7 @@ let initPrevDic (edges: Dictionary<string, (string*int) array>) =
 let toDictionary (map : Map<_, _>) : Dictionary<_, _> = Dictionary(map)
 
 let initEdges =
-    let filePath = "../graph.csv"
+    let filePath = "benchmarks/dijkstra/graph.csv"
     let lines = seq {
         use sr = new StreamReader (filePath)
         while not sr.EndOfStream do

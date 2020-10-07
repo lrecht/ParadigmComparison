@@ -13,7 +13,7 @@ namespace oop_c_
         static void Main(string[] args)
         {
             string directory = System.IO.Directory.GetParent(Environment.CurrentDirectory).ToString();
-            List<Edge> edges = File.ReadAllLines($"{directory}/soc-sign-bitcoinotc.csv")
+            List<Edge> edges = File.ReadAllLines($"benchmarks/dijkstra/graph.csv")
                                            .Select(v => Edge.FromCsv(v))
                                            .ToList();
             Graph graph = new Graph(edges);

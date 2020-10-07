@@ -4,7 +4,7 @@ open System.Collections.Immutable
 open System.Collections.Generic
 open System.IO
 
-let filePath = "../graph.csv"
+let filePath = "benchmarks/dijkstra/graph.csv"
 let lines = seq {
     use sr = new StreamReader (filePath)
     while not sr.EndOfStream do
