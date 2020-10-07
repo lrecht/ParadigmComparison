@@ -7,26 +7,43 @@ namespace functional_c_
     class Program
     {
 
-        static ImmutableList<(string, string, int)> EDGES = ImmutableList.Create<(string, string, int)>(
-            //(source_vertex, dest_vertex, distance)
-            ("a", "b", 7),
-            ("a", "c", 9),
-            ("a", "f", 14),
-            ("b", "c", 10),
-            ("b", "d", 15),
-            ("c", "d", 11),
-            ("c", "f", 2),
-            ("d", "e", 6),
-            ("e", "f", 9)
-        );
-        static readonly string START = "a";
-        static readonly string END = "e";
+        //static ImmutableList<(string, string, int)> EDGES = ImmutableList.Create<(string, string, int)>(
+        //    //(source_vertex, dest_vertex, distance)
+        //    ("a", "b", 7),
+        //    ("a", "c", 9),
+        //    ("a", "f", 14),
+        //    ("b", "c", 10),
+        //    ("b", "d", 15),
+        //    ("c", "d", 11),
+        //    ("c", "f", 2),
+        //    ("d", "e", 6),
+        //    ("e", "f", 9)
+        //);
+        //static readonly string START = "a";
+        //static readonly string END = "e";
 
         static void Main(string[] args)
         {
-            //a, c, d, e
+            string directory = System.IO.Directory.GetParent(System.Environment.CurrentDirectory).ToString();
+            ImmutableList<(string, string, int)> EDGES = getGraphFromCsv($"{directory}/soc-sign-bitcoinotc.csv");
+            string START = "257";
+            string END = "5525";
+
             var shortestPath = dijkstra(EDGES, START, END);
             System.Console.WriteLine(string.Join(' ', shortestPath));
+        }
+
+        private static ImmutableList<(string, string, int)> getGraphFromCsv(string filePath)
+        {
+            return System.IO.File.ReadAllLines(filePath)
+                .Select(line => {
+                    var values = line.Split(',');
+                    var from = System.Convert.ToString(values[0]);
+                    var to = System.Convert.ToString(values[1]);
+                    var cost = System.Convert.ToInt32(values[2]);
+                    return (from, to, cost);
+                })
+                .ToImmutableList();
         }
 
         private static ImmutableList<string> backtrack(ImmutableDictionary<string, (string, int, string)> visited, string source, (string, int, string) vertex, ImmutableList<string> path)
