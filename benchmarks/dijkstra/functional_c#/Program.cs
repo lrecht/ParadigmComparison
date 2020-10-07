@@ -116,7 +116,6 @@ namespace functional_c_
                 return notVisited;
 
             var newNotVisited = notVisited
-            .Where(x => x.Item1 != currentVertex.Item1)
             .Union(
                 graph[currentVertex.Item1]
                 .Where(edge => !visited.ContainsKey(edge.Item2))
