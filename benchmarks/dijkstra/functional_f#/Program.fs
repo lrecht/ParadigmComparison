@@ -29,7 +29,6 @@ let rec backtrack (visited:Map<string,string>) curr res start =
 let rec findPath edgeMap (moves:ImmutableSortedSet<(string*string*int)>) (visited:Map<string,string>) dest =
     let from,target,cost = moves.Min in
         if target = dest then
-            printfn "%A" cost
             visited.Add(target,from)
         elif (visited.ContainsKey target) then
             findPath edgeMap (moves.Remove (from,target,cost)) visited dest
