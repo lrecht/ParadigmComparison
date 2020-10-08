@@ -96,7 +96,7 @@ let END = "5525"
 let main argv =
     let mutable edges = List<Edge>()
 
-    for line in System.IO.File.ReadAllLines(argv.[0]) do
+    for line in System.IO.File.ReadAllLines("benchmarks/dijkstra/graph.csv") do
         edges.Add(Edge.FromCSV(line))
 
     let g = Graph(edges)
