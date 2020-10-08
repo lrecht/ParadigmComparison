@@ -63,6 +63,7 @@ type Graph(edges) =
         else new List<String>()
 
 
+    let mutable isDone = false
     member this.Solve startVertex endVertex = 
         if graph.ContainsKey startVertex && graph.ContainsKey endVertex then
             let source = graph.[startVertex]
@@ -71,7 +72,7 @@ type Graph(edges) =
             let vertexQueue = new SortedSet<Vertex>()
             vertexQueue.Add(source) |> ignore // Ignore, because it returns a bool - Which we are not using
 
-            while vertexQueue.Count > 0 do
+            while vertexQueue.Count > 0 && not isDone do
                 let mutable current = vertexQueue.Min
                 vertexQueue.Remove(current) |> ignore
                 if not (current.Equals dest) then
@@ -83,8 +84,7 @@ type Graph(edges) =
                             neighbour.dist <- alternativeDist
                             neighbour.previous <- current
                             vertexQueue.Add(neighbour) |> ignore // Same as the others
-                    List<String>()
-                else getPath dest
+                else isDone <- true 
             getPath dest
         else List<String>()
 
