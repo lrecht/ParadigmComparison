@@ -59,9 +59,8 @@ namespace functional_c_
             else
             {
                 var vertices = graph
-                            .Select(x => x.Value
+                            .SelectMany(x => x.Value
                             .Select(y => y.Item2))
-                            .Aggregate((x, y) => x.Union(y))
                             .Union(graph.Select(x => x.Key));
 
                 //(vertex, total_cost_to_get_to_vertex, previous_vertex)
