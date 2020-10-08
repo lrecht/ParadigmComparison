@@ -77,7 +77,6 @@ type Graph(edges) =
                                         neighbour.previous <- current
                                         vertexQueue.Add(neighbour) |> ignore // Same as the others
 
-                // The '<>' means "not equal to"
                 if not (isNull dest.previous)
                     then
                         let path = new List<String>()
@@ -101,7 +100,6 @@ let main argv =
     
     for line in textEdges do
         edges.Add(Edge.FromCSV(line))
-
 
     let g = Graph(edges)
     let res = g.Solve START END
