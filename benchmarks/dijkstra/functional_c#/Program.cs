@@ -6,22 +6,6 @@ namespace functional_c_
 {
     class Program
     {
-
-        //static ImmutableList<(string, string, int)> EDGES = ImmutableList.Create<(string, string, int)>(
-        //    //(source_vertex, dest_vertex, distance)
-        //    ("a", "b", 7),
-        //    ("a", "c", 9),
-        //    ("a", "f", 14),
-        //    ("b", "c", 10),
-        //    ("b", "d", 15),
-        //    ("c", "d", 11),
-        //    ("c", "f", 2),
-        //    ("d", "e", 6),
-        //    ("e", "f", 9)
-        //);
-        //static readonly string START = "a";
-        //static readonly string END = "e";
-
         static void Main(string[] args)
         {
             ImmutableList<(string, string, int)> EDGES = getEdgesFromCsv($"benchmarks/dijkstra/graph.csv");
@@ -97,7 +81,6 @@ namespace functional_c_
             var newVisited = visited.Add(vertex.Item1, vertex);
 
             if(vertex.Item1 == destination){
-                //System.Console.WriteLine("Reached final vertex " + vertex.Item1 + " with cost " + vertex.Item2);
                 return backtrack(newVisited, source, newVisited[destination], ImmutableList<string>.Empty).Reverse();
             }
             else {
