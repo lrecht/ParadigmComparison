@@ -4,7 +4,6 @@ open System
 
 // Adds Dictionaries and Sets
 open System.Collections.Generic
-open System.Linq
 
 [<AllowNullLiteral>]
 type Vertex(name) =
@@ -63,7 +62,7 @@ type Graph(edges) =
             vertexQueue.Add(source) |> ignore // Ignore, because it returns a bool - Which we are not using
 
             while vertexQueue.Count > 0 do
-                let mutable current = vertexQueue.First()
+                let mutable current = vertexQueue.Min
                 vertexQueue.Remove(current) |> ignore
                 if not (current.Equals dest) then
                     for n in current.neighbours do
@@ -92,9 +91,8 @@ let END = "5525"
 [<EntryPoint>]
 let main argv =
     let mutable edges = new List<Edge>()
-    let textEdges = System.IO.File.ReadAllLines(argv.[0])
-    
-    for line in textEdges do
+
+    for line in System.IO.File.ReadAllLines(argv.[0]) do
         edges.Add(Edge.FromCSV(line))
 
     let g = Graph(edges)
