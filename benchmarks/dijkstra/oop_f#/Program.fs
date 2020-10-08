@@ -18,8 +18,8 @@ type Vertex(name) =
         member this.CompareTo o = 
             let v = o :?> Vertex
             if v.dist = this.dist
-                then compare this.name v.name
-                else compare this.dist v.dist
+            then compare this.name v.name
+            else compare this.dist v.dist
 
 
 type Edge(startVertex, endVertex, cost) =
