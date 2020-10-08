@@ -44,9 +44,10 @@ type Graph(edges) =
         // Fill the Set with all available verticies
         for e:Edge in edges do
             if not (graph.ContainsKey e.Start) 
-                then graph.Add(e.Start, Vertex(e.Start)) |> ignore // Ignore, because it returns a bool - Which we are not using
+            then graph.Add(e.Start, Vertex(e.Start)) |> ignore // Ignore, because it returns a bool - Which we are not using
+
             if not (graph.ContainsKey e.End)
-                then graph.Add(e.End, Vertex(e.End)) |> ignore // Ignore, because it returns a bool - Which we are not using
+            then graph.Add(e.End, Vertex(e.End)) |> ignore // Ignore, because it returns a bool - Which we are not using
         
         for e:Edge in edges do
             let endV = graph.[e.End]
@@ -54,40 +55,35 @@ type Graph(edges) =
 
 
     member this.Solve startVertex endVertex = 
-        if graph.ContainsKey startVertex && graph.ContainsKey endVertex
-            then
-                let source = graph.[startVertex]
-                source.dist <- 0
-                let dest = graph.[endVertex]
-                let vertexQueue = new SortedSet<Vertex>()
-                vertexQueue.Add(source) |> ignore // Ignore, because it returns a bool - Which we are not using
+        if graph.ContainsKey startVertex && graph.ContainsKey endVertex then
+            let source = graph.[startVertex]
+            source.dist <- 0
+            let dest = graph.[endVertex]
+            let vertexQueue = new SortedSet<Vertex>()
+            vertexQueue.Add(source) |> ignore // Ignore, because it returns a bool - Which we are not using
 
-                while vertexQueue.Count > 0 do
-                    let mutable current = vertexQueue.First()
-                    vertexQueue.Remove(current) |> ignore
-                    if not (current.Equals dest)
-                        then
-                            for n in current.neighbours do
-                                let mutable neighbour = n.Key
-                                let mutable alternativeDist = current.dist + n.Value
-                                if alternativeDist < neighbour.dist
-                                    then 
-                                        vertexQueue.Remove(neighbour) |> ignore // Same as the others
-                                        neighbour.dist <- alternativeDist
-                                        neighbour.previous <- current
-                                        vertexQueue.Add(neighbour) |> ignore // Same as the others
+            while vertexQueue.Count > 0 do
+                let mutable current = vertexQueue.First()
+                vertexQueue.Remove(current) |> ignore
+                if not (current.Equals dest) then
+                    for n in current.neighbours do
+                        let mutable neighbour = n.Key
+                        let mutable alternativeDist = current.dist + n.Value
+                        if alternativeDist < neighbour.dist then 
+                            vertexQueue.Remove(neighbour) |> ignore // Same as the others
+                            neighbour.dist <- alternativeDist
+                            neighbour.previous <- current
+                            vertexQueue.Add(neighbour) |> ignore // Same as the others
 
-                if not (isNull dest.previous)
-                    then
-                        let path = new List<String>()
-                        let mutable previous = dest
-                        while not ( isNull previous ) do
-                            path.Insert(0, previous.name)
-                            previous <- previous.previous
-                        path
-                    else
-                        new List<String>()
+            if not (isNull dest.previous) then
+                let path = new List<String>()
+                let mutable previous = dest
+                while not ( isNull previous ) do
+                    path.Insert(0, previous.name) |> ignore
+                    previous <- previous.previous
+                path
             else new List<String>()
+        else new List<String>()
 
 [<Literal>]
 let START = "257"
