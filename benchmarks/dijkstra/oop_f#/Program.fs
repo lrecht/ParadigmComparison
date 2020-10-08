@@ -52,6 +52,16 @@ type Graph(edges) =
             let endV = graph.[e.End]
             graph.[e.Start].neighbours.Add(endV, e.Cost)
 
+    let getPath dest =
+        if not (isNull (dest:Vertex).previous) then
+            let path = new List<String>()
+            let mutable previous = dest
+            while not ( isNull previous ) do
+                path.Insert(0, previous.name) |> ignore
+                previous <- previous.previous
+            path
+        else new List<String>()
+
 
     member this.Solve startVertex endVertex = 
         if graph.ContainsKey startVertex && graph.ContainsKey endVertex then
@@ -73,16 +83,10 @@ type Graph(edges) =
                             neighbour.dist <- alternativeDist
                             neighbour.previous <- current
                             vertexQueue.Add(neighbour) |> ignore // Same as the others
-
-            if not (isNull dest.previous) then
-                let path = new List<String>()
-                let mutable previous = dest
-                while not ( isNull previous ) do
-                    path.Insert(0, previous.name) |> ignore
-                    previous <- previous.previous
-                path
-            else new List<String>()
-        else new List<String>()
+                    List<String>()
+                else getPath dest
+            getPath dest
+        else List<String>()
 
 [<Literal>]
 let START = "257"
@@ -90,7 +94,7 @@ let END = "5525"
 
 [<EntryPoint>]
 let main argv =
-    let mutable edges = new List<Edge>()
+    let mutable edges = List<Edge>()
 
     for line in System.IO.File.ReadAllLines(argv.[0]) do
         edges.Add(Edge.FromCSV(line))
