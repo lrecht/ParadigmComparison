@@ -1,7 +1,7 @@
 ﻿open System
 
-let suits: string array = [| "H"; "R"; "S"; "K" |] //The suits: Hjerter, Ruder, Spar, Klør
-let numbers: string array = [| "A"; "2"; "3"; "4"; "5"; "6"; "7"; "8"; "9"; "10"; "J"; "Q"; "K" |]
+let suits: string array = [| "Clubs"; "Diamonds"; "Hearts"; "Spades" |] //The suits: Hjerter, Ruder, Spar, Klør
+let numbers: string array = [| "Two"; "Three"; "Four"; "Five"; "Six"; "Seven"; "Eight"; "Nine"; "Ten"; "Jack"; "Queen"; "King"; "Ace" |]
 
 type Deck = {
     mutable Size: int
@@ -14,7 +14,7 @@ let createNewDeck deck =
     
     for suit in 0 .. suits.Length-1 do
         for num in 0 .. numbers.Length-1 do
-            deck.Cards.[(num+(suit*numbers.Length))] <- suits.[suit] + "_" + numbers.[num]
+            deck.Cards.[(num+(suit*numbers.Length))] <- numbers.[num] + " of " + suits.[suit]
     
 
 let deckToString (deck: Deck) =
