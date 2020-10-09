@@ -29,7 +29,7 @@ namespace functional_c_
 
             var deckStrSize = showDeck(deck).Count();
             var shuffledDeck = shuffleDeck(deck, new Random());
-            var dealedDeck = shuffledDeck.Remove(getCardFromBackOfDeck(shuffledDeck));
+            var dealedDeck = shuffledDeck.Remove(shuffledDeck.Last());
 
             return playingCardsOnDeck(dealedDeck, deckStrSize + count);
         }
@@ -43,10 +43,6 @@ namespace functional_c_
         private static ImmutableList<(Suit, Value)> shuffleDeck(ImmutableList<(Suit, Value)> deck, Random rng)
         {
             return deck.OrderBy(x => rng.Next()).ToImmutableList();
-        }
-        private static (Suit, Value) getCardFromBackOfDeck(ImmutableList<(Suit, Value)> deck)
-        {
-            return deck.Last();
         }
 
         private static ImmutableList<(Suit, Value)> getNewDeck(){
