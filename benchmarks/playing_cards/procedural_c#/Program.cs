@@ -48,9 +48,7 @@ namespace procedural_c_
 
         string dealCard()
         {
-            int last = deckCount - 1;
-            string card = deck[last];
-            deck[last] = "";
+            string card = deck[deckCount - 1];
             deckCount--;
             return card;
         }
