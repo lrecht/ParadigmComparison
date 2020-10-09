@@ -101,9 +101,9 @@ namespace procedural_c_
             while (backtrack.ContainsKey(position))
             {
                 position = backtrack[position];
-                res.Add(position);
+                res.Prepend(position);
             }
-            res.Reverse();
+
             return res;
         }
 
