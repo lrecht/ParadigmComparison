@@ -40,8 +40,6 @@ namespace procedural_c_
             foreach (string edge in file)
             {
                 string[] line = edge.Split(",");
-                if (line.Length < 3)
-                    continue;
                 string from = line[0], to = line[1];
                 int weight = Convert.ToInt32(line[2]);
                 if (edgeMap.ContainsKey(from))
@@ -101,7 +99,7 @@ namespace procedural_c_
             while (backtrack.ContainsKey(position))
             {
                 position = backtrack[position];
-                res.Prepend(position);
+                res.Insert(0,position);
             }
 
             return res;
