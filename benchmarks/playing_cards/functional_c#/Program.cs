@@ -12,7 +12,7 @@ namespace functional_c_
 
         static void Main(string[] args)
         {
-            var result = performPlayingCards(getNewDeck(), 1000, 0);
+            var result = performPlayingCards(1000, 0);
             System.Console.WriteLine(result);
         }
 
