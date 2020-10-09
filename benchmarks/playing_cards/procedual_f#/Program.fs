@@ -5,16 +5,17 @@ let numbers: string array = [| "A"; "2"; "3"; "4"; "5"; "6"; "7"; "8"; "9"; "10"
 
 type Deck = {
     mutable Size: int
-    Cards: string array
+    mutable Cards: string array
 }
 
-let createNewDeck =
-    let deck: Deck = { Deck.Size=52; Deck.Cards=(Array.create 52 null) }
-
+let createNewDeck deck =
+    deck.Size <- 52
+    deck.Cards <- (Array.create 52 null)
+    
     for suit in 0 .. suits.Length-1 do
         for num in 0 .. numbers.Length-1 do
             deck.Cards.[(num+(suit*numbers.Length))] <- suits.[suit] + "_" + numbers.[num]
-    deck
+    
 
 let deckToString (deck: Deck) =
     let mutable result: string = ""
@@ -44,18 +45,23 @@ let main argv =
     let stopWatch = System.Diagnostics.Stopwatch.StartNew()
     
     //make a new deck
-    let mutable deck: Deck = createNewDeck
-
-    while deck.Size <> 0 do
-        //Show
-        deckToString deck |> ignore
-        
-        //shuffle (randomize) the deck
-        shuffle deck
-        
-        //deal from the deck
-        dealCard deck |> ignore
-
+    let mutable count = 0
+    let mutable deck: Deck = { Deck.Size = 0; Deck.Cards = [||] }
+    
+    for x in 0 .. 1000 do
+        createNewDeck deck
+        while deck.Size <> 0 do
+            //Show
+            let deckString = deckToString deck
+            
+            //shuffle (randomize) the deck
+            shuffle deck
+            
+            //deal from the deck
+            dealCard deck |> ignore
+            count <- count + deckString.Length
+    
+    printfn "Count: %i" count
     stopWatch.Stop()
     printfn "Time: %i" stopWatch.ElapsedMilliseconds
     0 // return an integer exit code
