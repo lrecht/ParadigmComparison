@@ -84,7 +84,10 @@ namespace functional_c_
 
         private static ImmutableList<string> dijkstraHelper(ImmutableDictionary<string, ImmutableList<(string, string, int)>> graph, string source, string destination, ImmutableSortedSet<(string, int, string)> vertexQueue, ImmutableDictionary<string, (string, int, string)> visited, ImmutableDictionary<string, (string, int, string)> vertexCosts)
         {
-            var vertex = vertexQueue.First(x => !visited.ContainsKey(x.Item1));
+            var vertex = vertexQueue.Min;
+            if(visited.ContainsKey(vertex.Item1))
+                return dijkstraHelper(graph, source, destination, vertexQueue.Remove(vertex), visited, vertexCosts);
+                
             var newVisited = visited.Add(vertex.Item1, vertex);
 
             if (vertex.Item1 == destination)
