@@ -28,7 +28,7 @@ namespace functional_c_
                 return count;
 
             var deckStrSize = showDeck(deck).Count();
-            var shuffledDeck = shuffleDeck(deck, new Random(), deck.Count, 0);
+            var shuffledDeck = shuffleDeck(deck, new Random());
             var dealedDeck = shuffledDeck.Remove(getCardFromBackOfDeck(shuffledDeck));
 
             return playingCardsOnDeck(dealedDeck, deckStrSize + count);
@@ -40,19 +40,9 @@ namespace functional_c_
             return string.Join('\n', deck.Select(x => $"{x.Item2} of {x.Item1}"));
         }
 
-        private static ImmutableList<(Suit, Value)> shuffleDeck(ImmutableList<(Suit, Value)> deck, Random rng, int deckSize, int i)
+        private static ImmutableList<(Suit, Value)> shuffleDeck(ImmutableList<(Suit, Value)> deck, Random rng)
         {
-            if(i >= deckSize)
-                return deck;
-
-            var randomNum = rng.Next(i, deckSize);
-            var temp = deck[randomNum];
-            return shuffleDeck(
-                deck.Replace(deck[randomNum], deck[i]).Replace(deck[i], temp), 
-                rng, 
-                deckSize, 
-                i + 1
-                );
+            return deck.OrderBy(x => rng.Next()).ToImmutableList();
         }
         private static (Suit, Value) getCardFromBackOfDeck(ImmutableList<(Suit, Value)> deck)
         {
