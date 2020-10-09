@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Linq;
+using System;
 using System.Collections.Generic;
 
 namespace oop_c_
@@ -7,14 +8,20 @@ namespace oop_c_
     {
         static void Main(string[] args)
         {
-            Deck d = new Deck();
-            while(d.Count() > 0)
+            int count = 0;
+            for(int i = 0; i < 1000; i++)
             {
-                string deck = d.ShowDeck();
-                d.Shuffle();
-                d.Deal();
-                deck = d.ShowDeck();
+                Deck d = new Deck();
+                while(d.Count() > 0)
+                {
+                    string deck = d.ShowDeck();
+                    d.Shuffle();
+                    d.Deal();
+                    // Count variable is to make sure ShowDeck() is not optimised away
+                    count += (d.ShowDeck()).Count();
+                }
             }
+            System.Console.WriteLine(count);
         }
     }
 
