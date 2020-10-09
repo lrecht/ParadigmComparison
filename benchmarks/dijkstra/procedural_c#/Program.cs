@@ -42,12 +42,13 @@ namespace procedural_c_
                 string[] line = edge.Split(",");
                 if (line.Length < 3)
                     continue;
-                string from = line[0], to = line[1], weight = line[2];
-                int intW = Convert.ToInt32(weight);
+                string from = line[0], to = line[1];
+                int weight = Convert.ToInt32(line[2]);
                 if (edgeMap.ContainsKey(from))
-                    edgeMap[from].Add((to,intW));
+                    edgeMap[from].Add((to,weight));
                 else
-                    edgeMap.Add(from, new List<(string,int)>{(to,intW)});
+                    edgeMap.Add(from, new List<(string,int)>{(to,weight)});
+
             }
 
             dijkstra(start,dest);
