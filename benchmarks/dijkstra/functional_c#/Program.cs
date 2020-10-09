@@ -96,9 +96,7 @@ namespace functional_c_
             }
             else
             {
-                var updated = updateCosts(graph, vertex, vertexQueue.Remove(vertex), newVisited, vertexCosts);
-                var newNotVisited = updated.Item1;
-                var newCosts = updated.Item2;
+                var (newNotVisited, newCosts) = updateCosts(graph, vertex, vertexQueue.Remove(vertex), newVisited, vertexCosts);
                 return dijkstraHelper(graph,
                                     source,
                                     destination,
