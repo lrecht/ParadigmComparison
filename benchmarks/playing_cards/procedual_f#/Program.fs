@@ -42,8 +42,6 @@ let dealCard (deck: Deck) =
 
 [<EntryPoint>]
 let main argv =
-    let stopWatch = System.Diagnostics.Stopwatch.StartNew()
-    
     //make a new deck
     let mutable count = 0
     let mutable deck: Deck = { Deck.Size = 0; Deck.Cards = [||] }
@@ -62,7 +60,5 @@ let main argv =
             count <- count + deckString.Length
     
     printfn "Count: %i" count
-    stopWatch.Stop()
-    printfn "Time: %i" stopWatch.ElapsedMilliseconds
     0 // return an integer exit code
 
