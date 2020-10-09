@@ -70,13 +70,19 @@ namespace functional_c_
                             .Append((source, 0, ""))
                             .ToImmutableSortedSet(Comparer<(string, int, string)>.Create((x, y) => x.Item2 > y.Item2 ? 1 : x.Item2 < y.Item2 ? -1 : string.Compare(x.Item1, y.Item1)));
 
+                var vertexCosts = vertices
+                            .Where(x => x != source)
+                            .Select(x => (x, int.MaxValue, ""))
+                            .Append((source, 0, ""))
+                            .ToImmutableDictionary(x => x.Item1);
+
                 var visited = ImmutableDictionary<string, (string, int, string)>.Empty;
 
-                return dijkstraHelper(graph, source, destination, vertexQueue, visited);
+                return dijkstraHelper(graph, source, destination, vertexQueue, visited, vertexCosts);
             }
         }
 
-        private static ImmutableList<string> dijkstraHelper(ImmutableDictionary<string, ImmutableList<(string, string, int)>> graph, string source, string destination, ImmutableSortedSet<(string, int, string)> vertexQueue, ImmutableDictionary<string, (string, int, string)> visited)
+        private static ImmutableList<string> dijkstraHelper(ImmutableDictionary<string, ImmutableList<(string, string, int)>> graph, string source, string destination, ImmutableSortedSet<(string, int, string)> vertexQueue, ImmutableDictionary<string, (string, int, string)> visited, ImmutableDictionary<string, (string, int, string)> vertexCosts)
         {
             var vertex = vertexQueue.First(x => !visited.ContainsKey(x.Item1));
             var newVisited = visited.Add(vertex.Item1, vertex);
@@ -87,36 +93,46 @@ namespace functional_c_
             }
             else
             {
-                var newNotVisited = updateCosts(graph, vertex, vertexQueue.Remove(vertex), newVisited);
+                var updated = updateCosts(graph, vertex, vertexQueue.Remove(vertex), newVisited, vertexCosts);
+                var newNotVisited = updated.Item1;
+                var newCosts = updated.Item2;
                 return dijkstraHelper(graph,
                                     source,
                                     destination,
                                     newNotVisited,
-                                    newVisited);
+                                    newVisited,
+                                    newCosts);
             }
         }
 
-        private static ImmutableSortedSet<(string, int, string)> updateCosts(ImmutableDictionary<string, ImmutableList<(string, string, int)>> graph, (string, int, string) currentVertex, ImmutableSortedSet<(string, int, string)> vertexQueue, ImmutableDictionary<string, (string, int, string)> visited)
+        private static (ImmutableSortedSet<(string, int, string)>, ImmutableDictionary<string, (string, int, string)>) updateCosts(ImmutableDictionary<string, ImmutableList<(string, string, int)>> graph, (string, int, string) currentVertex, ImmutableSortedSet<(string, int, string)> vertexQueue, ImmutableDictionary<string, (string, int, string)> visited, ImmutableDictionary<string, (string, int, string)> vertexCosts)
         {
             if (!graph.ContainsKey(currentVertex.Item1))
-                return vertexQueue;
+                return (vertexQueue, vertexCosts);
 
-            return vertexQueue
-            .Union(
-                graph[currentVertex.Item1]
+            var cheaperVertices = graph[currentVertex.Item1]
                 .Where(edge => !visited.ContainsKey(edge.Item2))
-                .Select(edge =>
+                .Where(edge =>
                 {
-                    var vertex = vertexQueue.First(y => y.Item1 == edge.Item2);
+                    var vertex = vertexCosts[edge.Item2];
 
                     var alternateCost = currentVertex.Item2 + edge.Item3;
-                    if (alternateCost < vertex.Item2)
-                        return (vertex.Item1, alternateCost, currentVertex.Item1);
-                    else
-                        return vertex;
+                    return alternateCost < vertex.Item2;
                 })
-            )
-            .ToImmutableSortedSet(vertexQueue.KeyComparer);
+                .Select(edge => {
+                    var vertex = vertexCosts[edge.Item2];
+                    var alternateCost = currentVertex.Item2 + edge.Item3;
+                    return (vertex.Item1, alternateCost, currentVertex.Item1);
+                });
+
+            var newCosts = vertexCosts
+                .SetItems(cheaperVertices.Select(x => KeyValuePair.Create<string, (string, int, string)>(x.Item1, x)));
+
+            var newQueue = vertexQueue
+                .Union(cheaperVertices)
+                .ToImmutableSortedSet(vertexQueue.KeyComparer);
+
+            return (newQueue, newCosts);
         }
     }
 }
