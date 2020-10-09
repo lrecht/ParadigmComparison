@@ -8,12 +8,13 @@ namespace oop_c_
         static void Main(string[] args)
         {
             Deck d = new Deck();
-            string deck = d.ShowDeck();
-            d.Shuffle();
-            for (int i = 0; i < 3; i++)
-                for (int j = 0; j < 5; j++)
-                    System.Console.WriteLine(d.Deal());
-            deck = d.ShowDeck();
+            while(d.Count() > 0)
+            {
+                string deck = d.ShowDeck();
+                d.Shuffle();
+                d.Deal();
+                deck = d.ShowDeck();
+            }
         }
     }
 
