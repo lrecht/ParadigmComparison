@@ -9,7 +9,7 @@ namespace procedural_c_
     {
         static void Main(string[] args)
         {
-            Procedural p = new Procedural("257","5525",$"benchmark/dijkstra/graph.csv");
+            Procedural p = new Procedural("257","5525",$"benchmarks/dijkstra/graph.csv");
         }
     }
 
