@@ -71,10 +71,6 @@ namespace oop_c_
             return card;
         }
 
-        public string ShowDeck()
-        {
-            StringBuilder sb = new StringBuilder();
-            return sb.AppendJoin('\n', deck).ToString();
-        }
+        public string ShowDeck() => String.Join('\n', deck);
     }
 }
