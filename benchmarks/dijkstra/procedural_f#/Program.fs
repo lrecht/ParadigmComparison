@@ -68,8 +68,8 @@ let rec heapifyNode (index: int) =
     // Find parent 
     let parent: int = (index - 1) / 2; 
 
-    // For Max-Heap 
-    // If current node is greater than its parent 
+    // For Min-Heap 
+    // If current node is less than its parent 
     // Swap both of them and call heapify again 
     // for the parent 
     if (smallerThan heap.array.[index] heap.array.[parent]) then
@@ -174,5 +174,4 @@ let main argv =
     printfn "Steps: %i" shortestPath.Length
     printfn "End weigth: %i" value
     0 // return an integer exit code
-
 
