@@ -1,4 +1,4 @@
-**/.ionide/*
+.ionide/*
 **/obj/*
 **/bin/*
-**/.vscode/*
+.vscode/*
