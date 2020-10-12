@@ -54,9 +54,9 @@ let swap (index1: int) (index2: int) =
     positions.[key1] <- index2
     positions.[key2] <- index1
 
-    let swap = heap.array.[index1]
+    let temp = heap.array.[index1]
     heap.array.[index1] <- heap.array.[index2]
-    heap.array.[index2] <- swap
+    heap.array.[index2] <- temp
 
 let smallerThan ((item11, item12): (string*int)) ((item21, item22): (string*int)) =
     if (item12 < item22) then
@@ -174,4 +174,3 @@ let main argv =
     printfn "Steps: %i" shortestPath.Length
     printfn "End weigth: %i" value
     0 // return an integer exit code
-
