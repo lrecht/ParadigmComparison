@@ -7,7 +7,7 @@ namespace oop_c_
 {
     class Program
     {
-        static string TEST_STRING = File.ReadAllText("../text.txt");
+        static string TEST_STRING = File.ReadAllText("benchmarks/huffman_coding/text.txt");
 
         static void Main(string[] args)
         {
