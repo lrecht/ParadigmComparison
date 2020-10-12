@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace oop_c_
@@ -9,16 +8,16 @@ namespace oop_c_
         static void Main(string[] args)
         {
             int count = 0;
-            for(int i = 0; i < 1000; i++)
+            for (int i = 0; i < 1000; i++)
             {
                 Deck d = new Deck();
-                while(d.Count() > 0)
+                while (d.Count > 0)
                 {
                     string deck = d.ShowDeck();
                     d.Shuffle();
                     d.Deal();
                     // Count variable is to make sure ShowDeck() is not optimised away
-                    count += (d.ShowDeck()).Count();
+                    count += deck.Length;
                 }
             }
             System.Console.WriteLine(count);
@@ -33,28 +32,28 @@ namespace oop_c_
     {
         Suit suit { get; }
         Value value { get; }
-        public Card(Suit s, Value v)
-        {
-            suit = s;
-            value = v;
-        }
-
+        public Card(Suit s, Value v) => (suit, value) = (s,v);
         public override string ToString() => $"{value} of {suit}";
     }
 
     public class Deck
     {
         List<Card> deck = new List<Card>();
+        Random random { get; set; }
         public Deck()
         {
+            random = new Random();
             foreach (Suit s in Enum.GetValues(typeof(Suit)))
                 foreach (Value v in Enum.GetValues(typeof(Value)))
                     deck.Add(new Card(s, v));
         }
-        public int Count() => deck.Count;
+        public int Count
+        {
+            get => deck.Count;
+            set { }
+        }
         public void Shuffle()
         {
-            var random = new Random();
             for (int i = 0; i < deck.Count; i++)
             {
                 int r = random.Next(i, deck.Count);
