@@ -11,10 +11,11 @@ type Deck = {
 let createNewDeck deck =
     deck.Size <- 52
     deck.Cards <- (Array.create 52 null)
-    
+    let mutable i = 0
     for suit in 0 .. suits.Length-1 do
         for num in 0 .. numbers.Length-1 do
-            deck.Cards.[(num+(suit*numbers.Length))] <- numbers.[num] + " of " + suits.[suit]
+            deck.Cards.[i] <- numbers.[num] + " of " + suits.[suit]
+            i <- i+1
     
 
 let deckToString (deck: Deck) =
@@ -33,12 +34,9 @@ let shuffle (deck: Deck) =
         deck.Cards.[r] <- temp;
 
 let dealCard (deck: Deck) = 
-    if (deck.Size = 0) then
-        raise (Exception("There are no cards in the deck"))
-    else
-        let card = deck.Cards.[deck.Size-1]
-        deck.Size <- deck.Size-1
-        card
+    let card = deck.Cards.[deck.Size-1]
+    deck.Size <- deck.Size-1
+    card
 
 [<EntryPoint>]
 let main argv =
