@@ -43,7 +43,7 @@ let main argv =
     let mutable count = 0
     let mutable deck: Deck = { Deck.Size = 0; Deck.Cards = [||] }
     
-    for x in 0 .. 1000 do
+    for x in 0 .. 999 do
         createNewDeck deck
         while deck.Size <> 0 do
             //Show
