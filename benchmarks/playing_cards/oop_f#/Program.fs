@@ -1,7 +1,6 @@
 ﻿// Learn more about F# at http://fsharp.org
 
 open System
-open System.Text
 open System.Collections.Generic
 
 
@@ -20,7 +19,6 @@ type Card(suit:Suit, value:Value) =
 // The type of a whole deck
 type Deck() =
     let _cards = new List<Card>()
-    let _strBuilder = new StringBuilder()
     let _rand = Random()
     do
         for _suit in Enum.GetValues(typeof<Suit>) do
@@ -45,11 +43,7 @@ type Deck() =
         card
 
     // Prints the deck with a line for each card
-    member this.ShowDeck =
-        _strBuilder.Clear() |> ignore
-        for str in _cards do
-            _strBuilder.Append(str) |> ignore
-        _strBuilder.ToString()
+    member this.ShowDeck = String.Join('\n', _cards)
 
 
 [<EntryPoint>]
