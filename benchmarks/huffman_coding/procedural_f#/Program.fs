@@ -38,8 +38,8 @@ let rec heapifyNode (index: int) =
     // Find parent 
     let parent: int = (index - 1) / 2; 
 
-    // For Max-Heap 
-    // If current node is greater than its parent 
+    // For Min-Heap 
+    // If current node is smaller than its parent 
     // Swap both of them and call heapify again 
     // for the parent 
     if (smallerThan heap.array.[index] heap.array.[parent]) then
@@ -120,11 +120,10 @@ let encode (mappings: Dictionary<char, string>) (text: string) =
 
 [<EntryPoint>]
 let main argv =
-    let text = System.IO.File.ReadAllText "../lines.txt"
+    let text = System.IO.File.ReadAllText "benchmarks/huffman_coding/lines.txt"
     let frequencies: Dictionary<char, int> = new Dictionary<char, int>()
     
-    for charecter in text do
-        let c: char = charecter
+    for c in text do
         if frequencies.ContainsKey(c) then
             frequencies.[c] <- frequencies.[c]+1
         else
@@ -135,5 +134,4 @@ let main argv =
     printfn "Length: %i" encoded.Length
     
     0 // return an integer exit code
-
 
