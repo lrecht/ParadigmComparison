@@ -1,6 +1,6 @@
 ﻿open System
 
-let suits: string array = [| "Clubs"; "Diamonds"; "Hearts"; "Spades" |] //The suits: Hjerter, Ruder, Spar, Klør
+let suits: string array = [| "Clubs"; "Diamonds"; "Hearts"; "Spades" |]
 let numbers: string array = [| "Two"; "Three"; "Four"; "Five"; "Six"; "Seven"; "Eight"; "Nine"; "Ten"; "Jack"; "Queen"; "King"; "Ace" |]
 
 type Deck = {
