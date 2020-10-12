@@ -1,4 +1,5 @@
 ﻿open System
+open System.Text
 
 let suits: string array = [| "Clubs"; "Diamonds"; "Hearts"; "Spades" |]
 let numbers: string array = [| "Two"; "Three"; "Four"; "Five"; "Six"; "Seven"; "Eight"; "Nine"; "Ten"; "Jack"; "Queen"; "King"; "Ace" |]
@@ -19,9 +20,9 @@ let createNewDeck deck =
     
 
 let deckToString (deck: Deck) =
-    let mutable result: string = ""
+    let mutable result: StringBuilder = StringBuilder()
     for card in 0 .. (deck.Size-1) do
-        result <- result + deck.Cards.[card] + " "
+        result <- result.Append(deck.Cards.[card] + " ")
     result
 
 let shuffle (deck: Deck) =
