@@ -40,7 +40,6 @@ let dealCard (deck: Deck) =
 
 [<EntryPoint>]
 let main argv =
-    //make a new deck
     let mutable count = 0
     let mutable deck: Deck = { Deck.Size = 0; Deck.Cards = [||] }
     
@@ -59,4 +58,3 @@ let main argv =
     
     printfn "Count: %i" count
     0 // return an integer exit code
-
