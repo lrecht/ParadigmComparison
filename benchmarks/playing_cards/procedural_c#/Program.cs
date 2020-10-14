@@ -29,7 +29,8 @@ namespace procedural_c_
                     shuffle();
                     dealCard();
                     // Count variable is to make sure ShowDeck() is not optimised away
-                    count += (showDeck()).Length;
+                    count += deck.Length;
+
                 }
             }
             System.Console.WriteLine(count);
