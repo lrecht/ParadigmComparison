@@ -37,12 +37,13 @@ let sort frq =
         ((Seq.map (fun (c,w) -> Leaf (w,c)) (Map.toSeq frq)),
          (Comparer<Tree>.Create(fun t1 t2 -> Compare t1 t2)))
 
-let rec makeTree (ss:ImmutableSortedSet<Tree>) =
-    if ss.Count = 1 then ss.[0]
-    else let first,second = ss.[0],ss.[1] in
+let rec makeTree (sortedset:ImmutableSortedSet<Tree>) =
+    if sortedset.Count = 1 then sortedset.[0]
+    else let first,second = sortedset.[0],sortedset.[1] in
             makeTree 
-                (ss.Remove(first).Remove(second)
+                (sortedset.Remove(first).Remove(second)
                    .Add(Node (((Weight first) + (Weight second)),first,second)))
+
 
 let rec makeTable' tree path = 
     match tree with
