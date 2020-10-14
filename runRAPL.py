@@ -1,8 +1,10 @@
+from math import sqrt
 import pyRAPL
 import argparse
 import os
 import fnmatch
 import subprocess
+import math
 
 parser = argparse.ArgumentParser()
 benchmarks_path = "./benchmarks"
@@ -122,19 +124,75 @@ def discover_fsharp_program(path):
 language_discover_funcs["f#"] = discover_fsharp_program
 
 
+class Stats():
+    """A class to simplify the statistical computations"""
+
+    def Clear(self):
+        """After each benchmark, the instance values can be cleared using this function"""
+        self.measures = []
+        self.mean = 0
+        self.std = 0
+        self.error_margin = 0
+        self.error_percent = 0
+
+    def add_measurement(self, measure):
+        """A small method to add measurements to the instance"""
+        self.measures.append(measure)
+
+    def compute_results(self):
+        """Calls all of the statistical calculation functions in the right order (Results will occupy the instance variables)"""
+        self.mean = self.get_mean()
+        self.std = self.get_deviation() * 2 # The times two is to produce 95% confidence
+        self.error_margin = self.get_error_margin()
+        self.error_percent = self.get_error_percent()
+
+    def get_mean(self):
+        """Will return the mean value, based on the current measurements"""
+        return sum(self.measures) / len(self.measures)
+
+    def get_deviation(self):
+        """Will return the standard deviation, based on the current measurements (Mean must be calculated first)"""
+        sqrt_sum = 0
+        for val in self.measures:
+            sqrt_sum += (val - self.mean)**2
+        
+        subres = sqrt_sum
+        if len(self.measures) > 1:
+            subres = sqrt_sum / (len(self.measures) - 1)
+        return math.sqrt(subres)
+
+    def get_error_margin(self):
+        """Will return the error margin, based on the current measurements (Standard deviation must be calculated first)"""
+        return self.std / math.sqrt(len(self.measures))
+
+    def get_error_percent(self):
+        """Will return the error margin in percent of the mean (Error margin must be calculated first)"""
+        return (self.error_margin / self.mean)
+
+    def to_pretty_string(self):
+        """Will return the 'mean', 'error margin', and 'error percent' in a readable format"""
+        mean = "{0:.2f}".format(self.mean)
+        error = "{0:.2f}".format(self.error_margin)
+        percent = "{0:.2%}".format(self.error_percent)
+        return "Results: {0} ± {1} (± {2})\n".format(mean, error, percent)
+
+
 #Performs the list of benchmarks and saves to results to output csv file
 def perform_benchmarks(benchmarks, experiment_iterations, output_file, skip_build):
     #Setupsies
     pyRAPL.setup()
+    statistics = Stats()
     csv_output = pyRAPL.outputs.CSVOutput(output_file)
 
     benchmark_count = len(benchmarks)
     current_benchmark = 0
 
     for b in benchmarks:
+        statistics.Clear()
         current_benchmark += 1
 
         print('\r' + "Performing benchmark " + str(current_benchmark) + " of " + str(benchmark_count), end='', flush=True)
+        print("\n", b.path)
 
         if(not skip_build and b.get_build_command()):
             subprocess.run(b.get_build_command(), shell=True, check=True, stdout=subprocess.DEVNULL)
@@ -147,8 +205,11 @@ def perform_benchmarks(benchmarks, experiment_iterations, output_file, skip_buil
             subprocess.run(b.get_run_command(), shell=True, check=True, stdout=subprocess.DEVNULL)
 
             meter.end()
+            statistics.add_measurement(meter.result.duration)
             csv_output.add(meter.result)
 
+        statistics.compute_results()
+        print(statistics.to_pretty_string())
         csv_output.save()
     
     print('\n')
