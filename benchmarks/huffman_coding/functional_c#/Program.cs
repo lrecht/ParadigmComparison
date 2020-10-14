@@ -23,7 +23,9 @@ namespace functional_c_
         private static ImmutableDictionary<char, string> createMappings(IEnumerable<(char, int)> frequencies)
         {
             var tree = frequencies.Select(x => (x.Item2, ImmutableDictionary<char, string>.Empty.Add(x.Item1, "")))
-                .ToImmutableSortedSet(Comparer<(int, ImmutableDictionary<char, string>)>.Create((x, y) => x.Item1 > y.Item1 ? 1 : x.Item1 < y.Item1 ? -1 : x.Item2.First().Key.CompareTo(y.Item2.First().Key)));
+                .ToImmutableSortedSet(Comparer<(int, ImmutableDictionary<char, string>)>
+                    .Create((x, y) => x.Item1 > y.Item1 ? 1 : x.Item1 < y.Item1 ? -1 : x.Item2.First().Key.CompareTo(y.Item2.First().Key)));
+
 
             return createMappingHelper(tree).First().Item2;
         }
