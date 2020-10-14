@@ -13,7 +13,7 @@ type Suit = Diamonds=0 | Spades=1 | Hearts=2 | Clubs=3
 type Card(suit:Suit, value:Value) =
     member this.Suit = suit
     member this.Value = value
-    override this.ToString() = sprintf "%A of %A" this.Value this.Suit
+    override this.ToString() = sprintf "%O of %O" this.Value this.Suit
 
 
 // The type of a whole deck
@@ -55,6 +55,6 @@ let main argv =
             let deck = d.ShowDeck
             d.Shuffle
             d.Deal |> ignore
-            count <- count + (d.ShowDeck).Length
+            count <- count + deck.Length
     printf "%d" count
     0

@@ -87,7 +87,7 @@ namespace functional_c_
             var vertex = vertexQueue.Min;
             if(visited.ContainsKey(vertex.Item1))
                 return dijkstraHelper(graph, source, destination, vertexQueue.Remove(vertex), visited, vertexCosts);
-                
+
             var newVisited = visited.Add(vertex.Item1, vertex);
 
             if (vertex.Item1 == destination)

@@ -68,10 +68,10 @@ namespace procedural_c_
                 position = elem.Item1;
                 if(position == dest)
                     break;
-                
+
                 if(!edgeMap.ContainsKey(position))
                     continue;
-                
+
                 foreach (var (newPos,cost) in edgeMap[position])
                 {
                     int alternateDist = currDist + cost;
@@ -147,7 +147,7 @@ namespace procedural_c_
         {
             // Find parent 
             int parent = (index - 1) / 2; 
-        
+
             // For Max-Heap 
             // If current node is greater than its parent 
             // Swap both of them and call heapify again 
@@ -171,16 +171,16 @@ namespace procedural_c_
             // If left child is smaller than root 
             if (l < heap.size && smallerThan(heap.array[l], heap.array[smallest]))
                 smallest = l; 
-    
+
             // If right child is smaller than smallest so far 
             if (r < heap.size && smallerThan(heap.array[r], heap.array[smallest])) 
                 smallest = r; 
-    
+
             // If smallest is not root 
             if (smallest != index) 
             { 
                 swap(index,smallest);
-    
+
                 // Recursively heapify the affected sub-tree 
                 heapify(smallest); 
             } 
