@@ -29,10 +29,7 @@ let swap (index1: int) (index2: int) =
     heap.array.[index2] <- swap
 
 let smallerThan ((id1, (feq1, list1)): (int*(int* Dictionary<char,string>))) ((id2, (feq2, list2)): (int*(int*Dictionary<char,string>))) =
-    if (feq1 < feq2) then
-        true
-    else
-        (feq1 = feq2 && id1.CompareTo(id2) = -1)
+    (feq1 < feq2)
 
 let rec heapifyNode (index: int) =
     // Find parent 
@@ -134,4 +131,3 @@ let main argv =
     printfn "Length: %i" encoded.Length
     
     0 // return an integer exit code
-
