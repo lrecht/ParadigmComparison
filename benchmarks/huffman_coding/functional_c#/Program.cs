@@ -11,7 +11,7 @@ namespace functional_c_
 
         static void Main(string[] args)
         {
-            string TEST_STRING = File.ReadAllText("benchmarks/huffman_coding/lines.txt");
+            var TEST_STRING = File.ReadAllText("benchmarks/huffman_coding/lines.txt");
             var frequencies = getFrequencies(TEST_STRING);
             var mappings = createMappings(frequencies);
             var encodedCharacters = TEST_STRING.Select(x => mappings[x]);
@@ -22,7 +22,9 @@ namespace functional_c_
         private static ImmutableDictionary<char, string> createMappings(IEnumerable<(char, int)> frequencies)
         {
             var tree = frequencies.Select(x => (x.Item2, ImmutableDictionary<char, string>.Empty.Add(x.Item1, "")))
-                .ToImmutableSortedSet(Comparer<(int, ImmutableDictionary<char, string>)>.Create((x, y) => x.Item1 > y.Item1 ? 1 : x.Item1 < y.Item1 ? -1 : x.Item2.First().Key.CompareTo(y.Item2.First().Key)));
+                .ToImmutableSortedSet(Comparer<(int, ImmutableDictionary<char, string>)>
+                    .Create((x, y) => x.Item1 > y.Item1 ? 1 : x.Item1 < y.Item1 ? -1 : x.Item2.First().Key.CompareTo(y.Item2.First().Key)));
+
 
             return createMappingHelper(tree).First().Item2;
         }
