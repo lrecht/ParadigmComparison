@@ -12,10 +12,10 @@ type IHuffmanTree(id, freq) =
     interface IComparable<IHuffmanTree> with
         override this.CompareTo obj = 
             let res = this.Frequency - obj.Frequency
-            if res = 0 then this.Id.CompareTo(obj.Id) else res
+            if res = 0 then this.Id.CompareTo obj.Id else res
 
 
-type HuffmanLeaf(c, id, freq) =
+type HuffmanLeaf(c, freq, id) =
     inherit IHuffmanTree(id, freq)
     member val Character = c with get
 
