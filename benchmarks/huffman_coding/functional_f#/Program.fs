@@ -5,7 +5,7 @@ open System.IO
 open System.Collections.Immutable
 open System.Collections.Generic
 
-let filePath = "../lines.txt"
+let filePath = "benchmarks/huffman_coding/lines.txt"
 let input = File.ReadAllText filePath
 
 type Tree = Node of Weight:int * Left:Tree * Right:Tree 
@@ -55,29 +55,15 @@ let rec makeTable' tree path =
 let makeTable tree = 
     makeTable' tree ""
 
-let rec decode' encoded tree res root = 
-    match encoded with 
-        | (x::xs) -> 
-            match tree with
-                | Node (w,l,r) -> if x = '0' then decode' xs l res root
-                                  else decode' xs r res root
-                | Leaf (w,v) -> decode' encoded root (res + string v) root
-        | _ -> match tree with
-                | Node (w,l,r) -> res
-                | Leaf (w,v) -> res + string v
-                
-let decode encoded tree = 
-    decode' encoded tree "" tree
-
 let huffman str =
     let frq = frequencies str
     let ss = sort frq
     let tree = makeTree ss
     let table = makeTable tree
     let encoded = String.collect (fun c -> table.[c]) str
-    decode (Seq.toList encoded) tree
+    encoded
 
 [<EntryPoint>]
 let main argv =
-    printfn "%s" (huffman input)
+    printfn "%i" (String.length (huffman input))
     0 // return an integer exit code
