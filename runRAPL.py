@@ -1,10 +1,8 @@
-from math import sqrt
 import pyRAPL
 import argparse
-import os
-import fnmatch
 import subprocess
 import stats as stat
+from program import *
 
 parser = argparse.ArgumentParser()
 benchmarks_path = "./benchmarks"
@@ -28,35 +26,6 @@ class readable_dir(argparse.Action):
                 setattr(namespace, self.dest, dirs)
             else:
                 raise argparse.ArgumentTypeError("readable_dir:{0} is not a readable dir".format(prospective_dir))
-
-
-class Program:
-    def __init__(self, path, paradigm):
-        self.path = path
-        self.paradigm = paradigm
-
-    def get_build_command(self):
-        raise NotImplementedError("Please Implement this method")
-
-    def get_run_command(self):
-        raise NotImplementedError("Please Implement this method")
-
-
-class Dotnet_Program(Program):
-    def get_build_command(self):
-        return "dotnet build --configuration Release --nologo --verbosity quiet " + self.path
-
-
-class C_Sharp_Program(Dotnet_Program):
-    def get_run_command(self):
-        command = self.path + '/bin/Release/netcoreapp3.1/'
-        return command + self.paradigm + "_c#"
-
-
-class F_Sharp_Program(Dotnet_Program):
-    def get_run_command(self):
-        command = self.path + '/bin/Release/netcoreapp3.1/'
-        return command + self.paradigm + "_f#"
 
 
 #Fetches programs to run based on arguments
@@ -85,44 +54,11 @@ def get_benchmark_programs(benchmarks, paradigms, languages):
 
     return benchmark_programs
 
-
-#Discovers c# project folders based on naming convention (functional_c# or oop_c#)
-def discover_csharp_program(path):
-    results = []
-
-    for name in os.listdir(path):
-        if not os.path.isdir(path + '/' + name):
-            continue
-
-        program_path = path + '/' + name
-
-        if fnmatch.fnmatch(name, "*_c#"):
-            results.append(C_Sharp_Program(program_path, name.split('_')[0]))
-
-    return results
-
 # Adds function to discover functions dictionary
 language_discover_funcs["c#"] = discover_csharp_program
 
-
-#Discovers f# project folders based on naming convention (functional_f# or oop_f#)
-def discover_fsharp_program(path):
-    results = []
-
-    for name in os.listdir(path):
-        if not os.path.isdir(path + '/' + name):
-            continue
-
-        program_path = path + '/' + name
-
-        if fnmatch.fnmatch(name, "*_f#"):
-            results.append(F_Sharp_Program(program_path, name.split('_')[0]))
-
-    return results
-
 # Adds function to discover functions dictionary
 language_discover_funcs["f#"] = discover_fsharp_program
-
 
 
 #Performs the list of benchmarks and saves to results to output csv file
