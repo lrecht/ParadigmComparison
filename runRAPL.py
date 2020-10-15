@@ -3,6 +3,7 @@ import argparse
 import subprocess
 import stats as stat
 from program import *
+from datetime import datetime
 
 parser = argparse.ArgumentParser()
 benchmarks_path = "./benchmarks"
@@ -149,7 +150,7 @@ if __name__ == '__main__':
         languages = all_languages
 
     skip_build = args.nobuild
-    output_file = args.output
+    output_file = "[{0}]{1}".format(datetime.now().isoformat(),args.output)
     iterations = args.iterations
     time_limit = args.time_limit
 
