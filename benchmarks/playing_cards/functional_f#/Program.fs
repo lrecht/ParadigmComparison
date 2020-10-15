@@ -1,30 +1,33 @@
 ﻿open System
 
-type Value = Two=0 | Three=1 | Four=2 | Five=3 | Six=4 | Seven=5 | Eight=6 | Nine=7 | Ten=8 | Jack=9 | Queen=10 | King=11 | Ace=12
-type Suit = Diamonds=0 | Spades=1 | Hearts=2 | Clubs=3
+let Value = [| "Two"; "Three"; "Four"; "Five"; "Six"; "Seven"; "Eight"; "Nine"; "Ten"; "Jack"; "Queen"; "King"; "Ace" |]
+let Suit = [| "Diamonds"; "Spades"; "Hearts"; "Clubs" |]
 
-let newDeck = seq {for x in Enum.GetValues(typeof<Value>) do for y in Enum.GetValues(typeof<Suit>) -> x,y }
-
+let newDeck() = 
+    Seq.toList (seq {for x in Value do for y in Suit do x,y })
+    
 let rand = Random()
-let shuffle xs = Seq.sortBy (fun x -> rand.Next()) xs
+let shuffle (xs: list<string*string>) = 
+    Seq.toList(Seq.sortBy (fun x -> rand.Next()) xs)
 
-let showDeck deck = 
-    String.concat "\n" (Seq.map (fun (v,s) -> sprintf "%O of %O" v s) deck)
+let showDeck (deck: list<string*string>) = 
+    String.Join("\n", (Seq.map (fun (v,s) -> (v.ToString() + " of " + s.ToString())) deck))
 
-let deal deck =
-    (Seq.head deck, Seq.tail deck)
+let deal (deck: list<string*string>) =
+    let list = Seq.toList deck
+    (list.Head, list.Tail)
 
-let rec run' deck runs c count =
+let rec run' (deck: list<string*string>) runs c count =
     if runs = 0
         then c
     elif count = 0
-        then run' newDeck (runs-1) c 52
+        then run' (newDeck()) (runs-1) c 52
     else
         run' ((snd (deal (shuffle deck)))) runs ((String.length (showDeck deck)) + c) (count-1)
 let run runs =
-    run' newDeck runs 0 52
+    run' (newDeck()) runs 0 52
 
 [<EntryPoint>]
 let main argv =
-    printfn "%O" (run 1000)
+    printfn "%i" (run 1000)
     0 // return an integer exit code
