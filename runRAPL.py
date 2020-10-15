@@ -126,6 +126,12 @@ language_discover_funcs["f#"] = discover_fsharp_program
 
 class Stats():
     """A class to simplify the statistical computations"""
+    def __init__(self, output_file):
+        name = output_file.split(".csv")[0]
+        self.file_name = name + "_stats.csv"
+        with open(self.file_name, "w") as stats_file:
+            stats_file.write("Name,Mean,Error Margin,Error Margin (%),Runs\n")
+        
 
     def Clear(self):
         """After each benchmark, the instance values can be cleared using this function"""
@@ -169,19 +175,24 @@ class Stats():
         """Will return the error margin in percent of the mean (Error margin must be calculated first)"""
         return (self.error_margin / self.mean)
 
+    def save(self, benchmark_name):
+        with open(self.file_name, "a+") as stats:
+            stats.write("{0},{1:.2f},{2:.2f},{3:.2%},{4}\n".format(benchmark_name, self.mean, self.error_margin, self.error_percent, len(self.measures)))
+
+
     def to_pretty_string(self):
         """Will return the 'mean', 'error margin', and 'error percent' in a readable format"""
         mean = "{0:.2f}".format(self.mean)
         error = "{0:.2f}".format(self.error_margin)
         percent = "{0:.2%}".format(self.error_percent)
-        return "Results: {0} ± {1} (± {2})\n".format(mean, error, percent)
+        return "Results: {0} ± {1} (± {2}) - [{3} Runs]\n".format(mean, error, percent, len(self.measures))
 
 
 #Performs the list of benchmarks and saves to results to output csv file
-def perform_benchmarks(benchmarks, experiment_iterations, output_file, skip_build):
+def perform_benchmarks(benchmarks, experiment_iterations, time_limit, output_file, skip_build):
     #Setupsies
     pyRAPL.setup()
-    statistics = Stats()
+    statistics = Stats(output_file)
     csv_output = pyRAPL.outputs.CSVOutput(output_file)
 
     benchmark_count = len(benchmarks)
@@ -198,21 +209,37 @@ def perform_benchmarks(benchmarks, experiment_iterations, output_file, skip_buil
             subprocess.run(b.get_build_command(), shell=True, check=True, stdout=subprocess.DEVNULL)
 
         #The measuring equipment
-        for _ in range(0, experiment_iterations):
-            meter = pyRAPL.Measurement(label=b.get_run_command())
-            meter.begin()
-            
-            subprocess.run(b.get_run_command(), shell=True, check=True, stdout=subprocess.DEVNULL)
-
-            meter.end()
-            statistics.add_measurement(meter.result.duration)
-            csv_output.add(meter.result)
+        if time_limit is None:
+            for _ in range(0, experiment_iterations):
+                res = run(b)
+                handle_results(res, csv_output, statistics)
+        else:
+            current_time = 0
+            while(current_time < time_limit):
+                res = run(b)
+                handle_results(res, csv_output, statistics)
+                current_time += res.duration / 1_000_000 #Microseconds to seconds
+            current_time = sum(statistics.measures)
 
         statistics.compute_results()
-        print(statistics.to_pretty_string())
+        statistics.save(b.path)
         csv_output.save()
     
     print('\n')
+
+def run(benchmark):
+    meter = pyRAPL.Measurement(label=benchmark.get_run_command())
+    meter.begin()
+    
+    subprocess.run(benchmark.get_run_command(), shell=True, check=True, stdout=subprocess.DEVNULL)
+
+    meter.end()
+    return meter.result
+
+
+def handle_results(res, raw_results_csv, stats):
+    stats.add_measurement(res.duration)
+    raw_results_csv.add(res)
 
 
 if __name__ == '__main__':
@@ -222,6 +249,7 @@ if __name__ == '__main__':
     parser.add_argument("-l", "--language", choices=all_languages, help="Run only benchmarks for language")
     parser.add_argument("-o", "--output", default="results.csv", help="Output csv file for results. Default is results.csv")
     parser.add_argument("-i", "--iterations", default=10, type=int, help="Number of iterations for each benchmark")
+    parser.add_argument("-t", "--time-limit", type=int, help="Number of seconds to continousely run each benchmark")
 
     args = parser.parse_args()
 
@@ -250,7 +278,8 @@ if __name__ == '__main__':
     skip_build = args.nobuild
     output_file = args.output
     iterations = args.iterations
+    time_limit = args.time_limit
 
     benchmark_programs = get_benchmark_programs(benchmarks, paradigms, languages)
 
-    perform_benchmarks(benchmark_programs, iterations, output_file, skip_build)
+    perform_benchmarks(benchmark_programs, iterations, time_limit, output_file, skip_build)
