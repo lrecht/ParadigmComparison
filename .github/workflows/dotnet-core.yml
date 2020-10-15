@@ -1,0 +1,19 @@
+name: .NET Core
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.301
+    - name: Install dependencies
+      run: for f in $(ls -d benchmarks/*/*/); do dotnet restore $f || exit 1; done
+    - name: Build
+      run: for f in $(ls -d benchmarks/*/*/); do dotnet build $f || exit 1; done
