@@ -10,12 +10,6 @@ let initVertices (edges: Dictionary<string, (string*int) array>) =
         vertices.Add(edge, Int32.MaxValue)
     vertices
 
-let initPrevDic (edges: Dictionary<string, (string*int) array>) =
-    let prevDic = new Dictionary<string, string>()
-    for edge in edges.Keys do
-        prevDic.Add(edge, null)
-    prevDic
-
 let toDictionary (map : Map<_, _>) : Dictionary<_, _> = Dictionary(map)
 
 let initEdges =
@@ -40,80 +34,143 @@ let initEdges =
 
     toDictionary edgeMap
 
-let remove (array: string array) (elm: string) =
-    let arrayLength = array.Length
-    let rec loop i =
-        if i >= arrayLength || array.[i] = elm then
-            i
-        else 
-            loop (i+1)
-    let index = loop 0
-    Array.append array.[0 .. (index-1)] array.[(index+1) .. (array.Length-1)]
+let positions: Dictionary<string,int> = new Dictionary<string, int>()
+let edgeMap: Dictionary<string,(string*int) list> = new Dictionary<string, (string*int) list>()
+let distances: Dictionary<string,int> = new Dictionary<string, int>()
+let position: string = ""
+type Heap = {
+    mutable array: (string*int) array
+    mutable maxSize: int
+    mutable size: int
+}
 
-let insertSort (array: string array) (costMap: Dictionary<string, int32>) (newValue: string) =
-    let arrayLength = array.Length 
-    let costNew = costMap.[newValue]
-    let rec loop i =
-        if i >= arrayLength || costNew < costMap.[array.[i]] then
-            i
-        else 
-            loop (i+1)
-    let index = loop 0
+let heap: Heap = { Heap.array = (Array.zeroCreate 1024); Heap.maxSize = 1024; Heap.size = 0 }
 
-    if index = (array.Length-1) then
-        Array.append array [| newValue |]
-    else if index = 0 then
-        Array.append [| newValue |] array
+
+let swap (index1: int) (index2: int) =
+    // Maintains dictionary to find items later
+    let (key1, value1) = heap.array.[index1]
+    let (key2, value2) = heap.array.[index2]
+    positions.[key1] <- index2
+    positions.[key2] <- index1
+
+    let temp = heap.array.[index1]
+    heap.array.[index1] <- heap.array.[index2]
+    heap.array.[index2] <- temp
+
+let smallerThan ((item11, item12): (string*int)) ((item21, item22): (string*int)) =
+    if (item12 < item22) then
+        true
     else
-        let start = Array.append array.[0 .. (index-1)] [| newValue |]
-        Array.append start array.[index .. (array.Length-1)]
+        (item12 = item22 && item11.CompareTo(item21) = -1)
+
+let rec heapifyNode (index: int) =
+    // Find parent 
+    let parent: int = (index - 1) / 2; 
+
+    // For Min-Heap 
+    // If current node is less than its parent 
+    // Swap both of them and call heapify again 
+    // for the parent 
+    if (smallerThan heap.array.[index] heap.array.[parent]) then
+        swap index parent
+
+        // Recursively heapify the parent node 
+        heapifyNode parent
+
+let insert (element: (string*int)) =
+    if(heap.size = heap.maxSize) then
+        heap.array <- Array.append heap.array (Array.zeroCreate heap.maxSize)
+        heap.maxSize <- heap.maxSize * 2
+
+    heap.array.[heap.size] <- element
+    heap.size <- (heap.size + 1)
+    heapifyNode (heap.size-1)
+
+let rec heapify (index: int) =
+    // Code from https://www.geeksforgeeks.org/heap-sort/
+    let mutable smallest: int = index; // Initialize smallest as root 
+    let l: int = 2*index + 1; // left = 2*i + 1 
+    let r: int = 2*index + 2; // right = 2*i + 2 
+
+    // If left child is smaller than root 
+    if (l < heap.size && (smallerThan heap.array.[l] heap.array.[smallest])) then
+        smallest <- l
+
+    // If right child is smaller than smallest so far 
+    if (r < heap.size && (smallerThan heap.array.[r] heap.array.[smallest])) then
+        smallest <- r
+
+    // If smallest is not root 
+    if (smallest <> index) then
+        swap index smallest
+
+        // Recursively heapify the affected sub-tree 
+        heapify smallest
+
+let pop ()=
+    let (key, cost) : (string*int) = heap.array.[0]
+    heap.array.[0] <- heap.array.[heap.size-1]
+    heap.size <- heap.size - 1
+    heapify 0
+
+    //Maintain dict
+    positions.Remove(key) |> ignore
+
+    (key, cost)
+
+let replace (pos: string) (newDist: int) =
+    if (positions.ContainsKey(pos)) then
+        let index: int = positions.[pos]
+        swap index 0
+        pop ()
+    else
+        positions.[pos] <- heap.size
+        insert (pos,newDist)
+        (pos,newDist)
 
 [<EntryPoint>]
 let main argv =
     let mutable edges = initEdges
-    let mutable vertices = initVertices edges
-    let mutable prevDic = initPrevDic edges
-
+    let mutable backtrack = new Dictionary<string, string>()
     let source: string = "257"
     let destination: string = "5525"
-
-    vertices.[source] <- 0
     
-    let mutable vertex_queue: string array = [| source |]
+    insert (source, 0)
     
-    while vertex_queue.Length > 0 do 
-        let current = vertex_queue.[0]
-        vertex_queue <- vertex_queue.[1 .. (vertex_queue.Length-1)]
+    while heap.size > 0 do 
+        let (key, cost) = pop()
         
-        //Destination found
-        if current = destination then
-            vertex_queue <- [|  |]
-        else if vertices.ContainsKey(current) then
-            let neighbors = edges.[current]
+        if key = destination then
+            heap.size <- 0
+        else if edges.ContainsKey(key) then
+            let neighbors = edges.[key]
             
-            for (key, value) in neighbors do   
-                //If the neighbor does not have another neighbor, then it is not added to the vertices, and cannot work
-                //This fix however, will do so that we cannot find distinations if it has no edges going out...
-                if vertices.ContainsKey(key) then
-                    let alt: int32 = vertices.[current] + value
-                    if alt < vertices.[key] then
-                        vertex_queue <- remove vertex_queue key
-                        vertices.[key] <- alt
-                        prevDic.[key] <- current
-                        vertex_queue <- insertSort vertex_queue vertices key
+            for (nKey, nCost) in neighbors do   
+                let alternateDist = cost + nCost;
+                if not (distances.ContainsKey(nKey)) then
+                    distances.Add(nKey,alternateDist)
+                    backtrack.Add(nKey, key);
+                    positions.Add(nKey,heap.size)
+                    insert ((nKey,alternateDist))
+                else if alternateDist < distances.[nKey] then
+                    backtrack.[nKey] <- key;
+                    distances.[nKey] <- alternateDist
+                    replace nKey alternateDist |> ignore
     
     //Create the shortest path
-    let mutable shortestPath: (string array) = [| |]
-    let mutable previous = destination
-    while not (isNull previous) do
-        shortestPath <- Array.append [| previous |] shortestPath
-        previous <- prevDic.[previous]
-
+    let mutable shortestPath: (string array) = [| destination |]
+    let mutable position = destination
+    
+    while position <> source do
+        position <- backtrack.[position]
+        shortestPath <- Array.append [| position |] shortestPath
+    
     for part in shortestPath do
         printf "%s " part
+    
+    let value = distances.[destination]
     printfn ""
     printfn "Steps: %i" shortestPath.Length
-    printfn "End weigth: %i" vertices.[destination]
+    printfn "End weigth: %i" value
     0 // return an integer exit code
-
-
