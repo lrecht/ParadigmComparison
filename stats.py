@@ -2,11 +2,11 @@ import math
 
 class Stats():
     """A class to simplify the statistical computations"""
-    def __init__(self, output_file):
+    def __init__(self, output_file, typ, measurement):
         name = output_file.split(".csv")[0]
-        self.file_name = name + "_stats.csv"
+        self.file_name = name + "_stats_{0}.csv".format(typ)
         with open(self.file_name, "w") as stats_file:
-            stats_file.write("Name,Mean,Error Margin,Error Margin (%),Runs\n")
+            stats_file.write("Name;Mean ({0});Error Margin ({0});Error Margin (%);Runs\n".format(measurement))
         
 
     def Clear(self):
@@ -53,7 +53,8 @@ class Stats():
 
     def save(self, benchmark_name):
         with open(self.file_name, "a+") as stats:
-            stats.write("{0},{1:.2f},{2:.2f},{3:.2%},{4}\n".format(benchmark_name, self.mean, self.error_margin, self.error_percent, len(self.measures)))
+            string = "{0};{1:,.2f};{2:,.2f};{3:.2%};{4}\n".format(benchmark_name, self.mean, self.error_margin, self.error_percent, len(self.measures))
+            stats.write(string.replace(".", "*").replace(",", ".").replace("*", ","))
 
 
     def to_pretty_string(self):
@@ -62,3 +63,30 @@ class Stats():
         error = "{0:.2f}".format(self.error_margin)
         percent = "{0:.2%}".format(self.error_percent)
         return "Results: {0} ± {1} (± {2}) - [{3} Runs]\n".format(mean, error, percent, len(self.measures))
+
+
+class Aggregator():
+    def __init__(self, output_file):
+        self.execution_time = Stats(output_file, "run_time", "µs")
+        self.package = Stats(output_file, "pkg_power", "µj")
+        self.ram = Stats(output_file, "ram_power", "µj")
+
+    def clear(self):
+        self.execution_time.Clear()
+        self.package.Clear()
+        self.ram.Clear()
+
+    def add(self, result):
+        self.execution_time.add_measurement(result.duration)
+        self.package.add_measurement(result.pkg[0])
+        self.ram.add_measurement(result.dram[0])
+
+    def compute(self):
+        self.execution_time.compute_results()
+        self.package.compute_results()
+        self.ram.compute_results()
+
+    def save(self, benchmark_name):
+        self.execution_time.save(benchmark_name)
+        self.package.save(benchmark_name)
+        self.ram.save(benchmark_name)

@@ -66,14 +66,14 @@ language_discover_funcs["f#"] = discover_fsharp_program
 def perform_benchmarks(benchmarks, experiment_iterations, time_limit, output_file, skip_build):
     #Setupsies
     pyRAPL.setup()
-    statistics = stat.Stats(output_file)
+    statistics = stat.Aggregator(output_file)
     csv_output = pyRAPL.outputs.CSVOutput(output_file)
 
     benchmark_count = len(benchmarks)
     current_benchmark = 0
 
     for b in benchmarks:
-        statistics.Clear()
+        statistics.clear()
         current_benchmark += 1
 
         print('\r' + "Performing benchmark " + str(current_benchmark) + " of " + str(benchmark_count), end='', flush=True)
@@ -93,9 +93,8 @@ def perform_benchmarks(benchmarks, experiment_iterations, time_limit, output_fil
                 res = run(b)
                 handle_results(res, csv_output, statistics)
                 current_time += res.duration / 1_000_000 #Microseconds to seconds
-            current_time = sum(statistics.measures)
 
-        statistics.compute_results()
+        statistics.compute()
         statistics.save(b.path)
         csv_output.save()
     
@@ -112,7 +111,7 @@ def run(benchmark):
 
 
 def handle_results(res, raw_results_csv, stats):
-    stats.add_measurement(res.duration)
+    stats.add(res)
     raw_results_csv.add(res)
 
 
