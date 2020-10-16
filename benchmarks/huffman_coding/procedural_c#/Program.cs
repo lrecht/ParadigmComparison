@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace procedural_c_
 {
@@ -8,13 +9,15 @@ namespace procedural_c_
 	{
 		static void Main(string[] args)
 		{
-			var text = System.IO.File.ReadAllText("benchmarks/huffman_coding/lines.txt");
+			var stop = System.Diagnostics.Stopwatch.StartNew();
+			var text = System.IO.File.ReadAllText("../lines.txt");
 			var feq = CreateFrequencies(text);
 			var mappings = CreateMappings(feq);
 			var encodedString = Encode(mappings, text);
 			Console.WriteLine("Length: " + encodedString.Length);
+			stop.Stop();
+			Console.WriteLine("Time: " + stop.ElapsedMilliseconds);
 		}
-
 		static Dictionary<char, int> CreateFrequencies(string text)
 		{
 			var result = new Dictionary<char, int>();
@@ -37,26 +40,36 @@ namespace procedural_c_
 			//insert leafs
 			foreach (var feq in frequencies)
 			{
-				insert((feq.Value, new Dictionary<char, string>() { { feq.Key, "" } }));
+				(char, string)[] data = { (feq.Key, "") };
+				insert((feq.Value, data));
 			}
 
 			while (heap.size > 1)
 			{
 				var first = pop();
 				var second = pop();
-				var newElm = (first.Item1 + second.Item1, new Dictionary<char, string>());
+				var newElm = (first.Item1 + second.Item1, new (char, string)[first.Item2.Length + second.Item2.Length]);
+				var pos = 0;
 				foreach (var elm in first.Item2)
 				{
-					newElm.Item2.Add(elm.Key, '0' + elm.Value);
+					newElm.Item2[pos++] = (elm.Item1, '0' + elm.Item2);
 				}
 				foreach (var elm in second.Item2)
 				{
-					newElm.Item2.Add(elm.Key, '1' + elm.Value);
+					newElm.Item2[pos++] = (elm.Item1, '1' + elm.Item2);
 				}
 				insert(newElm);
 			}
 
-			return pop().Item2;
+			var mappings = new Dictionary<char, string>();
+			var array = pop();
+
+			foreach (var value in array.Item2)
+			{
+				mappings.Add(value.Item1, value.Item2);
+			}
+
+			return mappings;
 		}
 
 		static string Encode(Dictionary<char, string> mappings, string text)
@@ -69,31 +82,17 @@ namespace procedural_c_
 			return result.ToString();
 		}
 
-
 		// --- Heap suff here
-		public static Heap heap = new Heap() { array = new (int, Dictionary<char, string>)[1024], maxSize = 1024, size = 0 };
-		public static Dictionary<int, int> positions = new Dictionary<int, int>();
+		public static Heap heap = new Heap() { array = new (int, (char, string)[])[1024], maxSize = 1024, size = 0 };
 
 		public struct Heap
 		{
 			public int size;
 			public int maxSize;
-			public (int, Dictionary<char, string>)[] array;
+			public (int, (char, string)[])[] array;
 		}
 
-		public static void replace(int pos, Dictionary<char, string> newDist)
-		{
-			if (positions.ContainsKey(pos))
-			{
-				int index = positions[pos];
-				swap(index, 0);
-				pop();
-			}
-			positions[pos] = heap.size;
-			insert((pos, newDist));
-		}
-
-		public static void insert((int, Dictionary<char, string>) element)
+		public static void insert((int, (char, string)[]) element)
 		{
 			if (heap.size == heap.maxSize)
 			{
@@ -106,15 +105,12 @@ namespace procedural_c_
 			heapifyNode(heap.size - 1);
 		}
 
-		public static (int, Dictionary<char, string>) pop()
+		public static (int, (char, string)[]) pop()
 		{
-			(int, Dictionary<char, string>) res = heap.array[0];
+			(int, (char, string)[]) res = heap.array[0];
 			heap.array[0] = heap.array[heap.size - 1];
 			heap.size -= 1;
 			heapify(0);
-
-			//Maintain dict
-			positions.Remove(res.Item1);
 
 			return res;
 		}
@@ -163,16 +159,12 @@ namespace procedural_c_
 		}
 		public static void swap(int index1, int index2)
 		{
-			// Maintains dictionary to find items later
-			positions[heap.array[index1].Item1] = index2;
-			positions[heap.array[index2].Item1] = index1;
-
 			var swap = heap.array[index1];
 			heap.array[index1] = heap.array[index2];
 			heap.array[index2] = swap;
 		}
 
-		public static bool smallerThan((int, Dictionary<char, string>) elem1, (int, Dictionary<char, string>) elem2)
+		public static bool smallerThan((int, (char, string)[]) elem1, (int, (char, string)[]) elem2)
 		{
 			return elem1.Item1 < elem2.Item1;
 		}
