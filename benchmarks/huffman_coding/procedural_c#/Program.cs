@@ -9,14 +9,11 @@ namespace procedural_c_
 	{
 		static void Main(string[] args)
 		{
-			var stop = System.Diagnostics.Stopwatch.StartNew();
 			var text = System.IO.File.ReadAllText("../lines.txt");
 			var feq = CreateFrequencies(text);
 			var mappings = CreateMappings(feq);
 			var encodedString = Encode(mappings, text);
 			Console.WriteLine("Length: " + encodedString.Length);
-			stop.Stop();
-			Console.WriteLine("Time: " + stop.ElapsedMilliseconds);
 		}
 		static Dictionary<char, int> CreateFrequencies(string text)
 		{
