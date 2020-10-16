@@ -1,8 +1,9 @@
 import pyRAPL
 import argparse
-import os
-import fnmatch
 import subprocess
+import stats as stat
+from program import *
+from datetime import datetime
 
 parser = argparse.ArgumentParser()
 benchmarks_path = "./benchmarks"
@@ -26,35 +27,6 @@ class readable_dir(argparse.Action):
                 setattr(namespace, self.dest, dirs)
             else:
                 raise argparse.ArgumentTypeError("readable_dir:{0} is not a readable dir".format(prospective_dir))
-
-
-class Program:
-    def __init__(self, path, paradigm):
-        self.path = path
-        self.paradigm = paradigm
-
-    def get_build_command(self):
-        raise NotImplementedError("Please Implement this method")
-
-    def get_run_command(self):
-        raise NotImplementedError("Please Implement this method")
-
-
-class Dotnet_Program(Program):
-    def get_build_command(self):
-        return "dotnet build --configuration Release --nologo --verbosity quiet " + self.path
-
-
-class C_Sharp_Program(Dotnet_Program):
-    def get_run_command(self):
-        command = self.path + '/bin/Release/netcoreapp3.1/'
-        return command + self.paradigm + "_c#"
-
-
-class F_Sharp_Program(Dotnet_Program):
-    def get_run_command(self):
-        command = self.path + '/bin/Release/netcoreapp3.1/'
-        return command + self.paradigm + "_f#"
 
 
 #Fetches programs to run based on arguments
@@ -83,75 +55,64 @@ def get_benchmark_programs(benchmarks, paradigms, languages):
 
     return benchmark_programs
 
-
-#Discovers c# project folders based on naming convention (functional_c# or oop_c#)
-def discover_csharp_program(path):
-    results = []
-
-    for name in os.listdir(path):
-        if not os.path.isdir(path + '/' + name):
-            continue
-
-        program_path = path + '/' + name
-
-        if fnmatch.fnmatch(name, "*_c#"):
-            results.append(C_Sharp_Program(program_path, name.split('_')[0]))
-
-    return results
-
 # Adds function to discover functions dictionary
 language_discover_funcs["c#"] = discover_csharp_program
-
-
-#Discovers f# project folders based on naming convention (functional_f# or oop_f#)
-def discover_fsharp_program(path):
-    results = []
-
-    for name in os.listdir(path):
-        if not os.path.isdir(path + '/' + name):
-            continue
-
-        program_path = path + '/' + name
-
-        if fnmatch.fnmatch(name, "*_f#"):
-            results.append(F_Sharp_Program(program_path, name.split('_')[0]))
-
-    return results
 
 # Adds function to discover functions dictionary
 language_discover_funcs["f#"] = discover_fsharp_program
 
 
 #Performs the list of benchmarks and saves to results to output csv file
-def perform_benchmarks(benchmarks, experiment_iterations, output_file, skip_build):
+def perform_benchmarks(benchmarks, experiment_iterations, time_limit, output_file, skip_build):
     #Setupsies
     pyRAPL.setup()
+    statistics = stat.Aggregator(output_file)
     csv_output = pyRAPL.outputs.CSVOutput(output_file)
 
     benchmark_count = len(benchmarks)
     current_benchmark = 0
 
     for b in benchmarks:
+        statistics.clear()
         current_benchmark += 1
 
         print('\r' + "Performing benchmark " + str(current_benchmark) + " of " + str(benchmark_count), end='', flush=True)
+        print("\n", b.path)
 
         if(not skip_build and b.get_build_command()):
             subprocess.run(b.get_build_command(), shell=True, check=True, stdout=subprocess.DEVNULL)
 
         #The measuring equipment
-        for _ in range(0, experiment_iterations):
-            meter = pyRAPL.Measurement(label=b.get_run_command())
-            meter.begin()
-            
-            subprocess.run(b.get_run_command(), shell=True, check=True, stdout=subprocess.DEVNULL)
+        if time_limit is None:
+            for _ in range(0, experiment_iterations):
+                res = run(b)
+                handle_results(res, csv_output, statistics)
+        else:
+            current_time = 0
+            while(current_time < time_limit):
+                res = run(b)
+                handle_results(res, csv_output, statistics)
+                current_time += res.duration / 1_000_000 #Microseconds to seconds
 
-            meter.end()
-            csv_output.add(meter.result)
-
+        statistics.compute()
+        statistics.save(b.path)
         csv_output.save()
     
     print('\n')
+
+def run(benchmark):
+    meter = pyRAPL.Measurement(label=benchmark.get_run_command())
+    meter.begin()
+    
+    subprocess.run(benchmark.get_run_command(), shell=True, check=True, stdout=subprocess.DEVNULL)
+
+    meter.end()
+    return meter.result
+
+
+def handle_results(res, raw_results_csv, stats):
+    stats.add(res)
+    raw_results_csv.add(res)
 
 
 if __name__ == '__main__':
@@ -161,6 +122,7 @@ if __name__ == '__main__':
     parser.add_argument("-l", "--language", choices=all_languages, help="Run only benchmarks for language")
     parser.add_argument("-o", "--output", default="results.csv", help="Output csv file for results. Default is results.csv")
     parser.add_argument("-i", "--iterations", default=10, type=int, help="Number of iterations for each benchmark")
+    parser.add_argument("-t", "--time-limit", type=int, help="Number of seconds to continousely run each benchmark")
 
     args = parser.parse_args()
 
@@ -187,9 +149,10 @@ if __name__ == '__main__':
         languages = all_languages
 
     skip_build = args.nobuild
-    output_file = args.output
+    output_file = "[{0}]{1}".format(datetime.now().isoformat(),args.output)
     iterations = args.iterations
+    time_limit = args.time_limit
 
     benchmark_programs = get_benchmark_programs(benchmarks, paradigms, languages)
 
-    perform_benchmarks(benchmark_programs, iterations, output_file, skip_build)
+    perform_benchmarks(benchmark_programs, iterations, time_limit, output_file, skip_build)
