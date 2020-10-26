@@ -1,14 +1,12 @@
 ﻿// Learn more about F# at http://fsharp.org
 
 open System
-
-// Adds Dictionaries and Sets
 open System.Collections.Generic
 
 [<AllowNullLiteral>]
 type Vertex(name) =
     member this.name = name 
-    member val neighbours = new Dictionary<Vertex, int>() with get, set
+    member val neighbours = new Dictionary<Vertex, Int32>() with get, set
     member val previous:Vertex = null with get, set
     member val dist = Int32.MaxValue with get, set
     override this.Equals o = (o :?> Vertex).name = this.name
@@ -29,7 +27,7 @@ type Edge(startVertex, endVertex, cost) =
     // Converts a line from graph CSV to an edge
     static member FromCSV line =
         let values = (line:String).Split(",")
-        let cost:int = Convert.ToInt32(values.[2])
+        let cost:Int32 = Convert.ToInt32(values.[2])
         let edge = Edge(values.[0], values.[1], cost)
         edge
 
@@ -43,10 +41,10 @@ type Graph(edges) =
         // Fill the Set with all available verticies
         for e:Edge in edges do
             if not (graph.ContainsKey e.Start) 
-            then graph.Add(e.Start, Vertex(e.Start)) |> ignore // Ignore, because it returns a bool - Which we are not using
+            then graph.Add(e.Start, Vertex(e.Start)) |> ignore
 
             if not (graph.ContainsKey e.End)
-            then graph.Add(e.End, Vertex(e.End)) |> ignore // Ignore, because it returns a bool - Which we are not using
+            then graph.Add(e.End, Vertex(e.End)) |> ignore
         
         for e:Edge in edges do
             let endV = graph.[e.End]
@@ -62,6 +60,15 @@ type Graph(edges) =
             path
         else new List<String>()
 
+    let visitNeighbours (current: Vertex) (vertexQueue:SortedSet<Vertex>) = 
+        for n in current.neighbours do
+            let mutable neighbour = n.Key
+            let mutable alternativeDist = current.dist + n.Value
+            if alternativeDist < neighbour.dist then 
+                vertexQueue.Remove(neighbour) |> ignore
+                neighbour.dist <- alternativeDist
+                neighbour.previous <- current
+                vertexQueue.Add(neighbour) |> ignore
 
     let mutable isDone = false
     member this.Solve startVertex endVertex = 
@@ -70,23 +77,17 @@ type Graph(edges) =
             source.dist <- 0
             let dest = graph.[endVertex]
             let vertexQueue = new SortedSet<Vertex>()
-            vertexQueue.Add(source) |> ignore // Ignore, because it returns a bool - Which we are not using
+            vertexQueue.Add(source) |> ignore
 
             while vertexQueue.Count > 0 && not isDone do
                 let mutable current = vertexQueue.Min
                 vertexQueue.Remove(current) |> ignore
                 if not (current.Equals dest) then
-                    for n in current.neighbours do
-                        let mutable neighbour = n.Key
-                        let mutable alternativeDist = current.dist + n.Value
-                        if alternativeDist < neighbour.dist then 
-                            vertexQueue.Remove(neighbour) |> ignore // Same as the others
-                            neighbour.dist <- alternativeDist
-                            neighbour.previous <- current
-                            vertexQueue.Add(neighbour) |> ignore // Same as the others
+                    visitNeighbours current vertexQueue
                 else isDone <- true 
             getPath dest
         else List<String>()
+    
 
 [<Literal>]
 let START = "257"

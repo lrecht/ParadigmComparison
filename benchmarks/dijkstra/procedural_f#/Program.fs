@@ -4,48 +4,15 @@ open System
 open System.IO
 open System.Collections.Generic
 
-let initVertices (edges: Dictionary<string, (string*int) array>) =
-    let vertices = new Dictionary<string, int32>()
-    for edge in edges.Keys do
-        vertices.Add(edge, Int32.MaxValue)
-    vertices
-
-let toDictionary (map : Map<_, _>) : Dictionary<_, _> = Dictionary(map)
-
-let initEdges =
-    let filePath = "benchmarks/dijkstra/graph.csv"
-    let lines = seq {
-        use sr = new StreamReader (filePath)
-        while not sr.EndOfStream do
-            yield sr.ReadLine ()
-    }
-
-    let graph = 
-        Seq.map 
-            (fun (a:string) -> 
-                let words = (a.Split ',') 
-                in (words.[0],words.[1],(words.[2] |> int)))
-            lines
-    
-    let edgeMap = Seq.fold (fun (acc:Map<string,(string*int) array>) (from,dest,cost) -> 
-        if acc.ContainsKey from then 
-            acc.Add(from,(Array.append (acc.[from]) [| (dest,cost)|] ))
-        else acc.Add(from,[|dest,cost|])) Map.empty graph in
-
-    toDictionary edgeMap
-
-let positions: Dictionary<string,int> = new Dictionary<string, int>()
-let edgeMap: Dictionary<string,(string*int) list> = new Dictionary<string, (string*int) list>()
-let distances: Dictionary<string,int> = new Dictionary<string, int>()
-let position: string = ""
 type Heap = {
     mutable array: (string*int) array
     mutable maxSize: int
     mutable size: int
 }
 
+// Global variables
 let heap: Heap = { Heap.array = (Array.zeroCreate 1024); Heap.maxSize = 1024; Heap.size = 0 }
-
+let positions: Dictionary<string,int> = new Dictionary<string, int>()
 
 let swap (index1: int) (index2: int) =
     // Maintains dictionary to find items later
@@ -78,7 +45,7 @@ let rec heapifyNode (index: int) =
         // Recursively heapify the parent node 
         heapifyNode parent
 
-let insert (element: (string*int)) =
+let heapInsert (element: (string*int)) =
     if(heap.size = heap.maxSize) then
         heap.array <- Array.append heap.array (Array.zeroCreate heap.maxSize)
         heap.maxSize <- heap.maxSize * 2
@@ -108,7 +75,7 @@ let rec heapify (index: int) =
         // Recursively heapify the affected sub-tree 
         heapify smallest
 
-let pop ()=
+let heapPop ()=
     let (key, cost) : (string*int) = heap.array.[0]
     heap.array.[0] <- heap.array.[heap.size-1]
     heap.size <- heap.size - 1
@@ -119,58 +86,97 @@ let pop ()=
 
     (key, cost)
 
-let replace (pos: string) (newDist: int) =
+let heapReplace (pos: string) (newDist: int) =
     if (positions.ContainsKey(pos)) then
         let index: int = positions.[pos]
         swap index 0
-        pop ()
+        heapPop ()
     else
         positions.[pos] <- heap.size
-        insert (pos,newDist)
+        heapInsert (pos,newDist)
         (pos,newDist)
 
-[<EntryPoint>]
-let main argv =
-    let mutable edges = initEdges
-    let mutable backtrack = new Dictionary<string, string>()
-    let source: string = "257"
-    let destination: string = "5525"
+let distances: Dictionary<string,int> = new Dictionary<string, int>()
+let mutable backtrack = new Dictionary<string, string>()
+
+let initVertices (edges: Dictionary<string, (string*int) array>) =
+    let vertices = new Dictionary<string, int32>()
+    for edge in edges.Keys do
+        vertices.Add(edge, Int32.MaxValue)
+    vertices
+
+let toDictionary (map : Map<_, _>) : Dictionary<_, _> = Dictionary(map)
+
+let initEdges =
+    let filePath = "benchmarks/dijkstra/graph.csv"
+    let lines = seq {
+        use sr = new StreamReader (filePath)
+        while not sr.EndOfStream do
+            yield sr.ReadLine ()
+    }
+
+    let graph = 
+        Seq.map 
+            (fun (a:string) -> 
+                let words = (a.Split ',') 
+                in (words.[0],words.[1],(words.[2] |> int)))
+            lines
     
-    insert (source, 0)
+    let edgeMap = Seq.fold (fun (acc:Map<string,(string*int) array>) (from,dest,cost) -> 
+        if acc.ContainsKey from then 
+            acc.Add(from,(Array.append (acc.[from]) [| (dest,cost)|] ))
+        else acc.Add(from,[|dest,cost|])) Map.empty graph in
+
+    toDictionary edgeMap
     
-    while heap.size > 0 do 
-        let (key, cost) = pop()
-        
-        if key = destination then
-            heap.size <- 0
-        else if edges.ContainsKey(key) then
-            let neighbors = edges.[key]
-            
-            for (nKey, nCost) in neighbors do   
-                let alternateDist = cost + nCost;
-                if not (distances.ContainsKey(nKey)) then
-                    distances.Add(nKey,alternateDist)
-                    backtrack.Add(nKey, key);
-                    positions.Add(nKey,heap.size)
-                    insert ((nKey,alternateDist))
-                else if alternateDist < distances.[nKey] then
-                    backtrack.[nKey] <- key;
-                    distances.[nKey] <- alternateDist
-                    replace nKey alternateDist |> ignore
-    
-    //Create the shortest path
+let printPath (shortestPath: string array) =
+    for part in shortestPath do
+        printf "%s " part
+
+let doBacktrack (source:string) (destination:string) =
     let mutable shortestPath: (string array) = [| destination |]
     let mutable position = destination
     
     while position <> source do
         position <- backtrack.[position]
         shortestPath <- Array.append [| position |] shortestPath
-    
-    for part in shortestPath do
-        printf "%s " part
-    
-    let value = distances.[destination]
-    printfn ""
-    printfn "Steps: %i" shortestPath.Length
-    printfn "End weigth: %i" value
+    shortestPath
+
+let replacePath (nKey:string) (key:string) (dist:int) =
+    backtrack.[nKey] <- key
+    distances.[nKey] <- dist
+    heapReplace nKey dist |> ignore
+
+let addToPath (nKey:string) (key:string) (dist:int) =
+    distances.Add(nKey,dist)
+    backtrack.Add(nKey, key)
+    positions.Add(nKey,heap.size)
+    heapInsert ((nKey,dist))
+
+let visitNeighbours (key:string) (cost:int) (edges: Dictionary<string,(string*int) array>) =
+    let neighbors = edges.[key]
+    for (nKey, nCost) in neighbors do   
+        let alternateDist = cost + nCost
+        if not (distances.ContainsKey(nKey)) then
+            addToPath nKey key alternateDist |> ignore
+        else if alternateDist < distances.[nKey] then
+            replacePath nKey key alternateDist |> ignore
+
+let solveDijkstra (source:string) (destination:string) =
+    let mutable edges = initEdges
+    while heap.size > 0 do 
+        let (key, cost) = heapPop()
+        if key = destination then
+            heap.size <- 0
+        else if edges.ContainsKey(key) then
+            visitNeighbours key cost edges |> ignore
+
+[<EntryPoint>]
+let main argv =
+    let source: string = "257"
+    let destination: string = "5525"
+    heapInsert (source, 0)
+    solveDijkstra source destination |> ignore
+    let shortestPath = doBacktrack source destination
+    printPath shortestPath |> ignore
     0 // return an integer exit code
