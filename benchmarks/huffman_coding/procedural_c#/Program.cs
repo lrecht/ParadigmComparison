@@ -9,7 +9,7 @@ namespace procedural_c_
 	{
 		static void Main(string[] args)
 		{
-			var text = System.IO.File.ReadAllText("../lines.txt");
+			var text = System.IO.File.ReadAllText("benchmarks/huffman_coding/lines.txt");
 			var feq = CreateFrequencies(text);
 			var mappings = CreateMappings(feq);
 			var encodedString = Encode(mappings, text);
