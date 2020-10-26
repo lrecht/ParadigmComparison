@@ -1,7 +1,7 @@
 ﻿open System
 
-let Value = [| "Two";"Three";"Four";"Five";"Six";"Seven";"Eight";"Nine";"Ten";"Jack";"Queen";"King";"Ace" |]
-let Suit = [| "Diamonds";"Spades";"Hearts";"Clubs" |]
+let Value = [ "Two";"Three";"Four";"Five";"Six";"Seven";"Eight";"Nine";"Ten";"Jack";"Queen";"King";"Ace" ]
+let Suit = [ "Diamonds";"Spades";"Hearts";"Clubs" ]
 
 let newDeck () = [for x in Value do
                     for y in Suit -> x,y] 
