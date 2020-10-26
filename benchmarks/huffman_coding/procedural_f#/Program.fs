@@ -20,8 +20,8 @@ let swap (index1: int) (index2: int) =
     heap.array.[index1] <- heap.array.[index2]
     heap.array.[index2] <- swap
 
-let smallerThan ((feq1, list1): (int*Dictionary<char,string>)) ((feq2, list2): (int*Dictionary<char,string>)) =
-    (feq1 < feq2)
+let smallerThan ((freq1, list1): (int*Dictionary<char,string>)) ((freq2, list2): (int*Dictionary<char,string>)) =
+    (freq1 < freq2)
 
 let rec heapifyNode (index: int) =
     // Find parent 
@@ -90,15 +90,15 @@ let combineNodes (list1: Dictionary<char, string>) (list2: Dictionary<char, stri
         newDictionary.Add(elm.Key, ("1"+ elm.Value))
     newDictionary
 
-let createMappings (sym2Feq: Dictionary<char,int>) = 
-    insertFrequencies sym2Feq
+let createMappings (sym2Freq: Dictionary<char,int>) = 
+    insertFrequencies sym2Freq
     while heap.size > 1 do
-        let mutable (feq1, list1) = pop() //Right
-        let mutable (feq2, list2) = pop() //Left
+        let mutable (freq1, list1) = pop() //Right
+        let mutable (freq2, list2) = pop() //Left
         let newDictionary = combineNodes list1 list2
-        insert ((feq1+feq2), newDictionary)
+        insert ((freq1+freq2), newDictionary)
     
-    let (feq, mappings) = pop()
+    let (freq, mappings) = pop()
     mappings //Dictionary<char, string>
 
 let encode (mappings: Dictionary<char, string>) (text: string) =

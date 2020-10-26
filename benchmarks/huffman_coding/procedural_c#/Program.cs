@@ -10,8 +10,8 @@ namespace procedural_c_
 		static void Main(string[] args)
 		{
 			var text = System.IO.File.ReadAllText("benchmarks/huffman_coding/lines.txt");
-			var feq = CreateFrequencies(text);
-			var mappings = CreateMappings(feq);
+			var freq = CreateFrequencies(text);
+			var mappings = CreateMappings(freq);
 			var encodedString = Encode(mappings, text);
 			Console.WriteLine("Length: " + encodedString.Length);
 		}
@@ -57,10 +57,10 @@ namespace procedural_c_
 
 		static void InsertLeafs(Dictionary<char, int> frequencies)
 		{
-			foreach (var feq in frequencies)
+			foreach (var freq in frequencies)
 			{
-				(char, string)[] data = { (feq.Key, "") };
-				insert((feq.Value, data));
+				(char, string)[] data = { (freq.Key, "") };
+				insert((freq.Value, data));
 			}
 		}
 
