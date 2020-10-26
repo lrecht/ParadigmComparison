@@ -5,11 +5,9 @@ open System.Collections.Generic
 open System.Text
 
 //------ HEAP
-
-let positions: Dictionary<int,int> = new Dictionary<int, int>()
 type Heap = {
     //Type help:   (id, (freqency, Dictionary<char, encodeing>) array)
-    mutable array: (int*(int*Dictionary<char,string>)) array
+    mutable array: (int*Dictionary<char,string>) array
     mutable maxSize: int
     mutable size: int
 }
@@ -18,18 +16,12 @@ let heap: Heap = { Heap.array = (Array.zeroCreate 1024); Heap.maxSize = 1024; He
 
 
 let swap (index1: int) (index2: int) =
-    // Maintains dictionary to find items later
-    let (key1, value1) = heap.array.[index1]
-    let (key2, value2) = heap.array.[index2]
-    positions.[key1] <- index2
-    positions.[key2] <- index1
-
     let swap = heap.array.[index1]
     heap.array.[index1] <- heap.array.[index2]
     heap.array.[index2] <- swap
 
-let smallerThan ((id1, (feq1, list1)): (int*(int* Dictionary<char,string>))) ((id2, (feq2, list2)): (int*(int*Dictionary<char,string>))) =
-    (feq1 < feq2)
+let smallerThan ((freq1, list1): (int*Dictionary<char,string>)) ((freq2, list2): (int*Dictionary<char,string>)) =
+    (freq1 < freq2)
 
 let rec heapifyNode (index: int) =
     // Find parent 
@@ -45,7 +37,7 @@ let rec heapifyNode (index: int) =
         // Recursively heapify the parent node 
         heapifyNode parent
 
-let insert (element: (int*(int*Dictionary<char,string>))) =
+let insert (element: (int*Dictionary<char,string>)) =
     if(heap.size = heap.maxSize) then
         heap.array <- Array.append heap.array (Array.zeroCreate heap.maxSize)
         heap.maxSize <- heap.maxSize * 2
@@ -80,33 +72,33 @@ let pop ()=
     heap.array.[0] <- heap.array.[heap.size-1]
     heap.size <- heap.size - 1
     heapify 0
-
-    //Maintain dict
-    positions.Remove(id) |> ignore
     (id, rest)
 
 //------ End of heap
 
-let createMappings (sym2Feq: Dictionary<char,int>) = 
-    let mutable id = 0
+let insertFrequencies (sym2Feq: Dictionary<char, int>) =
     for leaf in sym2Feq do
         let newDic = new Dictionary<char, string>()
         newDic.Add(leaf.Key, "")
-        insert (id, (leaf.Value, newDic))
-        id <- id+1
+        insert (leaf.Value, newDic)
+
+let combineNodes (list1: Dictionary<char, string>) (list2: Dictionary<char, string>) =
+    let mutable newDictionary = new Dictionary<char, string>()
+    for elm in list1 do
+        newDictionary.Add(elm.Key, ("0"+ elm.Value))
+    for elm in list2 do
+        newDictionary.Add(elm.Key, ("1"+ elm.Value))
+    newDictionary
+
+let createMappings (sym2Freq: Dictionary<char,int>) = 
+    insertFrequencies sym2Freq
     while heap.size > 1 do
-        let mutable (id1, (feq1, list1)) = pop() //Right
-        let mutable (id2, (feq2, list2)) = pop() //Left
-        let mutable newDictionary = new Dictionary<char, string>()
-        for elm in list1 do
-            newDictionary.Add(elm.Key, ("0"+ elm.Value))
-        for elm in list2 do
-            newDictionary.Add(elm.Key, ("1"+ elm.Value))
-        
-        insert (id, ((feq1+feq2), newDictionary))
-        id <- id+1
+        let mutable (freq1, list1) = pop() //Right
+        let mutable (freq2, list2) = pop() //Left
+        let newDictionary = combineNodes list1 list2
+        insert ((freq1+freq2), newDictionary)
     
-    let (id, (feq, mappings)) = pop()
+    let (freq, mappings) = pop()
     mappings //Dictionary<char, string>
 
 let encode (mappings: Dictionary<char, string>) (text: string) =

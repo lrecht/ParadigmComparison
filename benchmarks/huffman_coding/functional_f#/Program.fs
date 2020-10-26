@@ -29,8 +29,9 @@ let frequencies input =
         if acc.ContainsKey symbol 
             then acc.Add (symbol,(acc.[symbol] + 1))
             else acc.Add (symbol,1))
-            Map.empty
-            input
+        Map.empty
+        input
+
 
 let sort frq =
     ImmutableSortedSet.ToImmutableSortedSet<Tree> 
