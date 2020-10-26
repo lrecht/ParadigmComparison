@@ -9,7 +9,7 @@ namespace procedural_c_
 	{
 		static void Main(string[] args)
 		{
-			var text = System.IO.File.ReadAllText("benchmarks/huffman_coding/lines.txt");
+			var text = System.IO.File.ReadAllText("../lines.txt");
 			var feq = CreateFrequencies(text);
 			var mappings = CreateMappings(feq);
 			var encodedString = Encode(mappings, text);
@@ -34,30 +34,16 @@ namespace procedural_c_
 
 		static Dictionary<char, string> CreateMappings(Dictionary<char, int> frequencies)
 		{
-			//insert leafs
-			foreach (var feq in frequencies)
-			{
-				(char, string)[] data = { (feq.Key, "") };
-				insert((feq.Value, data));
-			}
+			InsertLeafs(frequencies);
 
 			while (heap.size > 1)
 			{
 				var first = pop();
 				var second = pop();
-				var newElm = (first.Item1 + second.Item1, new (char, string)[first.Item2.Length + second.Item2.Length]);
-				var pos = 0;
-				foreach (var elm in first.Item2)
-				{
-					newElm.Item2[pos++] = (elm.Item1, '0' + elm.Item2);
-				}
-				foreach (var elm in second.Item2)
-				{
-					newElm.Item2[pos++] = (elm.Item1, '1' + elm.Item2);
-				}
-				insert(newElm);
+				insert(CombineNodes(first, second));
 			}
 
+			//Create mappings from array
 			var mappings = new Dictionary<char, string>();
 			var array = pop();
 
@@ -67,6 +53,30 @@ namespace procedural_c_
 			}
 
 			return mappings;
+		}
+
+		static void InsertLeafs(Dictionary<char, int> frequencies)
+		{
+			foreach (var feq in frequencies)
+			{
+				(char, string)[] data = { (feq.Key, "") };
+				insert((feq.Value, data));
+			}
+		}
+
+		static (int, (char, string)[]) CombineNodes((int, (char, string)[]) first, (int, (char, string)[]) second)
+		{
+			var newElm = (first.Item1 + second.Item1, new (char, string)[first.Item2.Length + second.Item2.Length]);
+			var pos = 0;
+			foreach (var elm in first.Item2)
+			{
+				newElm.Item2[pos++] = (elm.Item1, '0' + elm.Item2);
+			}
+			foreach (var elm in second.Item2)
+			{
+				newElm.Item2[pos++] = (elm.Item1, '1' + elm.Item2);
+			}
+			return newElm;
 		}
 
 		static string Encode(Dictionary<char, string> mappings, string text)
