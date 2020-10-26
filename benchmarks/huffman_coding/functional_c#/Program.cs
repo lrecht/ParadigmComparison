@@ -21,17 +21,16 @@ namespace functional_c_
 
         private static ImmutableDictionary<char, string> createMappings(IEnumerable<(char, int)> frequencies)
         {
-            var tree = frequencies.Select(x => (x.Item2, ImmutableDictionary<char, string>.Empty.Add(x.Item1, "")))
-                .ToImmutableSortedSet(Comparer<(int, ImmutableDictionary<char, string>)>
-                    .Create((x, y) => x.Item1 > y.Item1 ? 1 : x.Item1 < y.Item1 ? -1 : x.Item2.First().Key.CompareTo(y.Item2.First().Key)));
+            var tree = frequencies.Select(x => (x.Item2, ImmutableList<(char, string)>.Empty.Add((x.Item1, ""))))
+                .ToImmutableSortedSet(Comparer<(int, ImmutableList<(char, string)>)>
+                    .Create((x, y) => x.Item1 > y.Item1 ? 1 : x.Item1 < y.Item1 ? -1 : x.Item2.First().Item1.CompareTo(y.Item2.First().Item1)));
 
-
-            return createMappingHelper(tree).First().Item2;
+            return createMappingHelper(tree).First().Item2.ToImmutableDictionary(x => x.Item1, elementSelector: y => y.Item2);
         }
 
-        private static ImmutableSortedSet<(int, ImmutableDictionary<char, string>)> createMappingHelper(ImmutableSortedSet<(int, ImmutableDictionary<char, string>)> tree)
+        private static ImmutableSortedSet<(int, ImmutableList<(char, string)>)> createMappingHelper(ImmutableSortedSet<(int, ImmutableList<(char, string)>)> tree)
         {
-            if(tree.Count() <= 1)
+            if(tree.Count <= 1)
                 return tree;
 
             var elems = tree.Take(2);
@@ -39,14 +38,14 @@ namespace functional_c_
             var elem1 = elems.ElementAt(0);
             var elem2 = elems.ElementAt(1);
 
-            var elem1Dictionary = elem1.Item2;
-            var elem2Dictionary = elem2.Item2;
+            var elem1List = elem1.Item2;
+            var elem2List = elem2.Item2;
 
-            var updatedEncodings1 = elem1Dictionary.Select(x => new KeyValuePair<char, string>(x.Key, "0" + x.Value));
-            var updatedEncodings2 = elem2Dictionary.Select(x => new KeyValuePair<char, string>(x.Key, "1" + x.Value));
+            var updatedEncodings1 = elem1List.Select(x => (x.Item1, "0" + x.Item2));
+            var updatedEncodings2 = elem2List.Select(x => (x.Item1, "1" + x.Item2));
 
-            var newDict = updatedEncodings1.Union(updatedEncodings2).ToImmutableDictionary();
-            var newTup = (elem1.Item1 + elem2.Item1, newDict);
+            var newList = updatedEncodings1.Union(updatedEncodings2).ToImmutableList();
+            var newTup = (elem1.Item1 + elem2.Item1, newList);
 
             return createMappingHelper(tree.Except(elems).Add(newTup));
         }
