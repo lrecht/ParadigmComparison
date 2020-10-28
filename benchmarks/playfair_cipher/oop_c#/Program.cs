@@ -116,23 +116,17 @@ namespace oop_c_
                 charTable.GetCharFromPosition(bCoords.X,aCoords.Y)
         };
         
-
         private string preprocessText(string text) 
         {
             text = text.ToUpper().Replace("J", "I");
-            text = Regex.Replace(text,"[^A-Z]", "");
-            return text;
+            return Regex.Replace(text,"[^A-Z]", "");
         } 
 
         private void createTable(string key)
         {
-            int len = key.Length;
-            for (int i = 0; i < len; i++)
-            {
-                char c = key[i];
+            foreach (char c in key)
                 if (!(charTable.ContainsChar(c)))
                     charTable.AddNext(c);
-            }
         }
     }
 }
