@@ -1,7 +1,7 @@
 ﻿open System
 open System.IO
 
-let filePath = "benchmarks/huffman_coding/lines.txt"
+let filePath = "benchmarks/playfair_cipher/lines.txt"
 let input = File.ReadAllText filePath
 let keyword = "this is a great keyword"
 let alph = "ABCDEFGHIKLMNOPQRSTUVWXYZ" 
