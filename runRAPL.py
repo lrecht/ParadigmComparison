@@ -4,6 +4,7 @@ import subprocess
 import stats as stat
 from program import *
 from datetime import datetime
+import email_service as es
 
 parser = argparse.ArgumentParser()
 benchmarks_path = "./benchmarks"
@@ -123,6 +124,7 @@ if __name__ == '__main__':
     parser.add_argument("-o", "--output", default="results.csv", help="Output csv file for results. Default is results.csv")
     parser.add_argument("-i", "--iterations", default=10, type=int, help="Number of iterations for each benchmark")
     parser.add_argument("-t", "--time-limit", type=int, help="Number of seconds to continousely run each benchmark")
+    parser.add_argument("-e", "--send-results-email", type=str, help="Send email containing statistical results")
 
     args = parser.parse_args()
 
@@ -148,11 +150,16 @@ if __name__ == '__main__':
     else:
         languages = all_languages
 
-    skip_build = args.nobuild
-    output_file = "[{0}]{1}".format(datetime.now().isoformat(),args.output)
-    iterations = args.iterations
-    time_limit = args.time_limit
+
+    skip_build      = args.nobuild
+    output_file     = "[{0}]{1}".format(datetime.now().isoformat(),args.output)
+    iterations      = args.iterations
+    time_limit      = args.time_limit
+    email           = args.send_results_email
 
     benchmark_programs = get_benchmark_programs(benchmarks, paradigms, languages)
 
     perform_benchmarks(benchmark_programs, iterations, time_limit, output_file, skip_build)
+
+    if(email is not None):
+        es.send_results(email, output_file)
