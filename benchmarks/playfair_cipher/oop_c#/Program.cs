@@ -8,7 +8,7 @@ namespace oop_c_
 {
     class Program
     {
-        static string TEST_STRING = File.ReadAllText("benchmarks/playfair_cipher/lines.txt");
+        static string TEST_STRING = File.ReadAllText("../lines.txt");
         static void Main(string[] args)
         {
             PlayFairCipher p = new PlayFairCipher("thisisagreatkeyword");
@@ -55,11 +55,9 @@ namespace oop_c_
     {
         private Table charTable { get; set; }
         private Point[] positions { get; set; }
-        private string _key { get; }
 
         public PlayFairCipher(string key)
         {
-            _key = key;
             string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
             charTable = new Table();
             createTable(preprocessText(key + alphabet));
