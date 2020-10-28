@@ -8,10 +8,10 @@ namespace oop_c_
 {
     class Program
     {
-        static string TEST_STRING = File.ReadAllText("../lines.txt");
+        static string TEST_STRING = File.ReadAllText("benchmarks/playfair_cipher/lines.txt");
         static void Main(string[] args)
         {
-            PlayFairCipher p = new PlayFairCipher("thisisagreatkeyword");
+            PlayFairCipher p = new PlayFairCipher("this is a great keyword");
             string encrypt = p.Encrypt(TEST_STRING);
             System.Console.WriteLine(encrypt.Length);
             string decrypt = p.Decrypt(encrypt);
