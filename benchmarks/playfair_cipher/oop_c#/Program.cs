@@ -2,18 +2,21 @@
 using System.Text;
 using System.Drawing;
 using System.Text.RegularExpressions;
+using System.IO;
 
 namespace oop_c_
 {
     class Program
     {
+        //static string TEST_STRING = File.ReadAllText("benchmarks/playfair_cipher/lines.txt");
+        static string TEST_STRING = File.ReadAllText("../lines.txt");
         static void Main(string[] args)
         {
             PlayFairCipher p = new PlayFairCipher("playfair example");
-            string encrypt = p.Encrypt("hide the gold in the tree stump");
-            System.Console.WriteLine(encrypt);
+            string encrypt = p.Encrypt(TEST_STRING);
+            System.Console.WriteLine(encrypt.Length);
             string decrypt = p.Decrypt(encrypt);
-            System.Console.WriteLine(decrypt);
+            System.Console.WriteLine(decrypt.Length);
         }
     }
 
@@ -61,6 +64,7 @@ namespace oop_c_
             string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
             charTable = new Table();
             createTable(preprocessText(key + alphabet));
+            
         }
 
         public string Encrypt(string text)
@@ -86,7 +90,7 @@ namespace oop_c_
         {
             int len = text.Length;
             StringBuilder returnValue = new StringBuilder();
-            int e = encipher ? 1 : -1;
+            int e = encipher ? 1 : 4;
             for (int i = 0; i < len; i += 2)
             {
                 (char a, char b) = (text[i], text[i+1]);
@@ -119,7 +123,7 @@ namespace oop_c_
 
         private string preprocessText(string text) 
         {
-            Regex reg = new Regex("[^a-zA-Z']");
+            Regex reg = new Regex("[^A-Z']");
             text = text.ToUpper().Replace("J", "I");
             text = reg.Replace(text, string.Empty);
             return text;
