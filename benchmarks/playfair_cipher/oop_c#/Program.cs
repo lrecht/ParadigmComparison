@@ -8,8 +8,7 @@ namespace oop_c_
 {
     class Program
     {
-        //static string TEST_STRING = File.ReadAllText("benchmarks/playfair_cipher/lines.txt");
-        static string TEST_STRING = File.ReadAllText("../lines.txt");
+        static string TEST_STRING = File.ReadAllText("benchmarks/playfair_cipher/lines.txt");
         static void Main(string[] args)
         {
             PlayFairCipher p = new PlayFairCipher("playfair example");
