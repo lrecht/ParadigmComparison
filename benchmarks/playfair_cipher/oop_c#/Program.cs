@@ -11,7 +11,7 @@ namespace oop_c_
         static string TEST_STRING = File.ReadAllText("benchmarks/playfair_cipher/lines.txt");
         static void Main(string[] args)
         {
-            PlayFairCipher p = new PlayFairCipher("playfair example");
+            PlayFairCipher p = new PlayFairCipher("thisisagreatkeyword");
             string encrypt = p.Encrypt(TEST_STRING);
             System.Console.WriteLine(encrypt.Length);
             string decrypt = p.Decrypt(encrypt);
@@ -63,7 +63,6 @@ namespace oop_c_
             string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
             charTable = new Table();
             createTable(preprocessText(key + alphabet));
-            
         }
 
         public string Encrypt(string text)
@@ -76,7 +75,7 @@ namespace oop_c_
                 if (i == sb.Length - 1)
                     sb.Append(sb.Length % 2 == 1 ? "X" : "");
 
-                // If two adjacent characters are the same replace last with X
+                // If two adjacent characters are the same insert X inbetween
                 else if (sb[i] == sb[i+1])
                     sb.Insert(i + 1, 'X');
             }
@@ -122,9 +121,8 @@ namespace oop_c_
 
         private string preprocessText(string text) 
         {
-            Regex reg = new Regex("[^A-Z']");
             text = text.ToUpper().Replace("J", "I");
-            text = reg.Replace(text, string.Empty);
+            text = Regex.Replace(text,"[^A-Z]", "");
             return text;
         } 
 
