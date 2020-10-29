@@ -46,7 +46,8 @@ namespace oop_c_
                 currentPos.Y++;
         }
 
-        public bool ContainsChar(char c) => !(positions[c - 'A'] == Point.Empty) || charTable[0,0] == c;
+        public bool ContainsChar(char c) => positions[c - 'A'] != Point.Empty || charTable[0,0] == c;
+
         public Point GetPositionFromChar(char c) => positions[c - 'A'];
         public char GetCharFromPosition(int x, int y) => charTable[x,y];
     }
