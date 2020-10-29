@@ -4,7 +4,7 @@ open System.IO
 let filePath = "benchmarks/playfair_cipher/lines.txt"
 let input = File.ReadAllText filePath
 let keyword = "this is a great keyword"
-let alph = "ABCDEFGHIKLMNOPQRSTUVWXYZ" 
+let alph = "ABCDEFGHIKLMNOPQRSTUVWXYZ"
 let rare = 'X'
 
 let contains letter text =
@@ -27,27 +27,27 @@ let prepKey key =
                     else string (Char.ToUpper c)) key+alph))
                 []
 
-let rec createTable' keyword rowIndex colIndex table =
+let rec createTable' keyword rowIndex colIndex (positions,values) =
     match keyword with
         | x::xs -> createTable' xs 
                                 ((rowIndex%5)+1) 
                                 (colIndex+rowIndex/5) 
-                                ((rowIndex,colIndex,x)::table)
-        | _ -> table
+                                (Map.add x (rowIndex,colIndex) positions,
+                                 Map.add (rowIndex,colIndex) x values)
+        | _ -> (positions,values)
 
 let createTable keyword =
-    createTable' (prepKey keyword) 1 1 []
+    createTable' (prepKey keyword) 1 1 (Map.empty,Map.empty)
 
-let findPos letter table =
-    List.find (fun (_,_,c) -> c = letter) table
+let findPos letter (positions,_) =
+    Map.find letter positions
 
-let third (_,_,x) = x
-let findVal x y table =
-    third (List.find (fun (x1,y1,_) -> x1 = x && y1 = y) table)
+let findVal x y (_,values) =
+    Map.find (x,y) values
 
 let rec pairHelper adjust first second table =
-    let col1,row1,_ = findPos first table in
-    let col2,row2,_ = findPos second table in
+    let col1,row1 = findPos first table in
+    let col2,row2 = findPos second table in
 
     if first = second
         then (pairHelper adjust first rare table)
