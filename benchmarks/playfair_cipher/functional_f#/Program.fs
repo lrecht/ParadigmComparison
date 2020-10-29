@@ -8,7 +8,7 @@ let alph = "ABCDEFGHIKLMNOPQRSTUVWXYZ"
 let rare = 'X'
 
 let contains letter text =
-    (List.fold (fun acc c -> c = letter || acc) false (text |> Seq.toList))
+    (List.exists (fun c -> c = letter) (text |> Seq.toList))
 
 let rec prepKey' key (used:char list) =
     match key with
@@ -71,7 +71,7 @@ let decodePair first second table =
 
 let rec prepInput' input res = 
     match input with
-    | x::xs ->  if x = 'j' || x = 'J'
+    | x::xs ->  if x = 'J'
                     then prepInput' xs ('I'::res)
                 elif contains x alph
                     then prepInput' xs (x::res)
