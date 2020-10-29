@@ -116,7 +116,7 @@ let addEncryption (initialPos: int) ((char1, pos1): (char*int)) ((char2, pos2): 
         // result <- result.Append (text.[pos1 .. (pos2-2)] + decrypted2.ToString())
         (decrypted1.ToString() + decrypted2.ToString())
 
-let itterateOnPairs (table: char[,]) (inputText: string) (encrypt: bool) =
+let iterateOnPairs (table: char[,]) (inputText: string) (encrypt: bool) =
     let mutable i: int = 0
     let mutable result = StringBuilder()
     let mutable text: StringBuilder = StringBuilder inputText
@@ -139,8 +139,7 @@ let itterateOnPairs (table: char[,]) (inputText: string) (encrypt: bool) =
 
 [<EntryPoint>]
 let main argv =
-    //let text = "Hide the gold...in the TREESTUMP!!!!"
-    let text = System.IO.File.ReadAllText("../lines.txt")
+    let text = System.IO.File.ReadAllText("benchmarks/playfair_cipher/lines.txt")
     let keyword: string = "thisisagreatkeyword"
     
     let mutable keyTable: char[,] = Array2D.create 5 5 Char.MaxValue
@@ -149,8 +148,8 @@ let main argv =
     
     populateKeyTable keyTable keyword
     
-    let encryption = itterateOnPairs keyTable text true
-    let decryption = itterateOnPairs keyTable encryption false
+    let encryption = iterateOnPairs keyTable text true
+    let decryption = iterateOnPairs keyTable encryption false
     
     System.IO.File.WriteAllText("../encrypted.txt", encryption)
     System.IO.File.WriteAllText("../decrypted.txt", decryption)
