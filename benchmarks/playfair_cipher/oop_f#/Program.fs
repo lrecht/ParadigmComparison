@@ -32,8 +32,8 @@ type Table() =
 type PlayFairCipher(key) =
     let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     let charTable = Table()
-    let preprocessText text =
-        let txt = (text:String).ToUpper().Replace("J", "I")
+    let preprocessText (text:String) =
+        let txt = text.ToUpper().Replace("J", "I")
         Regex.Replace(txt, "[^A-Z]", "")
 
     let createTable key = 
@@ -63,7 +63,7 @@ type PlayFairCipher(key) =
         let length = text.Length
         let returnValue = StringBuilder()
         let cipherKey = if encipher then 1 else 4
-        for i in 0 .. 2 .. (length - 2) do
+        for i in 0 .. 2 .. (length - 1) do
             let aCord = charTable.GetPositionFromChar text.[i]
             let bCord = charTable.GetPositionFromChar text.[i + 1]
             if (aCord.X = bCord.X) then returnValue.Append(sameRow aCord bCord cipherKey) |> ignore
@@ -76,11 +76,12 @@ type PlayFairCipher(key) =
 
     member __.Decrypt text = cipher text false
     member __.Encrypt text =
-        let addX length = if length % 2 = 1 then "X" else ""
-        let sb = StringBuilder(preprocessText text)
-        for i in 0 .. 2 .. (sb.Length - 1) do
-            if i = sb.Length - 1 then sb.Append(addX sb.Length) |> ignore
-            else if sb.Length > i && sb.[i] = sb.[i + 1] then sb.Insert(i + 1, 'X') |> ignore
+        let mutable sb = StringBuilder(preprocessText text)
+        let mutable i = 0
+        while i < sb.Length do
+            if i = sb.Length - 1 then sb.Append('X') |> ignore
+            else if sb.[i] = sb.[i + 1] then sb.Insert(i + 1, 'X') |> ignore
+            i <- i + 2
         cipher (sb.ToString()) true
 
 
