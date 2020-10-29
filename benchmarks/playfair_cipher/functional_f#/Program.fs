@@ -7,12 +7,12 @@ let keyword = "this is a great keyword"
 let alph = "ABCDEFGHIKLMNOPQRSTUVWXYZ" 
 let rare = 'X'
 
-let inAlph letter alph =
-    (List.fold (fun acc c -> c = letter || acc) false (alph |> Seq.toList))
+let contains letter text =
+    (List.fold (fun acc c -> c = letter || acc) false (text |> Seq.toList))
 
 let rec prepKey' key (used:char list) =
     match key with
-        | x::xs -> if inAlph x used
+        | x::xs -> if contains x used
                         then prepKey' xs used
                    else prepKey' xs (x::used)
         | _ -> List.rev used
@@ -22,7 +22,7 @@ let prepKey key =
                 (fun c -> 
                     if c = 'j' || c = 'J'
                         then "I" 
-                    elif not (inAlph (Char.ToUpper c) alph) 
+                    elif not (contains (Char.ToUpper c) alph) 
                         then "" 
                     else string (Char.ToUpper c)) key+alph))
                 []
@@ -73,7 +73,7 @@ let rec prepInput' input res =
     match input with
     | x::xs ->  if x = 'j' || x = 'J'
                     then prepInput' xs ('I'::res)
-                elif inAlph x alph
+                elif contains x alph
                     then prepInput' xs (x::res)
                 else prepInput' xs res
     | _ -> List.rev res
