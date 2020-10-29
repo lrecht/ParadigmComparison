@@ -41,20 +41,17 @@ type PlayFairCipher(key) =
             if not (charTable.ContainsChar c) then charTable.AddNext c
 
     let addKeyMod5 value key = (value + key) % 5
-    let sameRow (aCord : Point) (bCord : Point) key =
-        [|
+    let sameRow (aCord : Point) (bCord : Point) key = [|
             charTable.GetCharFromPosition aCord.X (addKeyMod5 bCord.Y key);
             charTable.GetCharFromPosition bCord.X (addKeyMod5 aCord.Y key)
         |]
 
-    let sameColumn (aCord : Point) (bCord : Point) key =
-        [|
+    let sameColumn (aCord : Point) (bCord : Point) key = [|
             charTable.GetCharFromPosition (addKeyMod5 aCord.X key) aCord.Y;
             charTable.GetCharFromPosition (addKeyMod5 bCord.X key) bCord.Y
         |]
 
-    let differentRowColumn (aCord : Point) (bCord : Point) = 
-        [|
+    let differentRowColumn (aCord : Point) (bCord : Point) = [|
             charTable.GetCharFromPosition aCord.X bCord.Y;
             charTable.GetCharFromPosition bCord.X aCord.Y
         |]
