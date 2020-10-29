@@ -6,14 +6,14 @@ class Stats():
         name = output_file.split(".csv")[0]
         self.file_name = name + "_stats_{0}.csv".format(typ)
         with open(self.file_name, "w") as stats_file:
-            stats_file.write("Name;Mean ({0});Error Margin ({0});Error Margin (%);Runs\n".format(measurement))
+            stats_file.write("Name;Sample Mean ({0});Standard Deviation({0});Standard Error ({0});Standard Error (%);Runs\n".format(measurement))
         
 
     def Clear(self):
         """After each benchmark, the instance values can be cleared using this function"""
         self.measures = []
         self.mean = 0
-        self.std = 0
+        self.sd = 0
         self.error_margin = 0
         self.error_percent = 0
 
@@ -24,7 +24,7 @@ class Stats():
     def compute_results(self):
         """Calls all of the statistical calculation functions in the right order (Results will occupy the instance variables)"""
         self.mean = self.get_mean()
-        self.std = self.get_deviation() * 2 # The times two is to produce 95% confidence
+        self.sd = self.get_deviation()
         self.error_margin = self.get_error_margin()
         self.error_percent = self.get_error_percent()
 
@@ -45,7 +45,7 @@ class Stats():
 
     def get_error_margin(self):
         """Will return the error margin, based on the current measurements (Standard deviation must be calculated first)"""
-        return self.std / math.sqrt(len(self.measures))
+        return self.sd / math.sqrt(len(self.measures))
 
     def get_error_percent(self):
         """Will return the error margin in percent of the mean (Error margin must be calculated first)"""
@@ -53,16 +53,8 @@ class Stats():
 
     def save(self, benchmark_name):
         with open(self.file_name, "a+") as stats:
-            string = "{0};{1:,.2f};{2:,.2f};{3:.2%};{4}\n".format(benchmark_name, self.mean, self.error_margin, self.error_percent, len(self.measures))
+            string = "{0};{1:,.2f};{2:,.2f};{3:,.2f};{4:.2%};{5}\n".format(benchmark_name, self.mean, self.sd, self.error_margin, self.error_percent, len(self.measures))
             stats.write(string.replace(".", "*").replace(",", ".").replace("*", ","))
-
-
-    def to_pretty_string(self):
-        """Will return the 'mean', 'error margin', and 'error percent' in a readable format"""
-        mean = "{0:.2f}".format(self.mean)
-        error = "{0:.2f}".format(self.error_margin)
-        percent = "{0:.2%}".format(self.error_percent)
-        return "Results: {0} ± {1} (± {2}) - [{3} Runs]\n".format(mean, error, percent, len(self.measures))
 
 
 class Aggregator():
