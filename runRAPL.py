@@ -4,6 +4,7 @@ import subprocess
 import stats as stat
 from program import *
 from datetime import datetime
+import email_service as es
 
 parser = argparse.ArgumentParser()
 benchmarks_path = "./benchmarks"
@@ -63,7 +64,7 @@ language_discover_funcs["f#"] = discover_fsharp_program
 
 
 #Performs the list of benchmarks and saves to results to output csv file
-def perform_benchmarks(benchmarks, experiment_iterations, time_limit, output_file, skip_build):
+def perform_benchmarks(benchmarks, experiment_iterations, time_limit, output_file, skip_build, skip_runs):
     #Setupsies
     pyRAPL.setup()
     statistics = stat.Aggregator(output_file)
@@ -73,6 +74,7 @@ def perform_benchmarks(benchmarks, experiment_iterations, time_limit, output_fil
     current_benchmark = 0
 
     for b in benchmarks:
+        skipped = 0
         statistics.clear()
         current_benchmark += 1
 
@@ -86,13 +88,19 @@ def perform_benchmarks(benchmarks, experiment_iterations, time_limit, output_fil
         if time_limit is None:
             for _ in range(0, experiment_iterations):
                 res = run(b)
-                handle_results(res, csv_output, statistics)
+                if (skipped != skip_runs):
+                    skipped += 1
+                else:
+                    handle_results(res, csv_output, statistics)
         else:
             current_time = 0
             while(current_time < time_limit):
                 res = run(b)
-                handle_results(res, csv_output, statistics)
-                current_time += res.duration / 1_000_000 #Microseconds to seconds
+                if (skipped != skip_runs):
+                    skipped += 1
+                else:
+                    handle_results(res, csv_output, statistics)
+                    current_time += res.duration / 1_000_000 #Microseconds to seconds
 
         statistics.compute()
         statistics.save(b.path)
@@ -123,6 +131,8 @@ if __name__ == '__main__':
     parser.add_argument("-o", "--output", default="results.csv", help="Output csv file for results. Default is results.csv")
     parser.add_argument("-i", "--iterations", default=10, type=int, help="Number of iterations for each benchmark")
     parser.add_argument("-t", "--time-limit", type=int, help="Number of seconds to continousely run each benchmark")
+    parser.add_argument("-e", "--send-results-email", type=str, help="Send email containing statistical results")
+    parser.add_argument("-s", "--skip-runs", type=int, default=0, help="Skip first n runs of each benchmark to stabilise results")
 
     args = parser.parse_args()
 
@@ -148,11 +158,17 @@ if __name__ == '__main__':
     else:
         languages = all_languages
 
-    skip_build = args.nobuild
-    output_file = "[{0}]{1}".format(datetime.now().isoformat(),args.output)
-    iterations = args.iterations
-    time_limit = args.time_limit
+
+    skip_build      = args.nobuild
+    output_file     = "[{0}]{1}".format(datetime.now().isoformat(),args.output)
+    iterations      = args.iterations
+    time_limit      = args.time_limit
+    email           = args.send_results_email
+    skip_runs       = args.skip_runs
 
     benchmark_programs = get_benchmark_programs(benchmarks, paradigms, languages)
 
-    perform_benchmarks(benchmark_programs, iterations, time_limit, output_file, skip_build)
+    perform_benchmarks(benchmark_programs, iterations, time_limit, output_file, skip_build, skip_runs)
+
+    if(email is not None):
+        es.send_results(email, output_file)
