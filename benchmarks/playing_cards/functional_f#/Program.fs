@@ -1,16 +1,16 @@
 ﻿open System
 
-type Value = Two=0 | Three=1 | Four=2 | Five=3 | Six=4 | Seven=5 | Eight=6 | Nine=7 | Ten=8 | Jack=9 | Queen=10 | King=11 | Ace=12
-type Suit = Diamonds=0 | Spades=1 | Hearts=2 | Clubs=3
+let Value = [ "Two";"Three";"Four";"Five";"Six";"Seven";"Eight";"Nine";"Ten";"Jack";"Queen";"King";"Ace" ]
+let Suit = [ "Diamonds";"Spades";"Hearts";"Clubs" ]
 
-let newDeck () = [for x in Enum.GetValues(typeof<Value>) do
-                    for y in Enum.GetValues(typeof<Suit>) -> x,y] 
+let newDeck () = [for x in Value do
+                    for y in Suit -> x,y] 
 
 let rand = Random()
 let shuffle xs = List.sortBy (fun x -> rand.Next()) xs
 
 let showDeck deck = 
-    String.concat "\n" (List.map (fun (v,s) -> sprintf "%O of %O" v s) deck)
+    String.concat "\n" (List.map (fun (v,s) -> v + " of " + s) deck)
 
 let deal deck = (List.head deck, List.tail deck)
 
