@@ -78,9 +78,6 @@ namespace procedural_c_
 
 		static string iterateOnPairs(string text, int direction)
 		{
-			if (text.Length % 2 == 1)
-				text = text + 'X';
-
 			var result = new StringBuilder();
 			int i = 0;
 			while (i < text.Length)
