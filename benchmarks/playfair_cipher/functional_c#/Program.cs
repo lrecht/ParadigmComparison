@@ -14,25 +14,37 @@ namespace functional_c_
             var keyword = "this is a great keyword";
             var alpabet = "ABCDEFGHIKLMNOPQRSTUVWXYZ";
 
-            var TEST_STRING = "hello world!"; // System.IO.File.ReadAllText("../lines.txt");
+            var TEST_STRING = System.IO.File.ReadAllText("../lines.txt");
             var table = createTable(keyword, alpabet);
             var encoded = new string(encode(TEST_STRING, table, alpabet).ToArray());
             var decoded = new string(decode(encoded, table, alpabet).ToArray());
 
-            System.Console.WriteLine(encoded);
-            System.Console.WriteLine(decoded);
+            System.Console.WriteLine(encoded.Length);
+            System.Console.WriteLine(decoded.Length);
         }
 
         private static ImmutableList<char> encode(string str, (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>) table, string alpabet)
-        {
-            var prep = prepInput(str.ToImmutableList(), alpabet);
-            return codeHelper(encodePair, prep, table, ImmutableList<char>.Empty);
-        }
+            => performAction(encodePair, str, table, alpabet);
 
         private static ImmutableList<char> decode(string str, (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>) table, string alpabet)
-        {
+            => performAction(decodePair, str, table, alpabet);
+
+        private static ImmutableList<char> performAction(Func<char, char, (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>), ImmutableList<char>> func, string str, (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>) table, string alpabet){
             var prep = prepInput(str.ToImmutableList(), alpabet);
-            return codeHelper(decodePair, prep, table, ImmutableList<char>.Empty);
+            var arg1 = prep;
+            var arg2 = ImmutableList<char>.Empty;
+
+            //Simulating trampolining
+            while(true){
+                var result = codeHelper(func, arg1, table, arg2);
+                if (result.hasResult)
+                    return result.result;
+                else
+                {
+                    arg1 = result.nextInput;
+                    arg2 = result.result;
+                }
+            }
         }
 
         private static ImmutableList<char> encodePair(char first, char second, (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>) table)
@@ -71,12 +83,12 @@ namespace functional_c_
         private static char findVal(int x, int y, (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char> values) table)
             => table.values[(x, y)];
 
-        private static ImmutableList<char> codeHelper(Func<char, char, (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>), ImmutableList<char>> codeFunc, ImmutableList<char> input, (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>) table, ImmutableList<char> res)
+        private static (bool hasResult, ImmutableList<char> nextInput, ImmutableList<char> result) codeHelper(Func<char, char, (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>), ImmutableList<char>> codeFunc, ImmutableList<char> input, (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>) table, ImmutableList<char> res)
         {
             if(input.IsEmpty)
-                return res;
+                return (true, input, res);
             else if(input.Count == 1)
-                return res.AddRange(codeFunc(input[0], rare, table));
+                return (true, input, res.AddRange(codeFunc(input[0], rare, table)));
 
             var c1 = input[0];
             var c2 = input[1];
@@ -84,12 +96,12 @@ namespace functional_c_
             if(c1 == c2){
                 var newInput = input.RemoveAt(0);
                 var newRes = res.AddRange(codeFunc(c1, rare, table));
-                return codeHelper(codeFunc, newInput, table, newRes);
+                return (false, newInput, newRes);
             }
             else{
                 var newInput = input.RemoveAt(0).RemoveAt(0);
                 var newRes = res.AddRange(codeFunc(c1, c2, table));
-                return codeHelper(codeFunc, newInput, table, newRes);
+                return (false, newInput, newRes);
             }
         }
 
