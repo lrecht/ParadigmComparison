@@ -81,7 +81,7 @@ let decrypt (text: string) =
 [<EntryPoint>]
 let main argv =
     let stop = System.Diagnostics.Stopwatch.StartNew()
-    let text = System.IO.File.ReadAllText("../lines.txt")
+    let text = System.IO.File.ReadAllText("benchmarks/playfair_cipher/lines.txt")
     let keyword = "This is a great keyword"
 
     populateTable (preprocessText (keyword + alphabet))
