@@ -22,12 +22,13 @@ namespace functional_c_
         }
 
         private static (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>) createTable(string keyword)
-        {
-            var prepedKey = prepKey(keyword);
-            return createTableHelper(prepedKey, 1, 1, (ImmutableDictionary<char, (int, int)>.Empty, ImmutableDictionary<(int, int), char>.Empty));
-        }
+            => createTableHelper(prepKey(keyword), 1, 1, (ImmutableDictionary<char, (int, int)>.Empty, ImmutableDictionary<(int, int), char>.Empty));
 
-        private static (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>) createTableHelper(ImmutableList<char> keyword, int rowIndex, int colIndex, (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>) table)
+        private static (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>) createTableHelper(
+            ImmutableList<char> keyword, 
+            int rowIndex, 
+            int colIndex, 
+            (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>) table)
         {
             if(keyword.IsEmpty)
                 return table;
@@ -69,7 +70,11 @@ namespace functional_c_
         private static ImmutableList<char> decode(string str, (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>) table)
             => cipher(decodePair, str, table);
 
-        private static ImmutableList<char> cipher(Func<char, char, (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>), ImmutableList<char>> func, string str, (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>) table){
+        private static ImmutableList<char> cipher(
+            Func<char, char, (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>), ImmutableList<char>> func, 
+            string str, 
+            (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>) table)
+        {
             var prep = prepInput(str.ToImmutableList());
             var arg1 = prep;
             var arg2 = ImmutableList<char>.Empty;
@@ -87,13 +92,23 @@ namespace functional_c_
             }
         }
 
-        private static ImmutableList<char> encodePair(char first, char second, (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>) table)
-            => pairHelper((x => x % 5 + 1), first, second, table);
+        private static ImmutableList<char> encodePair(
+            char first, 
+            char second, 
+            (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>) table)
+                => pairHelper((x => x % 5 + 1), first, second, table);
 
-        private static ImmutableList<char> decodePair(char first, char second, (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>) table)
-            => pairHelper((x => x == 1 ? 5 : x - 1), first, second, table);
+        private static ImmutableList<char> decodePair(
+            char first, 
+            char second, 
+            (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>) table)
+                => pairHelper((x => x == 1 ? 5 : x - 1), first, second, table);
 
-        private static ImmutableList<char> pairHelper(Func<int, int> adjust, char first, char second, (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>) table)
+        private static ImmutableList<char> pairHelper(
+            Func<int, int> adjust, 
+            char first, 
+            char second, 
+            (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>) table)
         {
             var (col1, row1) = findPos(first, table);
             var (col2, row2) = findPos(second, table);
@@ -123,7 +138,11 @@ namespace functional_c_
         private static char findVal(int x, int y, (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char> values) table)
             => table.values[(x, y)];
 
-        private static (bool hasResult, ImmutableList<char> nextInput, ImmutableList<char> result) codeHelper(Func<char, char, (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>), ImmutableList<char>> codeFunc, ImmutableList<char> input, (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>) table, ImmutableList<char> res)
+        private static (bool hasResult, ImmutableList<char> nextInput, ImmutableList<char> result) codeHelper(
+            Func<char, char, (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>), ImmutableList<char>> codeFunc, 
+            ImmutableList<char> input, 
+            (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>) table, 
+            ImmutableList<char> res)
         {
             if(input.IsEmpty)
                 return (true, input, res);
