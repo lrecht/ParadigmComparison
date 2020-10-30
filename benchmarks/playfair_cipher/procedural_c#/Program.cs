@@ -7,7 +7,7 @@ namespace procedural_c_
 {
 	class Program
 	{
-		const string alphabet = "ABCDEFGHIJKLMNOPQRSTUVXYZ";
+		const string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 		const int dimension1 = 5;
 		const int dimension2 = 5;
 		static char[,] table;
