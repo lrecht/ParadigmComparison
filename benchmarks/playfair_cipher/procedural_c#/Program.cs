@@ -18,7 +18,7 @@ namespace procedural_c_
 			positions = new (int, int)[26];
 
 			table = new char[5, 5];
-			var text = System.IO.File.ReadAllText("../lines.txt");
+			var text = System.IO.File.ReadAllText("benchmarks/playfair_cipher/lines.txt");
 			var keyword = "This is a great keyword";
 
 			populateTable(preprocessText(keyword + alphabet));
