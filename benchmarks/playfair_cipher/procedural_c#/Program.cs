@@ -45,7 +45,7 @@ namespace procedural_c_
 				var pos = (place / dimension1, place % dimension1);
 				var character = text[i];
 				var charPos = (character - 'A');
-				if (!(positions[charPos] != (0, 0) || table[0, 0] == character))
+				if (positions[charPos] == (0, 0) && table[0, 0] != character)
 				{
 					table[pos.Item1, pos.Item2] = character;
 					positions[charPos] = pos;
