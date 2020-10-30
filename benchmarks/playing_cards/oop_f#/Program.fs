@@ -5,15 +5,15 @@ open System.Collections.Generic
 
 
 // Value is necessary to make it ENUM and not UNION
-type Value = Two=0 | Three=1 | Four=2 | Five=3 | Six=4 | Seven=5 | Eight=6 | Nine=7 | Ten=8 | Jack=9 | Queen=10 | King=11 | Ace=12
-type Suit = Diamonds=0 | Spades=1 | Hearts=2 | Clubs=3
+let Value = [ "Two";"Three";"Four";"Five";"Six";"Seven";"Eight";"Nine";"Ten";"Jack";"Queen";"King";"Ace" ]
+let Suit = [ "Diamonds";"Spades";"Hearts";"Clubs" ]
 
 
 // The type of a single card
-type Card(suit:Suit, value:Value) =
+type Card(suit, value) =
     member this.Suit = suit
     member this.Value = value
-    override this.ToString() = sprintf "%O of %O" this.Value this.Suit
+    override this.ToString() = sprintf "%s of %s" this.Value this.Suit
 
 
 // The type of a whole deck
@@ -21,9 +21,9 @@ type Deck() =
     let _cards = new List<Card>()
     let _rand = Random()
     do
-        for _suit in Enum.GetValues(typeof<Suit>) do
-            for _value in Enum.GetValues(typeof<Value>) do
-                _cards.Add(Card(_suit :?> Suit, _value :?> Value))
+        for _suit in Suit do
+            for _value in Value do
+                _cards.Add(Card(_suit, _value))
 
     member this.Count = _cards.Count
 
