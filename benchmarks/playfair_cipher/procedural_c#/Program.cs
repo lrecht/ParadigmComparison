@@ -27,8 +27,8 @@ namespace procedural_c_
 			string encryption = encrypt(text);
 			string decryption = decrypt(encryption);
 
-			Console.WriteLine(encryption.Length + "\t");
-			Console.WriteLine(decryption.Length + "\t");
+			Console.WriteLine(encryption.Length);
+			Console.WriteLine(decryption.Length);
 			Console.WriteLine("Time: " + stop.ElapsedMilliseconds);
 		}
 
