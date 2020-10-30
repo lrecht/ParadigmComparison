@@ -15,7 +15,6 @@ namespace procedural_c_
 
 		static void Main(string[] args)
 		{
-			var stop = System.Diagnostics.Stopwatch.StartNew();
 			positions = new (int, int)[26];
 
 			table = new char[5, 5];
@@ -29,7 +28,6 @@ namespace procedural_c_
 
 			Console.WriteLine(encryption.Length);
 			Console.WriteLine(decryption.Length);
-			Console.WriteLine("Time: " + stop.ElapsedMilliseconds);
 		}
 
 		static string preprocessText(string text)
