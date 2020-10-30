@@ -84,13 +84,13 @@ namespace procedural_c_
 			{
 				var first = positions[(text[i] - 'A')];
 				var second = positions[(text[i + 1] - 'A')];
-				result = result.Append(deencrypt(first, second, direction));
+				result = result.Append(cipher(first, second, direction));
 				i += 2;
 			}
 			return result.ToString();
 		}
 
-		static string deencrypt((int, int) item1, (int, int) item2, int direction)
+		static string cipher((int, int) item1, (int, int) item2, int direction)
 		{
 			if (item1.Item2 == item2.Item2)
 			{
