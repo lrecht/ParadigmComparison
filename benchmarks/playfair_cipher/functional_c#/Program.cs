@@ -1,36 +1,76 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Immutable;
-using System.Collections.Generic;
 
 namespace functional_c_
 {
     class Program
     {
+        static string keyword = "this is a great keyword";
+        static string alphabet = "ABCDEFGHIKLMNOPQRSTUVWXYZ";
         static char rare = 'X';
-        //TODO: REMOVE TABLE AS ARGUMENT
         static void Main(string[] args)
         {
-            var keyword = "this is a great keyword";
-            var alpabet = "ABCDEFGHIKLMNOPQRSTUVWXYZ";
 
-            var TEST_STRING = System.IO.File.ReadAllText("../lines.txt");
-            var table = createTable(keyword, alpabet);
-            var encoded = new string(encode(TEST_STRING, table, alpabet).ToArray());
-            var decoded = new string(decode(encoded, table, alpabet).ToArray());
+            var TEST_STRING = System.IO.File.ReadAllText("benchmarks/playfair_cipher/lines.txt");
+            var table = createTable(keyword);
+            var encoded = new string(encode(TEST_STRING, table).ToArray());
+            var decoded = new string(decode(encoded, table).ToArray());
 
             System.Console.WriteLine(encoded.Length);
             System.Console.WriteLine(decoded.Length);
         }
 
-        private static ImmutableList<char> encode(string str, (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>) table, string alpabet)
-            => performAction(encodePair, str, table, alpabet);
+        private static (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>) createTable(string keyword)
+        {
+            var prepedKey = prepKey(keyword);
+            return createTableHelper(prepedKey, 1, 1, (ImmutableDictionary<char, (int, int)>.Empty, ImmutableDictionary<(int, int), char>.Empty));
+        }
 
-        private static ImmutableList<char> decode(string str, (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>) table, string alpabet)
-            => performAction(decodePair, str, table, alpabet);
+        private static (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>) createTableHelper(ImmutableList<char> keyword, int rowIndex, int colIndex, (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>) table)
+        {
+            if(keyword.IsEmpty)
+                return table;
+            
+            var (postions, values) = table;
+            var c = keyword.First();
+            var updatedPoss = postions.Add(c, (rowIndex, colIndex));
+            var updatedVals = values.Add((rowIndex, colIndex), c);
+            return createTableHelper(keyword.RemoveAt(0), 
+                                    ((rowIndex % 5) + 1),
+                                    (colIndex + rowIndex / 5),
+                                    (updatedPoss, updatedVals));
+        }
 
-        private static ImmutableList<char> performAction(Func<char, char, (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>), ImmutableList<char>> func, string str, (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>) table, string alpabet){
-            var prep = prepInput(str.ToImmutableList(), alpabet);
+        private static ImmutableList<char> prepKey(string keyword)
+        {
+            var simpleKey = keyword
+                            .Where(x => char.IsLetter(x))
+                            .Distinct()
+                            .Select(x => char.ToUpper( x == 'j' || x == 'J' ? 'I' : x ))
+                            .ToImmutableList();
+
+            var smallerAlph = alphabet
+                            .Where(x => !simpleKey.Contains(x))
+                            .ToImmutableList();
+
+            return simpleKey.AddRange(smallerAlph);
+        }
+
+        private static ImmutableList<char> prepInput(ImmutableList<char> str)
+            => str
+                .Select(c => char.ToUpper( c == 'j' || c == 'J' ? 'I' : c ))
+                .Where(c => alphabet.Contains(c))
+                .ToImmutableList();
+
+        private static ImmutableList<char> encode(string str, (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>) table)
+            => cipher(encodePair, str, table);
+
+        private static ImmutableList<char> decode(string str, (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>) table)
+            => cipher(decodePair, str, table);
+
+        private static ImmutableList<char> cipher(Func<char, char, (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>), ImmutableList<char>> func, string str, (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>) table){
+            var prep = prepInput(str.ToImmutableList());
             var arg1 = prep;
             var arg2 = ImmutableList<char>.Empty;
 
@@ -103,48 +143,6 @@ namespace functional_c_
                 var newRes = res.AddRange(codeFunc(c1, c2, table));
                 return (false, newInput, newRes);
             }
-        }
-
-        private static ImmutableList<char> prepInput(ImmutableList<char> str, string alpabet)
-            => str
-                .Select(c => char.ToUpper( c == 'j' || c == 'J' ? 'I' : c ))
-                .Where(c => alpabet.Contains(c))
-                .ToImmutableList();
-
-        private static (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>) createTable(string keyword, string alphabet)
-        {
-            var prepedKey = prepKey(keyword, alphabet);
-            return createTableHelper(prepedKey, 1, 1, (ImmutableDictionary<char, (int, int)>.Empty, ImmutableDictionary<(int, int), char>.Empty));
-        }
-
-        private static (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>) createTableHelper(ImmutableList<char> keyword, int rowIndex, int colIndex, (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>) t)
-        {
-            if(keyword.IsEmpty)
-                return t;
-            
-            var (postions, values) = t;
-            var c = keyword.First();
-            var updatedPoss = postions.Add(c, (rowIndex, colIndex));
-            var updatedVals = values.Add((rowIndex, colIndex), c);
-            return createTableHelper(keyword.RemoveAt(0), 
-                                    ((rowIndex % 5) + 1),
-                                    (colIndex + rowIndex / 5),
-                                    (updatedPoss, updatedVals));
-        }
-
-        private static ImmutableList<char> prepKey(string keyword, string alpabet)
-        {
-            var simpleKey = keyword
-                            .Where(x => char.IsLetter(x))
-                            .Distinct()
-                            .Select(x => char.ToUpper( x == 'j' || x == 'J' ? 'I' : x ))
-                            .ToImmutableList();
-
-            var smallerAlph = alpabet
-                            .Where(x => !simpleKey.Contains(x))
-                            .ToImmutableList();
-
-            return simpleKey.AddRange(smallerAlph);
         }
     }
 }
