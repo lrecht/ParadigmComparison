@@ -6,9 +6,9 @@ namespace functional_c_
 {
     class Program
     {
-        static string keyword = "this is a great keyword";
-        static string alphabet = "ABCDEFGHIKLMNOPQRSTUVWXYZ";
-        static char rare = 'X';
+        static readonly string keyword = "this is a great keyword";
+        static readonly string alphabet = "ABCDEFGHIKLMNOPQRSTUVWXYZ";
+        static readonly char rare = 'X';
         static void Main(string[] args)
         {
 
