@@ -68,7 +68,7 @@ namespace oop_c_
         {
             StringBuilder sb = new StringBuilder(preprocessText(text));
 
-            for (int i = 0; i < sb.Length; i += 2)
+            for (int i = 0; i < sb.Length-1; i += 2)
             {
                 // If two adjacent characters are the same insert X inbetween
                 if (sb[i] == sb[i+1])
