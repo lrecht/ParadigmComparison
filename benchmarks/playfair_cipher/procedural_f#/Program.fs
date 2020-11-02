@@ -80,7 +80,6 @@ let decrypt (text: string) =
 
 [<EntryPoint>]
 let main argv =
-    let stop = System.Diagnostics.Stopwatch.StartNew()
     let text = System.IO.File.ReadAllText("benchmarks/playfair_cipher/lines.txt")
     let keyword = "This is a great keyword"
 
@@ -92,5 +91,4 @@ let main argv =
     
     printfn "%i" encryption.Length
     printfn "%i" decryption.Length
-    printfn "Time: %i" stop.ElapsedMilliseconds
     0 // return an integer exit code
