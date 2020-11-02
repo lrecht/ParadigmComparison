@@ -70,14 +70,13 @@ namespace oop_c_
 
             for (int i = 0; i < sb.Length; i += 2)
             {
-                // If length is odd add X
-                if (i == sb.Length - 1)
-                    sb.Append(sb.Length % 2 == 1 ? "X" : "");
-
                 // If two adjacent characters are the same insert X inbetween
-                else if (sb[i] == sb[i+1])
+                if (sb[i] == sb[i+1])
                     sb.Insert(i + 1, 'X');
             }
+            // If length is odd add X     
+            sb.Append(sb.Length % 2 == 1 ? "X" : "");
+
             return cipher(sb.ToString(), true);
         }
 
