@@ -88,7 +88,7 @@ let main argv =
     let testString = System.IO.File.ReadAllText "benchmarks/playfair_cipher/lines.txt"
     let p = PlayFairCipher("this is a great keyword")
     let encrypt = p.Encrypt(testString)
-    printfn "%d" (String.length encrypt)
     let decrypt = p.Decrypt(encrypt)
+    printfn "%d" (String.length encrypt)
     printfn "%d" (String.length decrypt)
     0
