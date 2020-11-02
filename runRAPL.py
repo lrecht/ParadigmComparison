@@ -5,6 +5,7 @@ import stats as stat
 from program import *
 from datetime import datetime
 import email_service as es
+import sys
 
 parser = argparse.ArgumentParser()
 benchmarks_path = "./benchmarks"
@@ -12,6 +13,9 @@ all_paradigms = ["functional", "oop", "procedural"]
 all_languages = ["c#", "f#"]
 language_discover_funcs = {}
 
+#sys.stderr.line_buffering=False
+def error_print(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
 
 #Used to validate benchmark folders
 class readable_dir(argparse.Action):
@@ -85,28 +89,32 @@ def perform_benchmarks(benchmarks, experiment_iterations, time_limit, output_fil
             subprocess.run(b.get_build_command(), shell=True, check=True, stdout=subprocess.DEVNULL)
 
         #The measuring equipment
-        if time_limit is None:
-            for _ in range(0, experiment_iterations):
-                res = run(b)
-                if (skipped != skip_runs):
+        current = 0
+        (max_iter, get_next_iter) = get_iter_options(time_limit, experiment_iterations)
+        while(current < max_iter):
+            res = run(b)
+            if all([res.pkg, res.dram]):
+                if (skipped != skip_runs): 
                     skipped += 1
                 else:
                     handle_results(res, csv_output, statistics)
-        else:
-            current_time = 0
-            while(current_time < time_limit):
-                res = run(b)
-                if (skipped != skip_runs):
-                    skipped += 1
-                else:
-                    handle_results(res, csv_output, statistics)
-                    current_time += res.duration / 1_000_000 #Microseconds to seconds
+                    current = get_next_iter(res, current)
+            else:
+                error_print("Failure in uptaining results from run: " + str(res))
 
         statistics.compute()
         statistics.save(b.path)
         csv_output.save()
     
     print('\n')
+
+
+def get_iter_options(max_time, max_iter):
+    if max_time is not None:
+        return (max_time, lambda x, current: current + (x.duration / 1_000_000))
+    else:
+        return (max_iter, lambda _, current: current + 1)
+
 
 def run(benchmark):
     meter = pyRAPL.Measurement(label=benchmark.get_run_command())
@@ -168,10 +176,6 @@ if __name__ == '__main__':
 
     benchmark_programs = get_benchmark_programs(benchmarks, paradigms, languages)
 
-    try:
-        perform_benchmarks(benchmark_programs, iterations, time_limit, output_file, skip_build, skip_runs)
-        if(email is not None):
-            es.send_results(email, output_file)
-    except:
-        if(email is not None):
-            es.send_fail(email, "stdout.log", "stderr.log")
+    perform_benchmarks(benchmark_programs, iterations, time_limit, output_file, skip_build, skip_runs)
+    if(email is not None):
+        es.send_results(email, output_file)
