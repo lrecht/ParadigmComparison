@@ -13,8 +13,8 @@ namespace oop_c_
         {
             PlayFairCipher p = new PlayFairCipher("this is a great keyword");
             string encrypt = p.Encrypt(TEST_STRING);
-            System.Console.WriteLine(encrypt.Length);
             string decrypt = p.Decrypt(encrypt);
+            System.Console.WriteLine(encrypt.Length);
             System.Console.WriteLine(decrypt.Length);
         }
     }
