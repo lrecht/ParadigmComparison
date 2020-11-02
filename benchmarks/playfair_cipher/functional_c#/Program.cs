@@ -76,17 +76,16 @@ namespace functional_c_
             (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>) table)
         {
             var prep = prepInput(str.ToImmutableList());
-            var arg1 = prep;
             var arg2 = ImmutableList<char>.Empty;
 
             //Simulating trampolining
             while(true){
-                var result = codeHelper(func, arg1, table, arg2);
+                var result = codeHelper(func, prep, table, arg2);
                 if (result.hasResult)
                     return result.result;
                 else
                 {
-                    arg1 = result.nextInput;
+                    prep = result.nextInput;
                     arg2 = result.result;
                 }
             }
