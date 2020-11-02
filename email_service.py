@@ -32,12 +32,29 @@ def create_mail(email, output_file):
     return message
 
 
-def send_results(email, output_file):
+def create_fail_mail(email, *files):
+    message = MIMEMultipart()
+    message["From"] = gmail_user
+    message["To"] = email
+    message["Subject"] = "Benchmarks failed to complete"
+    message.attach(MIMEText("These are the log files from the stdout and stderr", 'plain', 'utf-8'))
+
+    for f in files:
+        message.attach(create_attachment(f))
+
+    return message
+
+def send_mail(email, message):
     server = smtplib.SMTP("smtp.gmail.com", 587)
     server.starttls()
     server.login(gmail_user, gmail_pass)
-
-    message = create_mail(email, output_file)
     server.sendmail(gmail_user, email, message.as_string())
-
     server.close()
+
+def send_results(email, output_file):
+    message = create_mail(email, output_file)
+    send_mail(email, message)
+
+def send_fail(email, *files):
+    message = create_fail_mail(email, *files)
+    send_mail(email, message)

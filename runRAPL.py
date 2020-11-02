@@ -168,7 +168,10 @@ if __name__ == '__main__':
 
     benchmark_programs = get_benchmark_programs(benchmarks, paradigms, languages)
 
-    perform_benchmarks(benchmark_programs, iterations, time_limit, output_file, skip_build, skip_runs)
-
-    if(email is not None):
-        es.send_results(email, output_file)
+    try:
+        perform_benchmarks(benchmark_programs, iterations, time_limit, output_file, skip_build, skip_runs)
+        if(email is not None):
+            es.send_results(email, output_file)
+    except:
+        if(email is not None):
+            es.send_fail(email, "stdout.log", "stderr.log")
