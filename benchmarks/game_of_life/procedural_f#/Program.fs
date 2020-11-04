@@ -41,7 +41,6 @@ let updateBord() =
 let initilizeBoard() =
     let state = System.IO.File.ReadAllText("../state256.txt")
     for i in 0 .. state.Length-1 do
-        //printfn "%i : %i" (i/width) (i % width)
         board.[(i/width), (i % width)] <- state.[i] = '1'
 
 let countAlive () =
