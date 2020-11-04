@@ -11,8 +11,6 @@ namespace procedural_c_
 
 		static void Main(string[] args)
 		{
-			var stop = System.Diagnostics.Stopwatch.StartNew();
-
 			initilizeBoard();
 			for (int i = 0; i < runs; i++)
 			{
@@ -20,7 +18,6 @@ namespace procedural_c_
 			}
 			var count = countAlive();
 			Console.WriteLine("Alive: " + count);
-			Console.WriteLine("Time: " + stop.ElapsedMilliseconds);
 		}
 
 		public static int countLiveNeighbors(int x, int y)
