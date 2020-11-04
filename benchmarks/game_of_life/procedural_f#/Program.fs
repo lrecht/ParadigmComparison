@@ -39,7 +39,7 @@ let updateBord() =
     board <- newBoard
 
 let initilizeBoard() =
-    let state = System.IO.File.ReadAllText("../state256.txt")
+    let state = System.IO.File.ReadAllText("benchmarks/game_of_life/state256.txt")
     for i in 0 .. state.Length-1 do
         board.[(i/width), (i % width)] <- state.[i] = '1'
 
