@@ -53,13 +53,11 @@ let countAlive () =
 
 [<EntryPoint>]
 let main argv =
-    let stop = System.Diagnostics.Stopwatch.StartNew()
     initilizeBoard()
     for i in 0 .. runs-1 do
         updateBord()
 
     let count: int = countAlive()
     printfn "Alive: %i" count
-    printfn "Time: %i" stop.ElapsedMilliseconds
 
     0 // return an integer exit code
