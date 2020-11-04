@@ -1,10 +1,11 @@
 ﻿// Learn more about F# at http://fsharp.org
 
 open System
+open System.Text
 
-let runs: int = 2800
-let height: int = 50
-let width: int = 220
+let runs: int = 1000
+let height: int = 256
+let width: int = 256
 let mutable board: bool[,] = Array2D.create width height false
 
 let countLiveNeighbors (x: int) (y: int) = 
@@ -29,6 +30,7 @@ let countLiveNeighbors (x: int) (y: int) =
 
 let updateBord() = 
     let newBoard = Array2D.create width height false
+    
     for y in 0 .. height-1 do
         for x in 0 .. width-1 do
             let n: int = countLiveNeighbors x y
@@ -36,33 +38,29 @@ let updateBord() =
             newBoard.[x, y] <- c && (n = 2 || n = 3) || not c && n = 3
     board <- newBoard
 
-let printBoard() =
-    for i in 0 .. width do
-        printf "-"
-    printfn ""
-    for y in 0 .. height-1 do
-        printf "|"
-        for x in 0 .. width-1 do
-            if board.[x, y] then
-                printf "o"
-            else
-                printf " "
-        printfn "|"
-    for i in 0 .. width do
-        printf "-"
-    printfn ""
-
 let initilizeBoard() =
-    let rand: Random = Random(2)
-    for y in 0 .. height-1 do
-        for x in 0 .. width-1 do
-            if rand.Next(0, 2) = 1 then
-                board.[x, y] <- true
+    let state = System.IO.File.ReadAllText("../state256.txt")
+    for i in 0 .. state.Length-1 do
+        //printfn "%i : %i" (i/width) (i % width)
+        board.[(i/width), (i % width)] <- state.[i] = '1'
+
+let countAlive () =
+    let mutable count = 0
+    for i in 0 .. height-1 do
+        for j in 0 .. width-1 do
+            if (board.[i, j]) then
+                count <- count + 1
+    count
 
 [<EntryPoint>]
 let main argv =
+    let stop = System.Diagnostics.Stopwatch.StartNew()
     initilizeBoard()
-    for i in 0 .. runs do
+    for i in 0 .. runs-1 do
         updateBord()
-    printBoard()
+
+    let count: int = countAlive()
+    printfn "Alive: %i" count
+    printfn "Time: %i" stop.ElapsedMilliseconds
+
     0 // return an integer exit code
