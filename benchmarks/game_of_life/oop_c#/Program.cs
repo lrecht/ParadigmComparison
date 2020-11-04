@@ -39,10 +39,9 @@ namespace oop_c_
         {
             _board = new bool[Size, Size];
             var f = File.ReadAllText("benchmarks/game_of_life/state256.txt").Select(c => c == '1').ToArray();
-            int m = 0;
-            for (int i = 0; i < Size; i++)
-                for (int j = 0; j < Size; j++)
-                    _board[i, j] = f[m++];
+            var len = f.Length;
+            for (int i = 0; i < len; i++)
+                _board[(i / Size), (i % Size)] = f[i];
         }
 
         public bool GetCell(int x, int y) => _board[x, y];
