@@ -4,11 +4,9 @@ let neighbours = List.except [(0,0)] [for x in [-1;0;1] do for y in [-1;0;1] do 
 let rec count' coorX coorY (map:Map<int*int,int>) coorList res =
     match coorList with
     | (head::tail) -> 
-                let x = coorX+(fst head)
-                let y = coorY+(snd head)
-                if x >= 1 && x <= size && y >= 1 && y <= size then
-                    count' coorX coorY map tail (res+(map.[(x,y)]))
-                else count' coorX coorY map tail res
+                let x = ((coorX + (fst head) % size) + size) % size
+                let y = ((coorY + (snd head) % size) + size) % size
+                count' coorX coorY map tail (res+(map.[(x,y)]))
     | _ -> res
 
 let count (coorX,coorY) map =
@@ -27,7 +25,7 @@ let updateCells (map:Map<int*int,int>) =
 [<EntryPoint>]
 let main argv =
     let rand = System.Random()
-    let assocList = [ for x in [1..size] do for y in [1..size] do ((x,y),rand.Next(0,2)) ]
+    let assocList = [ for x in [0..size-1] do for y in [0..size-1] do ((x,y),rand.Next(0,2)) ]
     let map = Map.ofList assocList
 
     printfn "%A"  map
