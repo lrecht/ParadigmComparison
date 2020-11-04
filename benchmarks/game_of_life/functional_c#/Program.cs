@@ -8,17 +8,17 @@ namespace functional_c_
     class Program
     {
         static readonly int dimensions = 256;
-        static readonly int runs = 20;
+        static readonly int runs = 1;
         static void Main(string[] args)
         {
-            var initialStateRep = System.IO.File.ReadAllText("benchmarks/game_of_life/state256.txt");
-            var lives = initialStateRep.Select(x => x == '1');
-            var cords = Enumerable.Range(0, dimensions);
-            var positions = cords.SelectMany(x => cords.Select(y => (x, y)));
-            var initialState = positions.Zip(lives, (k, v) => new KeyValuePair<(int x, int y), bool>(k, v)).ToImmutableDictionary<(int x, int y), bool>();
+            var initialStateRep = System.IO.File.ReadAllText("benchmarks/game_of_life/state256.txt").Select(x => x == '1');
+            var indecies = Enumerable.Range(0, dimensions);
+            var positions = indecies.SelectMany(x => indecies.Select(y => (x, y)));
+            var initialState = positions.Zip(initialStateRep, (k, v) => new KeyValuePair<(int x, int y), bool>(k, v)).ToImmutableDictionary<(int x, int y), bool>();
+            
             var result = simulateSteps(initialState, runs);
+            
             var living = result.Where(x => x.Value);
-
             System.Console.WriteLine(living.Count());
         }
 
@@ -27,7 +27,7 @@ namespace functional_c_
 
         private static ImmutableDictionary<(int x, int y), bool> getNextState(ImmutableDictionary<(int x, int y), bool> state)
         {
-            var relative = ImmutableList<int>.Empty.Add(-1).Add(0).Add(1);
+            var relative = Enumerable.Range(-1, 3).ToImmutableList();
             return state.Select(point => {
                 var neighbourPositions = relative.SelectMany(x => relative.Select(y => (x, y)))
                                         .Select(pos => (((((point.Key.x + pos.x) % dimensions) + dimensions) % dimensions) , ((((point.Key.y + pos.y) % dimensions) + dimensions) % dimensions)))
