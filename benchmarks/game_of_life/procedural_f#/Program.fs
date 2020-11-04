@@ -3,7 +3,7 @@
 open System
 open System.Text
 
-let runs: int = 1000
+let runs: int = 100
 let height: int = 256
 let width: int = 256
 let mutable board: bool[,] = Array2D.create width height false
