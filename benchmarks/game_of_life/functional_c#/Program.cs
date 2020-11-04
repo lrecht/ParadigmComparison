@@ -8,7 +8,7 @@ namespace functional_c_
     class Program
     {
         static readonly int dimensions = 256;
-        static readonly int runs = 1;
+        static readonly int runs = 100;
         static void Main(string[] args)
         {
             var initialStateRep = System.IO.File.ReadAllText("benchmarks/game_of_life/state256.txt").Select(x => x == '1');
