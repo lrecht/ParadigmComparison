@@ -36,5 +36,6 @@ let main argv =
     let assocList = readFile "benchmarks/game_of_life/state256.txt"
     let map = Map.ofList assocList
 
-    printfn "%i" (run map 25)
+    printfn "%i" (run map 100)
+
     0 // return an integer exit code
