@@ -39,7 +39,7 @@ namespace oop_c_
         public void Initialise()
         {
             _board = new bool[Size, Size];
-            var f = File.ReadAllText("../state256.txt").Select(c => c == '1').ToArray();
+            var f = File.ReadAllText("benchmarks/game_of_life_concurrent/state256.txt").Select(c => c == '1').ToArray();
             var len = f.Length;
             for (int i = 0; i < len; i++)
                 _board[(i / Size), (i % Size)] = f[i];
