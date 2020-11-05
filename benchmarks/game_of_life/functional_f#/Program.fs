@@ -19,8 +19,7 @@ let rules cell count =
     | _ -> false
 
 let updateCells (map:Map<int*int,bool>) =
-    Map.fold (fun accMap coor cell -> 
-                Map.add coor (rules cell (count coor map)) accMap) Map.empty map
+    Map.map (fun coor cell -> (rules cell (count coor map))) map
 
 let readFile file =
     List.zip ([ for x in [0..size-1] do for y in [0..size-1] do (x,y) ]) 
