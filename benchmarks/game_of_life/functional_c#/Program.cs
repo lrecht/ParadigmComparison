@@ -6,7 +6,6 @@ namespace functional_c_
     class Program
     {
         static readonly int dimensions = 256;
-        static readonly int size = dimensions * dimensions;
         static readonly int runs = 100;
         static ImmutableList<(int x, int y)> relativePostions = Enumerable.Range(-1, 3)
                             .SelectMany(x => Enumerable.Range(-1, 3).Select(y => (x, y)))
