@@ -27,23 +27,21 @@ let prepKey key =
                     else string (Char.ToUpper c)) key+alph))
                 []
 
-let rec createTable' keyword rowIndex colIndex (positions,values) =
-    match keyword with
-        | x::xs -> createTable' xs 
-                                ((rowIndex%5)+1) 
-                                (colIndex+rowIndex/5) 
-                                (Map.add x (rowIndex,colIndex) positions,
-                                 Map.add (rowIndex,colIndex) x values)
-        | _ -> (positions,values)
+let rec computePos char (values:char []) res =
+    if char = 'J' then -1 elif char = values.[res] then res else computePos char values (res+1)
 
 let createTable keyword =
-    createTable' (prepKey keyword) 1 1 (Map.empty,Map.empty)
+    let key = prepKey keyword
+    let values = Seq.toArray key
+    let positions = Array.init 26 (fun index -> computePos (char (index + (int 'A'))) values 0)
+    (positions,values)
 
-let findPos letter (positions,_) =
-    Map.find letter positions
+let findPos letter (positions:int [],_) =
+    let p = positions.[(int letter - int 'A')]
+    (p%5,p/5)
 
-let findVal x y (_,values) =
-    Map.find (x,y) values
+let findVal col row (_,values:char []) =
+    values.[(col+row*5)]
 
 let rec pairHelper adjust first second table =
     let col1,row1 = findPos first table in
@@ -64,10 +62,10 @@ let rec pairHelper adjust first second table =
                 (findVal col1 row2 table)
 
 let encodePair first second table =
-    pairHelper (fun x -> x%5+1) first second table
+    pairHelper (fun x -> x%5) first second table
 
 let decodePair first second table =
-    pairHelper (fun x -> if x = 1 then 5 else x - 1) first second table
+    pairHelper (fun x -> (x-1+5)%5) first second table
 
 let rec prepInput' input res = 
     match input with
