@@ -9,6 +9,7 @@ namespace functional_c_
     {
         static readonly int dimensions = 256;
         static readonly int runs = 100;
+        static readonly int threads = System.Environment.ProcessorCount;
         static void Main(string[] args)
         {
             var initialStateRep = System.IO.File.ReadAllText("benchmarks/game_of_life/state256.txt")
@@ -32,7 +33,11 @@ namespace functional_c_
         private static ImmutableDictionary<(int, int), bool> getNextState(ImmutableDictionary<(int x, int y), bool> state)
         {
             var relative = Enumerable.Range(-1, 3).ToImmutableList();
-            return state.AsParallel().Select(point => {
+            return state.AsParallel()
+                .WithDegreeOfParallelism(threads)
+                .WithExecutionMode(ParallelExecutionMode.ForceParallelism)
+                .WithMergeOptions(ParallelMergeOptions.FullyBuffered)
+                .Select(point => {
                 var neighbourPositions = relative.SelectMany(x => relative.Select(y => (x, y)))
                                         .Select(pos => (
                                             ((((point.Key.x + pos.x) % dimensions) + dimensions) % dimensions), 
