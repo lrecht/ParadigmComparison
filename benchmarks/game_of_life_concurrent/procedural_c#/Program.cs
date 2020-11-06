@@ -85,7 +85,7 @@ namespace procedural_c_
 
 		public static void initilizeBoard()
 		{
-			var state = System.IO.File.ReadAllText("../state256.txt");
+			var state = System.IO.File.ReadAllText("benchmarks/game_of_life_concurrent/state256.txt");
 			for (int i = 0; i < state.Length; i++)
 			{
 				board[(i / width), (i % width)] = state[i] == '1';
