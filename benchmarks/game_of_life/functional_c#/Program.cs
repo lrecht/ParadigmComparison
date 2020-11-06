@@ -26,10 +26,11 @@ namespace functional_c_
         private static ImmutableArray<bool> getNextState(ImmutableArray<bool> state)
         {
             var relative = Enumerable.Range(-1, 3).ToImmutableList();
+            var relativePositions = relative.SelectMany(x => relative.Select(y => (x, y)));
             return state.Select((x, i) => {
                 var iCordinates = ((i % dimensions), (i / dimensions));
 
-                var neighbourCoordinates = relative.SelectMany(x => relative.Select(y => (x, y)))
+                var neighbourCoordinates = relativePositions
                                         .Select(pos => (
                                             ((((i % dimensions + pos.x) % dimensions) + dimensions) % dimensions), 
                                             ((((i / dimensions + pos.y) % dimensions) + dimensions) % dimensions)))
