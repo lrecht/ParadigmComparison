@@ -29,10 +29,13 @@ namespace oop_c_
             {
                 number++;
                 int exprChoice = rand.Next(0, 4);
-                if(exprChoice == 0) return new Add(generateRandomExpression(max), generateRandomExpression(max));
-                else if(exprChoice == 1) return new Minus(generateRandomExpression(max), generateRandomExpression(max));
-                else if(exprChoice == 2) return new Multiply(generateRandomExpression(max), generateRandomExpression(max));
-                else return new Negate(generateRandomExpression(max));
+                switch (exprChoice)
+                {
+                    case 0: return new Add(generateRandomExpression(max), generateRandomExpression(max));
+                    case 1: return new Minus(generateRandomExpression(max), generateRandomExpression(max));
+                    case 2: return new Multiply(generateRandomExpression(max), generateRandomExpression(max));
+                    default: return new Negate(generateRandomExpression(max));
+                }
             }
         }
     }
@@ -48,7 +51,6 @@ namespace oop_c_
         public IExpression left, right;
         public Add(IExpression l, IExpression r) => (left, right) = (l, r);
         public int Eval() => left.Eval() + right.Eval();
-
         public string PrettyPrint() => "(" + left.PrettyPrint() + "+" + right.PrettyPrint() + ")";
     }
 
@@ -57,7 +59,6 @@ namespace oop_c_
         public IExpression left, right;
         public Minus(IExpression l, IExpression r) => (left, right) = (l, r);
         public int Eval() => left.Eval() - right.Eval();
-
         public string PrettyPrint() => "(" + left.PrettyPrint() + "-" + right.PrettyPrint() + ")";
     }
 
@@ -66,7 +67,6 @@ namespace oop_c_
         public IExpression left, right;
         public Multiply(IExpression l, IExpression r) => (left, right) = (l, r);
         public int Eval() => left.Eval() * right.Eval();
-
         public string PrettyPrint() => "(" + left.PrettyPrint() + "*" + right.PrettyPrint() + ")";
     }
 
@@ -75,7 +75,6 @@ namespace oop_c_
         IExpression child;
         public Negate(IExpression c) { child = c; }
         public int Eval() => -child.Eval();
-
         public string PrettyPrint() => "(-" + child.PrettyPrint() + ")";
     }
 
@@ -84,7 +83,6 @@ namespace oop_c_
         public int Value;
         public Lit(int v) { Value = v; }
         public int Eval() => Value;
-
         public string PrettyPrint() => Value.ToString();
     }
 }
