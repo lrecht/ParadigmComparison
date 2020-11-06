@@ -1,16 +1,14 @@
 ﻿let size = 256
 let neighbours = List.except [(0,0)] [for x in [-1;0;1] do for y in [-1;0;1] do (x,y)]
 
-let rec count' coorX coorY (map:Map<int*int,bool>) coorList res =
-    match coorList with
-    | (head::tail) -> 
-                let x = ((coorX + (fst head) % size) + size) % size
-                let y = ((coorY + (snd head) % size) + size) % size
-                count' coorX coorY map tail (if map.[(x,y)] then res+1 else res)
-    | _ -> res
+let wrap x =
+    ((x % size) + size) % size
 
-let count (coorX,coorY) map =
-    count' coorX coorY map neighbours 0
+let count (coorX,coorY) (arr:bool [,]) =
+    List.fold (fun count (xdif,ydif) -> 
+                if arr.[wrap (coorX+xdif),wrap (coorY+ydif)] 
+                then count + 1 
+                else count) 0 neighbours
 
 let rules cell count =
     match cell,count with
@@ -18,23 +16,22 @@ let rules cell count =
     | false,3 -> true
     | _ -> false
 
-let updateCells (map:Map<int*int,bool>) =
-    Map.map (fun coor cell -> (rules cell (count coor map))) map
+let updateCells arr =
+    Array2D.mapi (fun x y cell -> (rules cell (count (x,y) arr))) arr
 
 let readFile file =
-    List.zip ([ for x in [0..size-1] do for y in [0..size-1] do (x,y) ]) 
-             (Seq.map (fun c -> c = '1') (System.IO.File.ReadAllText file) |> Seq.toList)
-
-let rec run map number =
+    let arr = (Seq.map (fun c -> c = '1') (System.IO.File.ReadAllText file) |> Seq.toArray)
+    Array2D.init size size (fun x y -> arr.[x*size+y])
+    
+let rec run arr number =
     if number > 0 
-    then run (updateCells map) (number-1)
-    else Map.fold (fun count _ b -> if b then count+1 else count) 0 map
+    then run (updateCells arr) (number-1)
+    else arr |> Seq.cast |> Seq.filter id |> Seq.length
 
 [<EntryPoint>]
 let main argv =
-    let assocList = readFile "benchmarks/game_of_life/state256.txt"
-    let map = Map.ofList assocList
+    let arr = readFile "benchmarks/game_of_life/state256.txt"
 
-    printfn "%i" (run map 100)
+    printfn "%i" (run arr 100)
 
     0 // return an integer exit code
