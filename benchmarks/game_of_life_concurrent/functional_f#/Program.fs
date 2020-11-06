@@ -29,7 +29,7 @@ let rec run arr number =
 
 [<EntryPoint>]
 let main argv =
-    let arr = readFile "benchmarks/game_of_life/state256.txt"
+    let arr = readFile "benchmarks/game_of_life_concurrent/state256.txt"
 
     printfn "%i" (run arr 100)
 
