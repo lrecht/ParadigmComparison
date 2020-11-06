@@ -8,6 +8,10 @@ namespace functional_c_
         static readonly int dimensions = 256;
         static readonly int size = dimensions * dimensions;
         static readonly int runs = 100;
+        static ImmutableList<(int x, int y)> relativePostions = Enumerable.Range(-1, 3)
+                            .SelectMany(x => Enumerable.Range(-1, 3).Select(y => (x, y)))
+                            .Except(ImmutableList.Create<(int, int)>((0,0)))
+                            .ToImmutableList();
         static void Main(string[] args)
         {
             var initialStateRep = System.IO.File.ReadAllText("benchmarks/game_of_life/state256.txt")
@@ -25,16 +29,11 @@ namespace functional_c_
 
         private static ImmutableArray<bool> getNextState(ImmutableArray<bool> state)
         {
-            var relative = Enumerable.Range(-1, 3).ToImmutableList();
-            var relativePositions = relative.SelectMany(x => relative.Select(y => (x, y)));
             return state.Select((x, i) => {
-                var iCordinates = ((i % dimensions), (i / dimensions));
-
-                var neighbourCoordinates = relativePositions
+                var neighbourCoordinates = relativePostions
                                         .Select(pos => (
                                             ((((i % dimensions + pos.x) % dimensions) + dimensions) % dimensions), 
-                                            ((((i / dimensions + pos.y) % dimensions) + dimensions) % dimensions)))
-                                        .Where(x => x != iCordinates);
+                                            ((((i / dimensions + pos.y) % dimensions) + dimensions) % dimensions)));
 
                 var neighbourIndecies = neighbourCoordinates.Select(x => (dimensions * x.Item2 + x.Item1));
 
