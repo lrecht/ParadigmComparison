@@ -11,6 +11,10 @@ namespace functional_c_
         static readonly int size = dimensions * dimensions;
         static readonly int runs = 100;
         static readonly int threads = System.Environment.ProcessorCount;
+        static ImmutableList<(int x, int y)> relativePostions = Enumerable.Range(-1, 3)
+                            .SelectMany(x => Enumerable.Range(-1, 3).Select(y => (x, y)))
+                            .Except(ImmutableList.Create<(int, int)>((0,0)))
+                            .ToImmutableList();
         static void Main(string[] args)
         {
             var initialStateRep = System.IO.File.ReadAllText("benchmarks/game_of_life/state256.txt")
@@ -28,26 +32,21 @@ namespace functional_c_
 
         private static ImmutableArray<bool> getNextState(ImmutableArray<bool> state)
         {
-            var relative = Enumerable.Range(-1, 3).ToImmutableList();
-            var relativePositions = relative.SelectMany(x => relative.Select(y => (x, y)));
             return state.AsParallel()
                 .WithDegreeOfParallelism(threads)
                 .WithExecutionMode(ParallelExecutionMode.ForceParallelism)
                 .WithMergeOptions(ParallelMergeOptions.FullyBuffered)
                 .Select((x, i) => {
-                    var iCoordinates = ((i % dimensions), (i / dimensions));
-
-                    var neighbourCoordinates = relativePositions
+                    var neighbourCoordinates = relativePostions
                                         .Select(pos => (
                                             ((((i % dimensions + pos.x) % dimensions) + dimensions) % dimensions), 
-                                            ((((i / dimensions + pos.y) % dimensions) + dimensions) % dimensions)))
-                                        .Where(x => x != iCoordinates);
+                                            ((((i / dimensions + pos.y) % dimensions) + dimensions) % dimensions)));
 
-                var neighbourIndecies = neighbourCoordinates.Select(x => (dimensions * x.Item2 + x.Item1));
+                    var neighbourIndecies = neighbourCoordinates.Select(x => (dimensions * x.Item2 + x.Item1));
 
-                var liveNeighbours = neighbourIndecies.Where(j => state[j]).Count();
+                    var liveNeighbours = neighbourIndecies.Where(j => state[j]).Count();
 
-                return x ? liveNeighbours == 2 || liveNeighbours == 3 : liveNeighbours == 3;
+                    return x ? liveNeighbours == 2 || liveNeighbours == 3 : liveNeighbours == 3;
             })
             .ToImmutableArray();
         }
