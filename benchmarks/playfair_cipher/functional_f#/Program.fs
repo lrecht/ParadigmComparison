@@ -62,7 +62,7 @@ let rec pairHelper adjust first second table =
                 (findVal col1 row2 table)
 
 let encodePair first second table =
-    pairHelper (fun x -> x%5) first second table
+    pairHelper (fun x -> (x+1)%5) first second table
 
 let decodePair first second table =
     pairHelper (fun x -> (x-1+5)%5) first second table
