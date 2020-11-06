@@ -91,25 +91,14 @@ let rec generateRandomExpression (max: int) =
 
 [<EntryPoint>]
 let main argv =
-    let stop = System.Diagnostics.Stopwatch.StartNew()
-    let stringStop = System.Diagnostics.Stopwatch()
-    let evalStop = System.Diagnostics.Stopwatch()
     let mutable stringCount = 0
     let mutable evalCount = 0
     for i in 1 .. 1000 do
         number <- 0
         let test = generateRandomExpression 1000
-        stringStop.Start()
         stringCount <- stringCount + test.Print.Length
-        stringStop.Stop()
-        evalStop.Start()
         evalCount <- evalCount + test.Eval
-        evalStop.Stop()
     
-    stop.Stop()
     printfn "String count: %i" stringCount
     printfn "Eval count: %i" evalCount
-    printfn "Time: %i" stop.ElapsedMilliseconds
-    printfn "string: %i" stringStop.ElapsedMilliseconds
-    printfn "eval: %i" evalStop.ElapsedMilliseconds
     0 // return an integer exit code
