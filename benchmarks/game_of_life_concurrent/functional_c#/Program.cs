@@ -17,9 +17,9 @@ namespace functional_c_
         static void Main(string[] args)
         {
             var initialStateRep = System.IO.File.ReadAllText("benchmarks/game_of_life_concurrent/state256.txt")
-
                 .Select(x => x == '1')
                 .ToImmutableArray();
+
             
             var result = simulateSteps(initialStateRep, runs);
             
