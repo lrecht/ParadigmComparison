@@ -4,9 +4,9 @@ let neighbours = List.except [(0,0)] [for x in [-1;0;1] do for y in [-1;0;1] do 
 let wrap x =
     ((x % size) + size) % size
 
-let count (coorX,coorY) (arr:bool [,]) =
+let count index (arr:bool []) =
     List.fold (fun count (xdif,ydif) -> 
-                if arr.[wrap (coorX+xdif),wrap (coorY+ydif)] 
+                if arr.[wrap ((index % size)+xdif) + (wrap ((index / size)+ydif)) * size]
                 then count + 1 
                 else count) 0 neighbours
 
@@ -15,13 +15,12 @@ let rules cell count =
     | true,(2|3) -> true
     | false,3 -> true
     | _ -> false
-
+    
 let updateCells arr =
-    Array2D.mapi (fun x y cell -> (rules cell (count (x,y) arr))) arr
+    Array.mapi (fun index cell -> (rules cell (count index arr))) arr
 
 let readFile file =
-    let arr = (Seq.map (fun c -> c = '1') (System.IO.File.ReadAllText file) |> Seq.toArray)
-    Array2D.init size size (fun x y -> arr.[x*size+y])
+    (Seq.map (fun c -> c = '1') (System.IO.File.ReadAllText file) |> Seq.toArray)
     
 let rec run arr number =
     if number > 0 
