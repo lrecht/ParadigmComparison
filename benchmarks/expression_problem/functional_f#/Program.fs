@@ -21,22 +21,19 @@ let rec eval e =
       | Min(expr1,expr2) -> (eval expr1) - (eval expr2)
 
 let rand = System.Random(2)
-let mutable number: int = 0
-let rec generateRandomExpression (max: int) = 
-    if number >= max then Var (rand.Next(0, 100))
+let rec generateRandomExpression count = 
+    if count <= 0 then Var (rand.Next(0, 100))
     else 
-        number <- number + 1
         match rand.Next(0,4) with
-          | 0 -> Add ((generateRandomExpression max),(generateRandomExpression max))
-          | 1 -> Min ((generateRandomExpression max),(generateRandomExpression max))
-          | 2 -> Mul ((generateRandomExpression max),(generateRandomExpression max))
-          | 3 -> Neg (generateRandomExpression max)
+          | 0 -> Add (generateRandomExpression (count-1),generateRandomExpression 0)
+          | 1 -> Min (generateRandomExpression (count-1),generateRandomExpression 0)
+          | 2 -> Mul (generateRandomExpression (count-1),generateRandomExpression 0)
+          | 3 -> Neg (generateRandomExpression (count-1))
 
 let rec run' digit printCount evalCount =
     match digit with
       | 0 -> (printCount,evalCount)
       | _ -> let expr = (generateRandomExpression 1000)
-             number <- 0
              run' (digit-1) (printCount+(Seq.length (prettyPrint expr))) (evalCount+(eval expr))
 
 let run digit =
