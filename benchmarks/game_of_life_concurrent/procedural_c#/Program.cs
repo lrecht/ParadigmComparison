@@ -9,7 +9,6 @@ namespace procedural_c_
 		static int runs = 100;
 		static int height = 256;
 		static int width = 256;
-		static int logicalProcessors = Environment.ProcessorCount;
 		static bool[,] board = new bool[width, height];
 
 		static void Main(string[] args)
