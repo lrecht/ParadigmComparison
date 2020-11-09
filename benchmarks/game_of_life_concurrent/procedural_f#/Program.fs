@@ -43,9 +43,7 @@ let updateBord() =
     
     for i in 0 .. logicalProcessors-1 do
         let start = i * (width*height) / logicalProcessors
-        let mutable stop = ((i+1) * (width*height) / logicalProcessors) - 1
-        if (i = logicalProcessors) then
-            stop <- stop - 1
+        let stop = ((i+1) * (width*height) / logicalProcessors) - 1
         
         let thread1 = Thread(fun () -> updateBordPartly start stop newBoard)
         threadPool.[i] <- thread1
