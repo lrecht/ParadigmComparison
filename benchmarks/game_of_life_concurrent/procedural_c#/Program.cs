@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace procedural_c_
 {
@@ -44,18 +43,38 @@ namespace procedural_c_
 			return value;
 		}
 
+		public static void updateBordPartly(int start, int stop, bool[,] newBoard)
+		{
+			for (int i = start; i <= stop; i++)
+			{
+				var x = (i / width);
+				var y = (i % width);
+				var n = countLiveNeighbors(x, y);
+				var c = board[x, y];
+				newBoard[x, y] = c && (n == 2 || n == 3) || (!c && n == 3);
+			}
+		}
 
 		public static void updateBoard()
 		{
 			var newBoard = new bool[width, height];
 
-			Parallel.For(0, width, x => {
-				Parallel.For(0, height, y => {
-					var n = countLiveNeighbors(x, y);
-					var c = board[x, y];
-					newBoard[x, y] = c && (n == 2 || n == 3) || (!c && n == 3);
-				});
-			});
+			Thread[] threadPool = new Thread[logicalProcessors];
+
+			for (int i = 0; i < logicalProcessors; i++)
+			{
+				var start = i * (width * height) / logicalProcessors;
+				var stop = ((i + 1) * (width * height) / logicalProcessors) - 1;
+
+				var thread1 = new Thread(() => updateBordPartly(start, stop, newBoard));
+				threadPool[i] = thread1;
+				thread1.Start();
+			}
+
+			for (int i = 0; i < logicalProcessors; i++)
+			{
+				threadPool[i].Join();
+			}
 
 			board = newBoard;
 		}
