@@ -2,6 +2,7 @@
 
 open System
 open System.Threading
+open System.Threading.Tasks
 
 let runs: int = 100
 let height: int = 256
@@ -29,28 +30,19 @@ let countLiveNeighbors (x: int) (y: int) =
         value <- value - 1
     value
 
-let updateBordPartly (start: int) (stop: int) (newBoard: bool[,]) =
-    for i in start .. stop do
-        let x = (i / width)
-        let y = (i % width)        
-        let n: int = countLiveNeighbors x y
-        let c: bool = board.[x, y]
-        newBoard.[x, y] <- c && (n = 2 || n = 3) || not c && n = 3
+let updateBoadAt (x: int) (y: int) (newBoard: bool[,]) = 
+    let n: int = countLiveNeighbors x y
+    let c: bool = board.[x, y]
+    newBoard.[x, y] <- c && (n = 2 || n = 3) || not c && n = 3
 
 let updateBord() = 
     let newBoard = Array2D.create width height false
-    let mutable threadPool: Thread[] = Array.create logicalProcessors null
     
-    for i in 0 .. logicalProcessors-1 do
-        let start = i * (width*height) / logicalProcessors
-        let stop = ((i+1) * (width*height) / logicalProcessors) - 1
-        
-        let thread1 = Thread(fun () -> updateBordPartly start stop newBoard)
-        threadPool.[i] <- thread1
-        thread1.Start()
-
-    for i in 0 .. logicalProcessors-1 do
-        threadPool.[i].Join()
+    Parallel.For(0, width, fun(x) -> 
+        Parallel.For(0, height, fun(y) -> 
+            updateBoadAt x y newBoard
+        ) |> ignore
+    ) |> ignore
 
     board <- newBoard
 
