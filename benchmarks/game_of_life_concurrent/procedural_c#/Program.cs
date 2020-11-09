@@ -65,10 +65,6 @@ namespace procedural_c_
 			{
 				var start = i * (width * height) / logicalProcessors;
 				var stop = ((i + 1) * (width * height) / logicalProcessors) - 1;
-				if (i == logicalProcessors)
-				{
-					stop--;
-				}
 
 				var thread1 = new Thread(() => updateBordPartly(start, stop, newBoard));
 				threadPool[i] = thread1;
