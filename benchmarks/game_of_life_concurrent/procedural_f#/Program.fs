@@ -7,7 +7,6 @@ open System.Threading.Tasks
 let runs: int = 100
 let height: int = 256
 let width: int = 256
-let logicalProcessors = Environment.ProcessorCount;
 let mutable board: bool[,] = Array2D.create width height false
 
 let countLiveNeighbors (x: int) (y: int) = 
