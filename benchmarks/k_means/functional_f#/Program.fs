@@ -29,5 +29,6 @@ let rec converge clusterMeans points =
 [<EntryPoint>]
 let main argv =
     let points = [|(1.0,2.0);(1.2,5.4);(2.3,2.3);(5.3,6.8);(1.2,53.0);(6.5,7.8);(8.3,9.0);(5.4,6.7);(2.9,86.4);(3.5,2.4);(2.4,7.9)|]
-    printfn "%A" (converge (Array.take 3 points) points)
+    let clusters = 3
+    printfn "%A" (converge (Array.take clusters points) points)
     0 // return an integer exit code
