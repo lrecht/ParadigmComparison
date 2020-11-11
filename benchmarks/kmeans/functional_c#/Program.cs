@@ -15,8 +15,9 @@ namespace functional_c_
     class Program
     {
         public static (double x, double y) computMean(IEnumerable<(double x, double y)> points){
-            var sumX = points.Select(p => p.x).Sum();
-            var sumY = points.Select(p => p.y).Sum(); //TODO: Improve effciency by returning tuple with X AND Y
+            var (sumX, sumY) = points
+                            .Select(p => (p.x, p.y))
+                            .Aggregate((a, b) => (a.x + b.x, a.y + b.y));
             var pointsSize = points.Count();
             return (sumX/pointsSize, sumY/pointsSize);
         }
