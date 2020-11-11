@@ -11,9 +11,8 @@ let closestPoint (allPoints:(float*float) array) point =
               (dist point h,h) allPoints |> snd
 
 let computeClusters clusterMeans points =
-    let closePoints = Array.map (fun p -> closestPoint clusterMeans p) points
-    Array.groupBy (fun i -> closePoints.[i]) [|0 .. points.Length-1|] 
-    |> Array.map (fun (_,indices) -> Array.map (fun i -> points.[i]) indices)
+    Array.groupBy (fun p -> closestPoint clusterMeans p) points
+    |> Array.map snd
 
 let computeClusterMean points =
     let sumx,sumy = Array.fold (fun (xacc,yacc) (x,y) -> xacc+x,yacc+y) (0.0,0.0) points
