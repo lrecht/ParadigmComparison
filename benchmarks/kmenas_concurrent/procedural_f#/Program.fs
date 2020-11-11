@@ -40,7 +40,7 @@ let distance ((xa, ya): (float*float)) ((xb, yb): (float*float)) =
     Math.Sqrt(Math.Pow((xb-xa), 2.0) + Math.Pow((yb-ya), 2.0))
 
 let assignPointsToKluster() =
-    Parallel.For(0, allData.Length, fun(i) -> 
+    Parallel.For(0, allData.Length-1, fun(i) -> 
         let mutable nearest = 0
         let mutable length = Double.PositiveInfinity
         for j in 0..numKlusters-1 do
@@ -62,8 +62,10 @@ let setCenter() =
         totalY <- totalY + y
         num <- num + 1
         test.[point.Kluster] <- ((totalX, totalY), num)
+    
     let mutable hasMoved: bool = false
-    for i in 0..numKlusters-1 do
+    Parallel.For(0, numKlusters-1, fun(i) ->
+    //for i in 0..numKlusters-1 do
         let mutable ((totalX, totalY),num) = test.[i]
         let (oldX, oldY) = klusters.[i]
         let (newX, newY) = (totalX/(float)num, totalY/(float)num)
@@ -72,6 +74,7 @@ let setCenter() =
             hasMoved <- true
 
         klusters.[i] <- (newX, newY)
+    ) |> ignore
     hasMoved
 
 [<EntryPoint>]
