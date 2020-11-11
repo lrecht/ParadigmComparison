@@ -29,11 +29,9 @@ let printKlusters() =
         let (x, y) = klusters.[i]
         printfn "Kluster %i: (%f, %f)" i x y
 
-let setKlustersRandom() =
+let setKlusters() =
     for i in 0..numKlusters-1 do
-        let randPointIndex = rand.Next(0, allData.Length-1)
-        let point = allData.[randPointIndex]
-        klusters.[i] <- point.Data
+        klusters.[i] <- allData.[i].Data
 
 let distance ((xa, ya): (float*float)) ((xb, yb): (float*float)) = 
     Math.Sqrt(Math.Pow((xb-xa), 2.0) + Math.Pow((yb-ya), 2.0))
@@ -48,7 +46,6 @@ let assignPointsToKluster() =
                 length <- tempDist
                 nearest <- j
         allData.[i].Kluster <- nearest
-
 
 let setCenter() = 
     let test: ((float * float) * int) array = Array.create numKlusters ((0.0, 0.0), 0)
@@ -76,7 +73,7 @@ let setCenter() =
 [<EntryPoint>]
 let main argv =
     generateData()
-    setKlustersRandom()
+    setKlusters()
     let mutable hasMoved = true
     
     while hasMoved do
