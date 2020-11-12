@@ -10,13 +10,11 @@ let closestPoint (allPoints:(float*float) array) point =
 let computeClusters clusterMeans points =
     Array.Parallel.map (fun p -> closestPoint clusterMeans p,p) points 
     |> Array.groupBy fst
-    |> Array.map (fun (_,list) -> Array.map snd list)
-
-let computeClusterMean points =
-    Array.averageBy fst points, Array.averageBy snd points
+    |> Array.Parallel.map ((fun (_,list) -> Array.map snd list) >> 
+                          (fun points -> Array.averageBy fst points, Array.averageBy snd points))
 
 let rec converge clusterMeans points =
-    let newClusterMeans = Array.map computeClusterMean (computeClusters clusterMeans points)
+    let newClusterMeans = computeClusters clusterMeans points
     if clusterMeans = newClusterMeans then clusterMeans else converge newClusterMeans points
 
 [<EntryPoint>]
