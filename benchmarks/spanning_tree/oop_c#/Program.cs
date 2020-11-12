@@ -10,12 +10,10 @@ namespace oop_c_
     {
         static void Main(string[] args)
         {
-            string directory = System.IO.Directory.GetParent(Environment.CurrentDirectory).ToString();
             int i = 0;
             Edge[] edges = File.ReadAllLines($"../graph.csv")
                                            .Select(v => Edge.FromCsv(v, i++))
                                            .ToArray();
-            //int vertexCount = edges.Select(x => x.Node1).Concat(edges.Select(y => y.Node2)).Distinct().Count();
             Graph graph = new Graph(edges, 5877);
             (int totalweight, int totaledges) = graph.ComputeSpanningTree();
             System.Console.WriteLine(totaledges);
