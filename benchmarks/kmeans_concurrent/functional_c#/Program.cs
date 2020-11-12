@@ -17,7 +17,10 @@ namespace functional_c_
         }
 
         public static (double, double) closest((double x, double y) point, ImmutableList<(double x, double y)> clusters)
-            => clusters.OrderBy(c => euclideanDist(point, c)).First();
+            => clusters.Aggregate((euclideanDist(point, clusters.First()), clusters.First()), (acc, c) => {
+                var dist2 = euclideanDist(point, c);
+                return acc.Item1 < dist2 ? acc : (dist2, c);
+            }).Item2;
 
         private static double euclideanDist((double x, double y) point, (double x, double y) c)
             => Math.Sqrt(Math.Pow(point.x - c.x, 2) + Math.Pow(point.y - c.y, 2));
