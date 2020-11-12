@@ -1,4 +1,6 @@
-﻿let dist (x1,y1) (x2,y2) =
+﻿open System.Linq
+
+let dist (x1,y1) (x2,y2) =
     System.Math.Sqrt ((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2))
 
 let closestPoint (allPoints:(float*float) array) point =
@@ -7,11 +9,9 @@ let closestPoint (allPoints:(float*float) array) point =
                 if d < shortest then (d,mean) else (shortest,s)) 
               (dist point allPoints.[0],allPoints.[0]) allPoints |> snd
 
-let computeClusters clusterMeans points =
-    Array.Parallel.map (fun p -> closestPoint clusterMeans p,p) points 
-    |> Array.groupBy fst
-    |> Array.Parallel.map ((fun (_,list) -> Array.map snd list) >> 
-                          (fun points -> Array.averageBy fst points, Array.averageBy snd points))
+let computeClusters clusterMeans (points:(float*float) []) =
+    points.AsParallel().GroupBy(fun p -> closestPoint clusterMeans p)
+          .Select(fun igrp -> igrp.Average(fst),igrp.Average(snd)).ToArray()
 
 let rec converge clusterMeans points =
     let newClusterMeans = computeClusters clusterMeans points
