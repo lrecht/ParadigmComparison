@@ -27,7 +27,7 @@ namespace functional_c_
             var pointsRep = System.IO.File.ReadAllLines("benchmarks/kmeans/points.txt");
             var points = pointsRep
                             .AsParallel()
-                            .Select(x => (double.Parse(x.Split(':')[0]), double.Parse(x.Split(':')[1])))
+                            .Select(x => (Convert.ToDouble(x.Split(':')[0]), Convert.ToDouble(x.Split(':')[1])))
                             .ToImmutableList(); //TODO: Think about whether this part is allowed to be parallelised...
             var clusters = runKMeans(10, points);
             clusters.ForEach(c => System.Console.WriteLine(c));
