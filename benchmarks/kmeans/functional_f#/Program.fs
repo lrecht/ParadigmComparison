@@ -2,13 +2,10 @@
     System.Math.Sqrt ((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2))
 
 let closestPoint (allPoints:(float*float) array) point =
-    let h = allPoints.[0]
     Array.fold (fun (shortest,s) mean -> 
                 let d = dist point mean 
-                if d < shortest
-                then (d,mean)
-                else (shortest,s)) 
-              (dist point h,h) allPoints |> snd
+                if d < shortest then (d,mean) else (shortest,s)) 
+              (dist point allPoints.[0],allPoints.[0]) allPoints |> snd
 
 let computeClusters clusterMeans points =
     Array.groupBy (fun p -> closestPoint clusterMeans p) points
@@ -19,9 +16,7 @@ let computeClusterMean points =
 
 let rec converge clusterMeans points =
     let newClusterMeans = Array.map computeClusterMean (computeClusters clusterMeans points)
-    if clusterMeans = newClusterMeans
-    then clusterMeans
-    else converge newClusterMeans points
+    if clusterMeans = newClusterMeans then clusterMeans else converge newClusterMeans points
 
 [<EntryPoint>]
 let main argv =
