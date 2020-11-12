@@ -9,7 +9,6 @@ namespace functional_c_
     {
         public static (double x, double y) computMean(IEnumerable<(double x, double y)> points){
             var (sumX, sumY) = points
-                            .Select(p => (p.x, p.y))
                             .Aggregate((a, b) => (a.x + b.x, a.y + b.y));
             var pointsSize = points.Count();
             return (sumX/pointsSize, sumY/pointsSize);
@@ -39,10 +38,8 @@ namespace functional_c_
 
         private static ImmutableList<(double, double)> converge(ImmutableList<(double x, double y)> clusters, ImmutableList<(double x, double y)> points)
         {
-            var groups = points
-                        .GroupBy(p => closest(p, clusters));
-
-            var newClusters = groups
+            var newClusters = points
+                        .GroupBy(p => closest(p, clusters))
                         .Select(g => computMean(g))
                         .ToImmutableList();
 

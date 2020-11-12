@@ -10,7 +10,6 @@ namespace functional_c_
     {
         public static (double x, double y) computMean(IEnumerable<(double x, double y)> points){
             var (sumX, sumY) = points
-                            .Select(p => (p.x, p.y))
                             .Aggregate((a, b) => (a.x + b.x, a.y + b.y));
             var pointsSize = points.Count();
             return (sumX/pointsSize, sumY/pointsSize);
