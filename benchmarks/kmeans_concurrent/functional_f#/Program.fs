@@ -16,9 +16,7 @@ let computeClusters clusterMeans points =
     |> Array.map (fun (_,list) -> Array.map snd list)
 
 let computeClusterMean points =
-    let sumx,sumy = Array.fold (fun (xacc,yacc) (x,y) -> xacc+x,yacc+y) (0.0,0.0) points
-    let len = float (Array.length points)
-    sumx/len,sumy/len
+    Array.averageBy fst points, Array.averageBy snd points
 
 let rec converge clusterMeans points =
     let newClusterMeans = Array.map computeClusterMean (computeClusters clusterMeans points)
