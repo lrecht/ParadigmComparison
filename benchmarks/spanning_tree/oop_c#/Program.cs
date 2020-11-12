@@ -11,7 +11,8 @@ namespace oop_c_
         static void Main(string[] args)
         {
             int i = 0;
-            Edge[] edges = File.ReadAllLines($"../graph.csv")
+            Edge[] edges = File.ReadAllLines($"benchmarks/spanning_tree/graph.csv")
+
                                            .Select(v => Edge.FromCsv(v, i++))
                                            .ToArray();
             Graph graph = new Graph(edges, 5877);
