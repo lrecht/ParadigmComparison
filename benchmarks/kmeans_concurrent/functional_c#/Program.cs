@@ -5,7 +5,6 @@ using System.Collections.Generic;
 
 namespace functional_c_
 {
-
     class Program
     {
         public static (double x, double y) computMean(IEnumerable<(double x, double y)> points){
@@ -26,11 +25,9 @@ namespace functional_c_
 
         static void Main(string[] args)
         {
-            var pointsRep = System.IO.File.ReadAllLines("benchmarks/kmeans/points.txt");
-            var points = pointsRep
-                            .AsParallel()
-                            .Select(x => (Convert.ToDouble(x.Split(':')[0]), Convert.ToDouble(x.Split(':')[1])))
-                            .ToImmutableList(); //TODO: Think about whether this part is allowed to be parallelised...
+            var points = System.IO.File.ReadAllLines("benchmarks/kmeans/points.txt")
+                .Select(x => (Convert.ToDouble(x.Split(':')[0]), Convert.ToDouble(x.Split(':')[1])))
+                .ToImmutableList();
             var clusters = runKMeans(10, points);
             clusters.ForEach(c => System.Console.WriteLine(c));
         }

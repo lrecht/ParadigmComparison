@@ -18,14 +18,16 @@ namespace functional_c_
             => clusters.Aggregate((euclideanDist(point, clusters.First()), clusters.First()), (acc, c) => {
                 var dist2 = euclideanDist(point, c);
                 return acc.Item1 < dist2 ? acc : (dist2, c);
-            }).Item2;
+                }).Item2;
 
         private static double euclideanDist((double x, double y) point, (double x, double y) c)
             => Math.Sqrt(Math.Pow(point.x - c.x, 2) + Math.Pow(point.y - c.y, 2));
 
         static void Main(string[] args)
         {
-            var points = System.IO.File.ReadAllLines("benchmarks/kmeans/points.txt").Select(x => (Convert.ToDouble(x.Split(':')[0]), Convert.ToDouble(x.Split(':')[1]))).ToImmutableList();
+            var points = System.IO.File.ReadAllLines("benchmarks/kmeans_concurrent/points.txt")
+                .Select(x => (Convert.ToDouble(x.Split(':')[0]), Convert.ToDouble(x.Split(':')[1])))
+                .ToImmutableList();
             var clusters = runKMeans(10, points);
             clusters.ForEach(c => System.Console.WriteLine(c));
         }
