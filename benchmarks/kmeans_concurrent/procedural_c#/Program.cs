@@ -87,22 +87,22 @@ namespace procedural_c_
 
 		public static bool setCenter()
 		{
-			((double, double), int)[] test = new ((double, double), int)[numKlusters];
+			((double, double), int)[] sums = new ((double, double), int)[numKlusters];
 
 			foreach (var point in allData)
 			{
 				var (x, y) = point.Data;
-				var ((totalX, totalY), num) = test[point.Kluster];
+				var ((totalX, totalY), num) = sums[point.Kluster];
 				totalX = totalX + x;
 				totalY = totalY + y;
 				num++;
-				test[point.Kluster] = ((totalX, totalY), num);
+				sums[point.Kluster] = ((totalX, totalY), num);
 			}
 
 			var hasMoved = false;
 			for (int i = 0; i < numKlusters; i++)
 			{
-				var ((totalX, totalY), num) = test[i];
+				var ((totalX, totalY), num) = sums[i];
 				var (oldX, oldY) = klusters[i];
 				var (newX, newY) = (totalX / (double)num, totalY / (double)num);
 
