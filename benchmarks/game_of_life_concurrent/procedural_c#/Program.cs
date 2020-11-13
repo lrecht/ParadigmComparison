@@ -27,10 +27,10 @@ namespace procedural_c_
 			int value = 0;
 			for (int j = -1; j <= 1; j++)
 			{
-				int k = (y + j + height) % height;
+				int k = ((((y + j + height) % height) + height) % height);
 				for (int i = -1; i <= 1; i++)
 				{
-					int h = (x + i + width) % width;
+					int h = ((((x + i + width) % width) + width) % width);
 					if (board[h, k])
 					{
 						value++;
@@ -48,8 +48,10 @@ namespace procedural_c_
 		{
 			var newBoard = new bool[width, height];
 
-			Parallel.For(0, width, x => {
-				Parallel.For(0, height, y => {
+			Parallel.For(0, width, x =>
+			{
+				Parallel.For(0, height, y =>
+				{
 					var n = countLiveNeighbors(x, y);
 					var c = board[x, y];
 					newBoard[x, y] = c && (n == 2 || n == 3) || (!c && n == 3);
