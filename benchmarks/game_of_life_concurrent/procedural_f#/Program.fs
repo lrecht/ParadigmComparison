@@ -15,11 +15,11 @@ let countLiveNeighbors (x: int) (y: int) =
     // This nested loop enumerates the 9 cells in the specified cells neighborhood.
     for j in -1 .. 1 do
         // Loop around the edges if y+j is off the board.
-        let k = (y + j + height) % height
+        let k = ((((y + j + height) % height) + height) % height)
 
         for i in -1 .. 1 do
            // Loop around the edges if x+i is off the board.
-            let h = (x + i + width) % width;
+            let h = ((((x + i + width) % width) + width) % width);
 
             // Count the neighbor cell at (h,k) if it is alive.
             if (board.[h, k]) then
