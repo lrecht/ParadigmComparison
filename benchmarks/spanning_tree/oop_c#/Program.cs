@@ -105,7 +105,6 @@ namespace oop_c_
         public UnionFind(int totalNodes)
         {
             vertexGroups = new int[6005 + 1];
-            //vertexGroups = new int[totalNodes + 1];
             Array.Fill(vertexGroups, -1); // No verticies belong to a group
         }
 
