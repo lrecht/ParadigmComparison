@@ -83,7 +83,6 @@ let pop ()=
 
 let readFileToHeap() =
     let lines = System.IO.File.ReadAllLines("benchmarks/spanning_tree/graph.csv");
-    let mutable i = 0
     for line in lines do
         let elms = line.Split(',')
         insert { Edge.Start = Int32.Parse(elms.[0]); Edge.End = Int32.Parse(elms.[1]); Edge.Weight = Int32.Parse(elms.[2]) }

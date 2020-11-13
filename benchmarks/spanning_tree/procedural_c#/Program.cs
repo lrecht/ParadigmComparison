@@ -31,7 +31,6 @@ namespace procedural_c_
 		public static void ReadFileToHeap()
 		{
 			var lines = System.IO.File.ReadAllLines("benchmarks/spanning_tree/graph.csv");
-			var i = 0;
 			foreach (var line in lines)
 			{
 				var split = line.Split(',');
