@@ -49,7 +49,7 @@ namespace procedural_c_
 			while (size < magic)
 			{
 				var current = pop();
-				if (unioun(current.Start, current.End))
+				if (union(current.Start, current.End))
 				{
 					result[size] = current;
 					size++;
@@ -61,7 +61,7 @@ namespace procedural_c_
 		}
 
 		public static int[] vertexGroups;
-		public static int uniounFind(int node)
+		public static int unionFind(int node)
 		{
 			if (vertexGroups[node] < 0)
 			{
@@ -69,15 +69,15 @@ namespace procedural_c_
 			}
 			else
 			{
-				vertexGroups[node] = uniounFind(vertexGroups[node]);
+				vertexGroups[node] = unionFind(vertexGroups[node]);
 				return vertexGroups[node];
 			}
 		}
 
-		public static bool unioun(int startNode, int endNode)
+		public static bool union(int startNode, int endNode)
 		{
-			var group1Root = uniounFind(startNode);
-			var group2Root = uniounFind(endNode);
+			var group1Root = unionFind(startNode);
+			var group2Root = unionFind(endNode);
 			if (group1Root == group2Root)
 			{
 				return false;

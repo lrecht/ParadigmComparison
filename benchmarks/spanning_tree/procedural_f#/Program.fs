@@ -90,21 +90,21 @@ let readFileToHeap() =
 
 
 
-let vertexGrups: int array = Array.create (6005 + 1) -1
-let rec uniounFind (node: int) =
-    if vertexGrups.[node] < 0 then
+let vertexGroup : int array = Array.create (6005 + 1) -1
+let rec unionFind (node: int) =
+    if vertexGroup .[node] < 0 then
         node
     else 
-        vertexGrups.[node] <- uniounFind vertexGrups.[node]
-        vertexGrups.[node]
+        vertexGroup .[node] <- unionFind vertexGroup .[node]
+        vertexGroup .[node]
 
-let unioun (startNode: int) (endNode: int) = 
-    let group1Root: int = uniounFind startNode
-    let group2Root: int = uniounFind endNode
+let union (startNode: int) (endNode: int) = 
+    let group1Root: int = unionFind startNode
+    let group2Root: int = unionFind endNode
     if group1Root = group2Root then
         false
     else
-        vertexGrups.[group2Root] <- group1Root
+        vertexGroup .[group2Root] <- group1Root
         true
 
 let computeMinSpanTree() = 
@@ -116,7 +116,7 @@ let computeMinSpanTree() =
 
     while size < theMagicNumber do
         let currentEdge = pop()
-        if (unioun currentEdge.Start currentEdge.End) then
+        if (union currentEdge.Start currentEdge.End) then
             result.[size] <- currentEdge
             size <- size + 1
             totalWeight <- totalWeight + currentEdge.Weight
