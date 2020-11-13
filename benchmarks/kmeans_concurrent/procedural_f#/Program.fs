@@ -16,7 +16,7 @@ let mutable allData: Point array = Array.create numValues ({ Point.Kluster = 0; 
 let klusters: (float * float) array = Array.create numKlusters (0.0, 0.0)
 
 let generateData() =
-    let lines = System.IO.File.ReadAllLines("../points.txt")
+    let lines = System.IO.File.ReadAllLines("benchmarks/kmeans_concurrent/points.txt")
     let mutable i = 0
     for line in lines do
         let split = line.Split(':')
@@ -85,4 +85,3 @@ let main argv =
     printKlusters()
 
     0 // return an integer exit code
-
