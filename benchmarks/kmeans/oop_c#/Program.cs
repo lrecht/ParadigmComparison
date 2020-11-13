@@ -14,9 +14,10 @@ namespace oop_c_
             points = File.ReadAllLines($"benchmarks/kmeans/points.txt")
                                 .Select(l => new Point(Convert.ToDouble(l.Split(':')[0]), Convert.ToDouble(l.Split(':')[1])))
                                 .ToArray();
-            clusters = points.Take(NUM_CLUSTERS)
-                                .Select(p => new Cluster(p))
-                                .ToArray();
+            clusters = new Cluster[NUM_CLUSTERS];
+            for (int i = 0; i < NUM_CLUSTERS; i++)
+                clusters[i] = new Cluster(points[i]);
+
             KMeans kmeans = new KMeans(points, clusters);
             var res = kmeans.Compute();
             foreach (Cluster c in res)
