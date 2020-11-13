@@ -16,7 +16,7 @@ let mutable allData: Point array = Array.create numValues ({ Point.Kluster = 0; 
 let klusters: (float * float) array = Array.create numKlusters (0.0, 0.0)
 
 let generateData() =
-    let lines = System.IO.File.ReadAllLines("../points.txt")
+    let lines = System.IO.File.ReadAllLines("benchmarks/kmeans_concurrent/points.txt")
     let mutable i = 0
     for line in lines do
         let split = line.Split(':')
@@ -51,18 +51,18 @@ let assignPointsToKluster() =
 
 
 let setCenter() = 
-    let test: ((float * float) * int) array = Array.create numKlusters ((0.0, 0.0), 0)
+    let sums: ((float * float) * int) array = Array.create numKlusters ((0.0, 0.0), 0)
     
     for point in allData do
         let (x, y) = point.Data
-        let mutable ((totalX, totalY),num) = test.[point.Kluster]
+        let mutable ((totalX, totalY),num) = sums.[point.Kluster]
         totalX <- totalX + x
         totalY <- totalY + y
         num <- num + 1
-        test.[point.Kluster] <- ((totalX, totalY), num)
+        sums.[point.Kluster] <- ((totalX, totalY), num)
     let mutable hasMoved: bool = false
     for i in 0..numKlusters-1 do
-        let mutable ((totalX, totalY),num) = test.[i]
+        let mutable ((totalX, totalY),num) = sums.[i]
         let (oldX, oldY) = klusters.[i]
         let (newX, newY) = (totalX/(float)num, totalY/(float)num)
         
