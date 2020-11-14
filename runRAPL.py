@@ -83,7 +83,7 @@ def perform_benchmarks(benchmarks, experiment_iterations, time_limit, output_fil
         current_benchmark += 1
 
         print('\r' + "Performing benchmark " + str(current_benchmark) + " of " + str(benchmark_count), end='', flush=True)
-        print("\n", b.path)
+        print("\n", b.path, flush=True)
 
         if(not skip_build and b.get_build_command()):
             subprocess.run(b.get_build_command(), shell=True, check=True, stdout=subprocess.DEVNULL)
