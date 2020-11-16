@@ -92,7 +92,7 @@ type KMeans =
 let main argv =
     let NUM_CLUSTERS: int = 10
 
-    let lines = System.IO.File.ReadAllLines("../points.txt");
+    let lines = System.IO.File.ReadAllLines("benchmarks/kmeans/points.txt");
     let points: Point array = Array.zeroCreate lines.Length
     for i in 0 .. lines.Length-1 do
         let split = lines.[i].Split(':')
