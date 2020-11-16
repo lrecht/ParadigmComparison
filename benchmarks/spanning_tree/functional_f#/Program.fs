@@ -32,7 +32,7 @@ let spanningTree (edges:ImmutableSortedSet<int*int*int>) =
 [<EntryPoint>]
 let main argv =
     let iss = ImmutableSortedSet.Empty.WithComparer (Comparer<int*int*int>.Create (fun x1 x2 -> compare x1 x2))
-    let res = System.IO.File.ReadAllLines("/home/lars/Documents/9. Semester/ParadigmComparison/benchmarks/spanning_tree/graph.csv")
+    let res = System.IO.File.ReadAllLines("benchmarks/spanning_tree/graph.csv")
     let full = Array.fold (fun (acc:ImmutableSortedSet<int*int*int>) (s:string) -> 
         let sarr = s.Split ',' in acc.Add((int32 sarr.[0]), (int32 sarr.[1]), (int32 sarr.[2]))) iss res
     let weight,edge = spanningTree full
