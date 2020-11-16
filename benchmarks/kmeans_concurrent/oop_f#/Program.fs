@@ -5,16 +5,11 @@ open System.IO
 open System.Linq
 open System.Threading.Tasks
 
-type Point = 
-    {
-        X: float;
-        Y: float;
-    }
-    static member Create (x: float) (y:float) = 
-        { X = x; Y = y }
-    
-    member this.EuclidianDist ((cx, cy): (float*float)) = 
-        Math.Sqrt(Math.Pow((cx - this.X), 2.0) + Math.Pow((cy - this.Y), 2.0));
+type Point(x, y) = 
+    member __.X = x
+    member __.Y = y
+    member __.EuclidianDist ((cx, cy): (float*float)) = 
+        Math.Sqrt(Math.Pow((cx - x), 2.0) + Math.Pow((cy - y), 2.0));
     
     member this.ClosestCluster (clusterCentroids: (float*float) array) = 
         let mutable bestClusterIndex: int = 0
@@ -26,55 +21,43 @@ type Point =
                 bestClusterIndex <- i
         bestClusterIndex
     
-    member this.PointsEquals (p: Point) = 
-        p.X = this.X && p.Y = this.Y
+    member ___.PointsEquals (p: Point) = 
+        p.X = x && p.Y = y
 
-    override this.ToString() = 
-        this.X.ToString() + " , " + this.Y.ToString()
+    override __.ToString() = 
+        x.ToString() + " , " + y.ToString()
 
 
-type Cluster = 
-    {
-        mutable Centroid: Point;
-        mutable SumX: float;
-        mutable SumY: float;
-        mutable PointCount: int;
-        key: Object;
-    }
-    static member Create (p: Point) =
-        { Centroid = p; SumX = 0.0; SumY = 0.0; PointCount = 0; key = Object() }
-
-    member this.AddToMean (p: Point) = 
-        lock (this.key) (fun() ->
-            this.SumX <- this.SumX + p.X
-            this.SumY <- this.SumY + p.Y
-            this.PointCount <- this.PointCount + 1
+type Cluster(cent: Point) as this =
+    let mutable sumX = 0.0
+    let mutable sumY = 0.0
+    let mutable pointCount = 0
+    let mutable key = Object()
+    member val Centroid = cent with get,set
+    member __.AddToMean (p: Point) = 
+        lock (key) (fun() ->
+            sumX <- sumX + p.X
+            sumY <- sumY + p.Y
+            pointCount <- pointCount + 1
         )
     
-    member this.ClearMeanValues() = 
-        this.SumX <- 0.0;
-        this.SumY <- 0.0;
-        this.PointCount <- 0;
+    member __.ClearMeanValues() = 
+        sumX <- 0.0;
+        sumY <- 0.0;
+        pointCount <- 0;
 
-    member this.ComputeNewCentroid() = 
-        let newCentroid = Point.Create (this.SumX / (float)this.PointCount) (this.SumY / (float)this.PointCount)
+    member __.ComputeNewCentroid() = 
+        let newCentroid = Point(sumX / (float)pointCount, sumY / (float)pointCount)
         let isConverged = this.Centroid.PointsEquals(newCentroid)
         this.Centroid <- newCentroid
         this.ClearMeanValues()
         isConverged
         
-type KMeans = 
-    {
-        InitialPoints: Point array;
-        Clusters: Cluster array;
-    }
-    static member Create (points: Point array) (kMeans: Cluster[]) = 
-        { InitialPoints = points; Clusters = kMeans }
-
-    member this.GetCentroids() =
-        let centroids: (float*float) array = Array.create this.Clusters.Length (0.0, 0.0)
-        for i in 0 .. this.Clusters.Length-1 do
-            let centroid = this.Clusters.[i].Centroid;
+type KMeans(initialPoints: Point array, clusters: Cluster[]) = 
+    member __.GetCentroids() =
+        let centroids: (float*float) array = Array.create clusters.Length (0.0, 0.0)
+        for i in 0 .. clusters.Length-1 do
+            let centroid = clusters.[i].Centroid;
             centroids.[i] <- (centroid.X, centroid.Y)
         centroids
 
@@ -83,35 +66,37 @@ type KMeans =
         while not converged do
             let centroids = this.GetCentroids()
             
-            Parallel.For(0, this.InitialPoints.Length, fun i -> 
+            Parallel.For(0, initialPoints.Length, fun i -> 
             //for i in 0 .. this.InitialPoints.Length-1 do
-                let point = this.InitialPoints.[i]
+                let point = initialPoints.[i]
                 let index = point.ClosestCluster(centroids)
-                this.Clusters.[index].AddToMean(point)
+                clusters.[index].AddToMean(point)
             ) |> ignore
 
             converged <- true
-            for i in 0 .. this.Clusters.Length - 1 do
-                if (not (this.Clusters.[i].ComputeNewCentroid())) then 
+            for i in 0 .. clusters.Length - 1 do
+                if (not (clusters.[i].ComputeNewCentroid())) then 
                     converged <- false
-            
-        this.Clusters
+        clusters
+
+
+[<Literal>]
+let NUM_CLUSTERS: int = 10
+
 
 [<EntryPoint>]
 let main argv =
-    let NUM_CLUSTERS: int = 10
-
     let lines = System.IO.File.ReadAllLines("benchmarks/kmeans_concurrent/points.txt");
     let points: Point array = Array.zeroCreate lines.Length
     for i in 0 .. lines.Length-1 do
         let split = lines.[i].Split(':')
-        points.[i] <- Point.Create (Double.Parse(split.[0])) (Double.Parse(split.[1]))
+        points.[i] <- Point(Double.Parse(split.[0]), (Double.Parse(split.[1])))
 
     let clusters: Cluster array = Array.zeroCreate NUM_CLUSTERS
     for i in 0 .. NUM_CLUSTERS-1 do
-        clusters.[i] <- Cluster.Create(points.[i])
+        clusters.[i] <- Cluster(points.[i])
 
-    let kMeans = KMeans.Create points clusters
+    let kMeans = KMeans(points, clusters)
     let res = kMeans.Compute()
 
     for cluster in res do
