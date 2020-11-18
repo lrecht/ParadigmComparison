@@ -14,7 +14,7 @@ namespace functional_c_
             var pic = new Bitmap("benchmarks/hough_transform/Pentagon.png");
             var res = computeHoughTransformation(pic);
             System.Console.WriteLine(res.Sum());
-            //ToBitmap(res.ToImmutableList());
+            ToBitmap(res.ToImmutableList());
         }
 
         private static ImmutableArray<int> computeHoughTransformation(Bitmap pic)
@@ -26,13 +26,13 @@ namespace functional_c_
 
             var tables = cosSinRadianTables(thetaAxisSize);
 
-            var reee = Enumerable.Range(0, height).SelectMany(y => Enumerable.Range(0, width).Select(x => (x, y)));
-            var reeTheta = Enumerable.Range(0, thetaAxisSize);
-            var reeeTransform = Enumerable.Range(0, rhoAxisSize).SelectMany(y => Enumerable.Range(0, thetaAxisSize).Select(x => (x, y)));
+            var pixelCordinates = Enumerable.Range(0, height).SelectMany(y => Enumerable.Range(0, width).Select(x => (x, y)));
+            var transformedPixelCoordinates = Enumerable.Range(0, rhoAxisSize).SelectMany(y => Enumerable.Range(0, thetaAxisSize).Select(x => (x, y)));
+            var thetaRange = Enumerable.Range(0, thetaAxisSize);
 
-            var validPixels = reee.Where(p => pic.GetPixel(p.x, p.y).Name != "ffffffff");
-            var something = validPixels.SelectMany(p => 
-                reeTheta.Select(theta => {
+            var validPixels = pixelCordinates.Where(p => pic.GetPixel(p.x, p.y).Name != "ffffffff");
+            var colouredPixelsCordinates = validPixels.SelectMany(p => 
+                thetaRange.Select(theta => {
                     var rho = tables.cosTable[theta] * p.x + tables.sinTable[theta] * p.y;
                     var rScaled = (int)Math.Round(rho * halfRhoAxisSize / diagonal) + halfRhoAxisSize;
 
@@ -40,11 +40,12 @@ namespace functional_c_
                 })
             );
 
-            var somethingElse = something.GroupBy(p => p);
-            var somethingElseeeee = somethingElse.Select(x => (x.First().theta, x.First().rScaled, x.Count()));
-            var dicty = somethingElseeeee.ToImmutableDictionary(x => (x.theta, x.rScaled), elementSelector: x => x.Item3);
+            var transformedPixelDict = colouredPixelsCordinates
+                .GroupBy(p => p)
+                .Select(x => (x.First().theta, x.First().rScaled, x.Count()))
+                .ToImmutableDictionary(x => (x.theta, x.rScaled), elementSelector: x => x.Item3);
 
-            var transformed = reeeTransform.Select(p => dicty.ContainsKey(p) ? dicty[p] : 0);
+            var transformed = transformedPixelCoordinates.Select(p => transformedPixelDict.ContainsKey(p) ? transformedPixelDict[p] : 0);
             return transformed.ToImmutableArray();
         }
 
@@ -52,7 +53,7 @@ namespace functional_c_
         {
             var thetaRadians = Enumerable
                 .Range(0, thetaAxisSize)
-                .Select(theta => theta * Math.PI / thetaAxisSize); //TODO: Performance update by moving this globally
+                .Select(theta => theta * Math.PI / thetaAxisSize);
 
             return (thetaRadians.Select(t => Math.Sin(t)).ToImmutableArray(), thetaRadians.Select(t => Math.Cos(t)).ToImmutableArray());
         }
