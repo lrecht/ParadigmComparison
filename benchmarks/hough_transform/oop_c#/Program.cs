@@ -9,7 +9,8 @@ namespace oop_c_
         static void Main(string[] args)
         {
             var hough = new HoughTransform("../Pentagon.png", 480, 640);
-            hough.ComputeTransformation();
+            var output = hough.ComputeTransformation();
+            System.Console.WriteLine(output.Cast<int>().Sum());
             hough.ToBitmap();
         }
     }
@@ -26,15 +27,15 @@ namespace oop_c_
             pictureData = new PictureData(filename);
             this.rhoAxisSize = rhoAxisSize;
             this.thetaAxisSize = thetaAxisSize;
-            transformed = new int[rhoAxisSize, thetaAxisSize];
+            transformed = new int[thetaAxisSize, rhoAxisSize];
         }
 
         public int[,] ComputeTransformation()
         {
             int width = pictureData.Original.Width, height = pictureData.Original.Height;
-            int maxRadius = (int)Math.Ceiling(hypotenusis(width, height));
-            int halfRAxisSize = rhoAxisSize / 2;
-            (double[] sinTable, double[] cosTable) = fillTables(rhoAxisSize, rhoAxisSize);
+            int diagonal = (int)(Math.Ceiling(hypotenusis(width, height)));
+            int halfRhoAxisSize = rhoAxisSize / 2;
+            (double[] sinTable, double[] cosTable) = fillTables(thetaAxisSize);
 
 
             // Scanning through each (x,y) pixel of the image
@@ -42,19 +43,20 @@ namespace oop_c_
             {
                 for (int x = 0; x < width; x++)
                 {
-                    Color c = pictureData.Original.GetPixel(x, y);
+                    Color color = pictureData.Original.GetPixel(x, y);
+                    
                     // If a pixel is white, skip it.
-                    if (c == Color.White)
+                    if (color.Name == "ffffffff")
                         continue;
 
-                    // If it is an edge pixel, loop through all possible values of θ, 
+                    // If it is black (an edge pixel), loop through all possible values of θ, 
                     // calculate the corresponding ρ, find the θ and ρ index in the 
                     // accumulator, and increment the accumulator base on those index pairs.
-                    for (int theta = 0; theta < rhoAxisSize - 1; theta++)
+                    for (int theta = 0; theta < thetaAxisSize; theta++)
                     {
                         // Distance from the origin to the closest point on the straight line
                         double rho = cosTable[theta] * x + sinTable[theta] * y;
-                        int rScaled = (int)Math.Round(rho * halfRAxisSize / maxRadius) + halfRAxisSize;
+                        int rScaled = (int)Math.Round(rho * halfRhoAxisSize / diagonal) + halfRhoAxisSize;
                         
                         // Accumulate
                         transformed[theta, rScaled] += 1;
@@ -84,15 +86,14 @@ namespace oop_c_
             if(shouldSave)
                 newBitMap.Save("HoughSpace.png");
             return newBitMap;
-
         }
 
         private double hypotenusis(int width, int height) => Math.Sqrt(Math.Pow(width, 2) + Math.Pow(height, 2));
-        private (double[], double[]) fillTables(int thetaAxisSize, int numRhos)
+
+        private (double[], double[]) fillTables(int thetaAxisSize)
         {
-            double[] sinTable = new double[numRhos];
-            double[] cosTable = new double[numRhos];
-            for (int theta = thetaAxisSize - 1; theta >= 0; theta--)
+            double[] sinTable = new double[thetaAxisSize], cosTable = new double[thetaAxisSize];
+            for (int theta = 0; theta < thetaAxisSize; theta++)
             {
                 double thetaRadians = theta * Math.PI / thetaAxisSize;
                 sinTable[theta] = Math.Sin(thetaRadians);
@@ -100,7 +101,6 @@ namespace oop_c_
             }
             return (sinTable, cosTable);
         }
-
     }
 
     public class PictureData
@@ -112,4 +112,3 @@ namespace oop_c_
         }
     }
 }
-
