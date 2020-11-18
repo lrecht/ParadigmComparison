@@ -26,22 +26,8 @@ let hough (image:Bitmap) =
                                     then acc 
                                     else (incrementAcc (float x,float y) acc)) accumulator 
 
-let makeBM (res:Map<int*int,int>) =
-    let newBitMap = new Bitmap(thetaSize, rhoSize)
-    for x in 0 .. thetaSize-1 do
-        for y in 0 .. rhoSize-1 do
-            if not (res.ContainsKey (x,y)) then
-                newBitMap.SetPixel(x, y, Color.FromArgb(255, 255, 255))
-            elif res.[x,y] <= 255 then
-                let num = 255-res.[x,y]
-                newBitMap.SetPixel(x, y, Color.FromArgb(num, num, num))
-            else
-                newBitMap.SetPixel(x, y, Color.FromArgb(0, 0, 0)) 
-    newBitMap.Save("HoughSpace.png")
-
 [<EntryPoint>]
 let main argv =
     let h = hough bm
     printfn "%i" (Map.fold (fun acc k v -> acc+v) 0 h)
-    makeBM h
     0 // return an integer exit code
