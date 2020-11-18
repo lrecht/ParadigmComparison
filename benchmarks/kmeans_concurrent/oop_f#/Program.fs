@@ -67,7 +67,6 @@ type KMeans(initialPoints: Point array, clusters: Cluster[]) =
             let centroids = this.GetCentroids()
             
             Parallel.For(0, initialPoints.Length, fun i -> 
-            //for i in 0 .. this.InitialPoints.Length-1 do
                 let point = initialPoints.[i]
                 let index = point.ClosestCluster(centroids)
                 clusters.[index].AddToMean(point)
@@ -103,5 +102,4 @@ let main argv =
         printfn "(%s)" (cluster.Centroid.ToString())
 
     0 // return an integer exit code
-
 
