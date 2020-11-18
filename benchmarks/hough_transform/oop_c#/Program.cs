@@ -8,7 +8,7 @@ namespace oop_c_
     {
         static void Main(string[] args)
         {
-            var hough = new HoughTransform("../Pentagon.png", 480, 640);
+            var hough = new HoughTransform("benchmarks/hough_transform/Pentagon.png", 480, 640);
             var output = hough.ComputeTransformation();
             System.Console.WriteLine(output.Cast<int>().Sum());
         }
@@ -83,7 +83,6 @@ namespace oop_c_
 
     public static class MyMath
     {
-
         public static double Hypotenuse(int width, int height) => Math.Sqrt(Math.Pow(width, 2) + Math.Pow(height, 2));
 
         public static (double[], double[]) CosSinRadianTables(int thetaAxisSize)
