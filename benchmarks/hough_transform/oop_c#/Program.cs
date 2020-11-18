@@ -11,7 +11,6 @@ namespace oop_c_
             var hough = new HoughTransform("../Pentagon.png", 480, 640);
             var output = hough.ComputeTransformation();
             System.Console.WriteLine(output.Cast<int>().Sum());
-            hough.ToBitmap();
         }
     }
 
@@ -64,28 +63,6 @@ namespace oop_c_
                 }
             }
             return transformed;
-        }
-
-        public Bitmap ToBitmap(bool shouldSave = true)
-        {
-            (int width, int height) = (transformed.GetLength(0), transformed.GetLength(1));
-            Bitmap newBitMap = new Bitmap(width, height);
-            for (int x = 0; x < width; x++)
-            {
-                for (int y = 0; y < height; y++)
-                {
-                    if (transformed[x, y] <= 255)
-                    {
-                        var num = 255 - transformed[x, y];
-                        newBitMap.SetPixel(x, y, Color.FromArgb(num, num, num));
-                    }
-                    else
-                        newBitMap.SetPixel(x, y, Color.FromArgb(0, 0, 0));
-                }
-            }
-            if(shouldSave)
-                newBitMap.Save("HoughSpace.png");
-            return newBitMap;
         }
 
         private double hypotenusis(int width, int height) => Math.Sqrt(Math.Pow(width, 2) + Math.Pow(height, 2));
