@@ -7,8 +7,6 @@ open System
 open System.Drawing
 
 let createCosSinTables (thetaAxisSize: int) = 
-    // x output ranges from 0 to pi
-    // y output ranges from -maxRadius to maxRadius
     let sinTable = Array.create thetaAxisSize 0.0
     let cosTable = Array.create thetaAxisSize 0.0
     for theta in 0 .. thetaAxisSize-1 do
@@ -35,7 +33,6 @@ let makeHoughSpaceData (cosTable: float[]) (sinTable: float[]) (image: Bitmap) (
 
 [<EntryPoint>]
 let main argv =
-    let stop = System.Diagnostics.Stopwatch.StartNew()
     let image: Bitmap = new Bitmap("benchmarks/hough_transform/Pentagon.png")
     
     let thetaAxisSize = 640
@@ -50,8 +47,6 @@ let main argv =
         for y in 0 .. outputData.GetLength(1)-1 do
             sum <- sum + outputData.[x, y]
 
-    stop.Stop()
     printfn "Sum: %i" sum
-    printfn "Time: %i" stop.ElapsedMilliseconds
 
     0 // return an integer exit code

@@ -7,7 +7,6 @@ namespace procedural_c_
 	{
 		static void Main(string[] args)
 		{
-			var stop = System.Diagnostics.Stopwatch.StartNew();
 			var image = new Bitmap("benchmarks/hough_transform/Pentagon.png");
 
 			var thetaAxisSize = 640;
@@ -25,10 +24,7 @@ namespace procedural_c_
 					sum += outputData[x, y];
 				}
 			}
-
-			stop.Stop();
 			Console.WriteLine("Sum: " + sum);
-			Console.WriteLine("Time: " + stop.ElapsedMilliseconds);
 		}
 
 		static int[,] makeHoughSpaceData(double[] cosTable, double[] sinTable, Bitmap image, int thetaAxisSize, int rhoAxisSize)
@@ -71,4 +67,3 @@ namespace procedural_c_
 		}
 	}
 }
-
