@@ -20,7 +20,7 @@ let createCosSinTables (thetaAxisSize: int) =
 let makeHoughSpaceData (cosTable: float[]) (sinTable: float[]) (image: Bitmap) (thetaAxisSize: int) (rhoAxisSize: int) = 
     let width = image.Width
     let height = image.Height
-    let maxRadius = (int)(Math.Ceiling(Math.Sqrt(Math.Pow((float)width, 2.0) + Math.Pow((float)height, 2.0))))
+    let diagonal = (int)(Math.Ceiling(Math.Sqrt(Math.Pow((float)width, 2.0) + Math.Pow((float)height, 2.0)))) //Max radius
     let halfRAxisSize = rhoAxisSize / 2
     let outputData = Array2D.create thetaAxisSize rhoAxisSize 0
     for x in 0 .. width-1 do
@@ -29,9 +29,8 @@ let makeHoughSpaceData (cosTable: float[]) (sinTable: float[]) (image: Bitmap) (
             if pixel.Name <> "ffffffff" then
                 for theta in 0..thetaAxisSize-1 do
                     let r = cosTable.[theta] * (float)x + sinTable.[theta] * (float)y;
-                    let rScaled = (int) (Math.Round(r * (float)halfRAxisSize / (float)maxRadius) + (float)halfRAxisSize);
+                    let rScaled = (int) (Math.Round(r * (float)halfRAxisSize / (float)diagonal) + (float)halfRAxisSize);
                     outputData.[theta, rScaled] <- outputData.[theta, rScaled] + 1
-    
     outputData
 
 [<EntryPoint>]
@@ -39,24 +38,20 @@ let main argv =
     let stop = System.Diagnostics.Stopwatch.StartNew()
     let image: Bitmap = new Bitmap("benchmarks/hough_transform/Pentagon.png")
     
-    let thetaAxisSize = 460
-    let rhoAxisSize = 360
+    let thetaAxisSize = 640
+    let rhoAxisSize = 480
     
     let (sinTable, cosTable) = createCosSinTables thetaAxisSize
     
     let outputData = makeHoughSpaceData cosTable sinTable image thetaAxisSize rhoAxisSize
 
-    let newBitMap = new Bitmap(thetaAxisSize, rhoAxisSize)
-    for x in 0 .. thetaAxisSize-1 do
-        for y in 0 .. rhoAxisSize-1 do
-            if outputData.[x, y] <= 255 then
-                let num = 255-outputData.[x, y]
-                newBitMap.SetPixel(x, y, Color.FromArgb(num, num, num))
-            else
-                newBitMap.SetPixel(x, y, Color.FromArgb(0, 0, 0)) 
-    newBitMap.Save("HoughSpace.png")
+    let mutable sum = 0
+    for x in 0 .. outputData.GetLength(0)-1 do 
+        for y in 0 .. outputData.GetLength(1)-1 do
+            sum <- sum + outputData.[x, y]
 
     stop.Stop()
+    printfn "Sum: %i" sum
     printfn "Time: %i" stop.ElapsedMilliseconds
 
     0 // return an integer exit code
