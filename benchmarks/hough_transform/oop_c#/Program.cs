@@ -32,7 +32,7 @@ namespace oop_c_
 
         public int[,] ComputeTransformation()
         {
-            int width = pictureData.Original.Width, height = pictureData.Original.Height;
+            int width = pictureData.Width, height = pictureData.Height;
             int diagonal = (int)(Math.Ceiling(hypotenusis(width, height)));
             int halfRhoAxisSize = rhoAxisSize / 2;
             (double[] sinTable, double[] cosTable) = fillTables(thetaAxisSize);
@@ -43,7 +43,7 @@ namespace oop_c_
             {
                 for (int x = 0; x < width; x++)
                 {
-                    Color color = pictureData.Original.GetPixel(x, y);
+                    Color color = pictureData.GetPixelColor(x, y);
                     
                     // If a pixel is white, skip it.
                     if (color.Name == "ffffffff")
@@ -105,10 +105,16 @@ namespace oop_c_
 
     public class PictureData
     {
-        public Bitmap Original { get; }
+        Bitmap original { get; }
+        public int Width { get; }
+        public int Height { get; }
         public PictureData(string filename)
         {
-            Original = new Bitmap(filename);
+            original = new Bitmap(filename);
+            Width = original.Width;
+            Height = original.Height;
         }
+
+        public Color GetPixelColor(int x, int y) => original.GetPixel(x, y);
     }
 }
