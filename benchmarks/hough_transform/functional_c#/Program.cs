@@ -14,7 +14,6 @@ namespace functional_c_
             var pic = new Bitmap("benchmarks/hough_transform/Pentagon.png");
             var res = computeHoughTransformation(pic);
             System.Console.WriteLine(res.Sum());
-            ToBitmap(res.ToImmutableList());
         }
 
         private static ImmutableArray<int> computeHoughTransformation(Bitmap pic)
@@ -58,21 +57,5 @@ namespace functional_c_
             return (thetaRadians.Select(t => Math.Sin(t)).ToImmutableArray(), thetaRadians.Select(t => Math.Cos(t)).ToImmutableArray());
         }
 
-        private static void ToBitmap(ImmutableList<int> transformed)	
-        {	
-            (int width, int height) = (thetaAxisSize, rhoAxisSize);	
-            Bitmap newBitMap = new Bitmap(width, height);	
-            for (int x = 0; x < transformed.Count; x++)	
-            {	
-                    if (transformed[x] <= 255)	
-                    {	
-                        var num = 255 - transformed[x];	
-                        newBitMap.SetPixel(x % thetaAxisSize, x / thetaAxisSize, Color.FromArgb(num, num, num));	
-                    }	
-                    else	
-                        newBitMap.SetPixel(x % thetaAxisSize, x / thetaAxisSize, Color.FromArgb(0, 0, 0));	
-            }	
-            newBitMap.Save("HoughSpace.png");	
-        }
     }
 }
