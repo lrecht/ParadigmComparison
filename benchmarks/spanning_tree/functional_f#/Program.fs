@@ -10,19 +10,18 @@ let compare (from,dest,w) (from1,dest1,w1) =
     elif dest > dest1 then 1
     else 0
 
-let rec find node (uf:ImmutableArray<int32>) =
+let rec find node (uf:ImmutableArray<int32>) changes =
     if uf.[node] < 0
-    then node,uf
+    then node,(List.fold (fun (acc:ImmutableArray<int32>) n -> acc.SetItem(n,node)) uf changes)
     else 
-        let node1,uf1 = find uf.[node] uf
-        node1,uf1.SetItem(node,node1)
+        find uf.[node] uf (node::changes)
 
 let rec spanningTree' (edges:ImmutableSortedSet<int*int*int>) (uf:ImmutableArray<int32>) weightSum edgeNumber vCount =
     if vCount = 0 then (weightSum,edgeNumber)
     else 
         let (f,d,w) = edges.Min
-        let root1,uf1 = find f uf
-        let root2,uf2 = find d uf1
+        let root1,uf1 = find f uf []
+        let root2,uf2 = find d uf1 []
         if root1 = root2 then spanningTree' (edges.Remove (f,d,w)) uf weightSum edgeNumber vCount
         else spanningTree' (edges.Remove (f,d,w)) (uf2.SetItem(root1,root2)) (weightSum+w) (edgeNumber+1) (vCount-1)
 
