@@ -32,9 +32,9 @@ namespace oop_c_
         public int[,] ComputeTransformation()
         {
             int width = pictureData.Width, height = pictureData.Height;
-            int diagonal = (int)(Math.Ceiling(hypotenusis(width, height)));
+            int diagonal = (int)(Math.Ceiling(MyMath.Hypotenuse(width, height)));
             int halfRhoAxisSize = rhoAxisSize / 2;
-            (double[] sinTable, double[] cosTable) = fillTables(thetaAxisSize);
+            (double[] sinTable, double[] cosTable) = MyMath.CosSinRadianTables(thetaAxisSize);
 
 
             // Scanning through each (x,y) pixel of the image
@@ -64,20 +64,6 @@ namespace oop_c_
             }
             return transformed;
         }
-
-        private double hypotenusis(int width, int height) => Math.Sqrt(Math.Pow(width, 2) + Math.Pow(height, 2));
-
-        private (double[], double[]) fillTables(int thetaAxisSize)
-        {
-            double[] sinTable = new double[thetaAxisSize], cosTable = new double[thetaAxisSize];
-            for (int theta = 0; theta < thetaAxisSize; theta++)
-            {
-                double thetaRadians = theta * Math.PI / thetaAxisSize;
-                sinTable[theta] = Math.Sin(thetaRadians);
-                cosTable[theta] = Math.Cos(thetaRadians);
-            }
-            return (sinTable, cosTable);
-        }
     }
 
     public class PictureData
@@ -93,5 +79,23 @@ namespace oop_c_
         }
 
         public Color GetPixelColor(int x, int y) => original.GetPixel(x, y);
+    }
+
+    public static class MyMath
+    {
+
+        public static double Hypotenuse(int width, int height) => Math.Sqrt(Math.Pow(width, 2) + Math.Pow(height, 2));
+
+        public static (double[], double[]) CosSinRadianTables(int thetaAxisSize)
+        {
+            double[] sinTable = new double[thetaAxisSize], cosTable = new double[thetaAxisSize];
+            for (int theta = 0; theta < thetaAxisSize; theta++)
+            {
+                double thetaRadians = theta * Math.PI / thetaAxisSize;
+                sinTable[theta] = Math.Sin(thetaRadians);
+                cosTable[theta] = Math.Cos(thetaRadians);
+            }
+            return (sinTable, cosTable);
+        }
     }
 }
