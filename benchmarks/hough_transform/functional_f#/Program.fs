@@ -12,22 +12,21 @@ let thetaRange = [|0 .. thetaSize-1|]
 let cosValues = Array.map (fun t -> Math.Cos ((float t)*Math.PI/float thetaSize)) thetaRange
 let sinValues = Array.map (fun t -> Math.Sin ((float t)*Math.PI/float thetaSize)) thetaRange
 
-let incrementAcc (x,y) (accumulator:Map<int*int,int>) = 
-    Array.fold (fun (acc:Map<int*int,int>) theta ->
-        let rho = round (x * cosValues.[theta] + y * sinValues.[theta])
+let getLines (x,y) = 
+    Array.map (fun theta ->
+        let rho = round (float x * cosValues.[theta] + float y * sinValues.[theta])
         let scaleRho = int (Math.Round ((rho * halfRhoSize / float diagonal) + halfRhoSize))
-        let num = if acc.ContainsKey (theta,scaleRho) then acc.[theta,scaleRho] + 1 else 1
-        acc.Add ((theta,scaleRho),num)) accumulator thetaRange
+        theta,scaleRho) thetaRange
 
 let hough (image:Bitmap) =
-    let accumulator = Map.empty
     [|for x in [0 .. width-1] do for y in [0 .. height-1] do (x,y)|]
-    |> Array.fold (fun acc (x,y) -> if image.GetPixel(x,y).Name = "ffffffff"
-                                    then acc 
-                                    else (incrementAcc (float x,float y) acc)) accumulator 
+    |> Array.filter (fun (x,y) -> image.GetPixel(x,y).Name <> "ffffffff")
+    |> Array.collect getLines
+    |> Array.groupBy id
+    |> Array.map (fun (k,list) -> k,(Array.length list))
 
 [<EntryPoint>]
 let main argv =
     let h = hough bm
-    printfn "%i" (Map.fold (fun acc k v -> acc+v) 0 h)
+    printfn "%i" (Array.fold (fun acc (k,v) -> acc+v) 0 h)
     0 // return an integer exit code
