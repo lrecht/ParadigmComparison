@@ -17,7 +17,7 @@ namespace functional_c_
 
         }
 
-        private static IEnumerable<(int,int,int)> computeHoughTransformation(Bitmap pic)
+        private static ImmutableArray<(int,int,int)> computeHoughTransformation(Bitmap pic)
 
         {
             var width = pic.Width;
@@ -43,7 +43,7 @@ namespace functional_c_
 
             return colouredPixelsCordinates
                 .GroupBy(p => p)
-                .Select(x => (x.First().theta, x.First().rScaled, x.Count()));
+                .Select(x => (x.First().theta, x.First().rScaled, x.Count())).ToImmutableArray();
         }
 
 
