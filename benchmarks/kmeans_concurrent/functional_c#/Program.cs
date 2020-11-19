@@ -25,7 +25,8 @@ namespace functional_c_
 
         static void Main(string[] args)
         {
-            var points = System.IO.File.ReadAllLines("benchmarks/kmeans/points.txt")
+            var points = System.IO.File.ReadAllLines("benchmarks/kmeans_concurrent/points.txt")
+
                 .Select(x => (Convert.ToDouble(x.Split(':')[0]), Convert.ToDouble(x.Split(':')[1])))
                 .ToImmutableList();
             var clusters = runKMeans(10, points);
