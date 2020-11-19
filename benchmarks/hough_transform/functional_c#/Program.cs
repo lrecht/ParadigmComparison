@@ -13,10 +13,12 @@ namespace functional_c_
         {
             var pic = new Bitmap("benchmarks/hough_transform/Pentagon.png");
             var res = computeHoughTransformation(pic);
-            System.Console.WriteLine(res.Sum());
+            System.Console.WriteLine(res.Select(x => x.Item3).Sum());
+
         }
 
-        private static ImmutableArray<int> computeHoughTransformation(Bitmap pic)
+        private static IEnumerable<(int,int,int)> computeHoughTransformation(Bitmap pic)
+
         {
             var width = pic.Width;
             var height = pic.Height;
@@ -39,14 +41,11 @@ namespace functional_c_
                 })
             );
 
-            var transformedPixelDict = colouredPixelsCordinates
+            return colouredPixelsCordinates
                 .GroupBy(p => p)
-                .Select(x => (x.First().theta, x.First().rScaled, x.Count()))
-                .ToImmutableDictionary(x => (x.theta, x.rScaled), elementSelector: x => x.Item3);
-
-            var transformed = transformedPixelCoordinates.Select(p => transformedPixelDict.ContainsKey(p) ? transformedPixelDict[p] : 0);
-            return transformed.ToImmutableArray();
+                .Select(x => (x.First().theta, x.First().rScaled, x.Count()));
         }
+
 
         private static (ImmutableArray<double> sinTable, ImmutableArray<double> cosTable) cosSinRadianTables(int thetaAxisSize)
         {
