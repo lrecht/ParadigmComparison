@@ -9,85 +9,49 @@ type Edge =
         Weight: int;
     }
 
-//------ HEAP
-type Heap = {
-    //Type help:   (id, (freqency, Dictionary<char, encodeing>) array)
-    mutable array: Edge array
-    mutable maxSize: int
-    mutable size: int
-}
+// Made by https://www.w3resource.com/csharp-exercises/searching-and-sorting-algorithm/searching-and-sorting-algorithm-exercise-9.php
 
-let heap: Heap = { Heap.array = (Array.zeroCreate 1024); Heap.maxSize = 1024; Heap.size = 0 }
+let Partition (arr:Edge[]) l r =
+    let pivot = arr.[l].Weight;
+    let mutable left = l
+    let mutable right = r
+    let mutable løøp = true
+    while løøp do
+        while (arr.[left].Weight < pivot) do
+            left <- left + 1
 
+        while (arr.[right].Weight > pivot) do
+            right <- right - 1
 
-let swap (index1: int) (index2: int) =
-    let swap = heap.array.[index1]
-    heap.array.[index1] <- heap.array.[index2]
-    heap.array.[index2] <- swap
+        if (left < right) then
+            if arr.[left].Weight = arr.[right].Weight then
+                left <- left + 1
+                right <- right - 1
+            else
+                let temp = arr.[left];
+                arr.[left] <- arr.[right];
+                arr.[right] <- temp;
+        else løøp <- false
+    right
 
-let smallerThan (edge1: Edge) (edge2: Edge) =
-    (edge1.Weight < edge2.Weight)
+let rec QuickSort (arr: Edge []) (left:int) (right:int) =
+    if (left < right) then
+        let pivot = Partition arr left right
 
-let rec heapifyNode (index: int) =
-    // Find parent 
-    let parent: int = (index - 1) / 2; 
+        if (pivot > 1) then
+            QuickSort arr left (pivot - 1)
 
-    // For Min-Heap 
-    // If current node is smaller than its parent 
-    // Swap both of them and call heapify again 
-    // for the parent 
-    if (smallerThan heap.array.[index] heap.array.[parent]) then
-        swap index parent
+        if (pivot + 1 < right) then
+            QuickSort arr (pivot + 1) right
 
-        // Recursively heapify the parent node 
-        heapifyNode parent
-
-let insert (element: Edge) =
-    if(heap.size = heap.maxSize) then
-        heap.array <- Array.append heap.array (Array.zeroCreate heap.maxSize)
-        heap.maxSize <- heap.maxSize * 2
-
-    heap.array.[heap.size] <- element
-    heap.size <- (heap.size + 1)
-    heapifyNode (heap.size-1)
-
-let rec heapify (index: int) =
-    // Code from https://www.geeksforgeeks.org/heap-sort/
-    let mutable smallest: int = index; // Initialize smallest as root 
-    let l: int = 2*index + 1; // left = 2*i + 1 
-    let r: int = 2*index + 2; // right = 2*i + 2 
-
-    // If left child is smaller than root 
-    if (l < heap.size && (smallerThan heap.array.[l] heap.array.[smallest])) then
-        smallest <- l
-
-    // If right child is smaller than smallest so far 
-    if (r < heap.size && (smallerThan heap.array.[r] heap.array.[smallest])) then
-        smallest <- r
-
-    // If smallest is not root 
-    if (smallest <> index) then
-        swap index smallest
-
-        // Recursively heapify the affected sub-tree 
-        heapify smallest
-
-let pop ()=
-    let edge = heap.array.[0]
-    heap.array.[0] <- heap.array.[heap.size-1]
-    heap.size <- heap.size - 1
-    heapify 0
-    edge
-
-//------ End of heap
-
-let readFileToHeap() =
+let readFileToArr() =
     let lines = System.IO.File.ReadAllLines("benchmarks/spanning_tree/graph.csv");
-    for line in lines do
-        let elms = line.Split(',')
-        insert { Edge.Start = Int32.Parse(elms.[0]); Edge.End = Int32.Parse(elms.[1]); Edge.Weight = Int32.Parse(elms.[2]) }
-
-
+    let c = lines.Length
+    let mutable arr : Edge array = Array.zeroCreate c
+    for i in 0 .. (c-1) do
+        let elms = lines.[i].Split(',')
+        arr.[i] <- { Edge.Start = Int32.Parse(elms.[0]); Edge.End = Int32.Parse(elms.[1]); Edge.Weight = Int32.Parse(elms.[2]) }
+    arr
 
 let vertexGroup : int array = Array.create (6005 + 1) -1
 let rec unionFind (node: int) =
@@ -106,15 +70,17 @@ let union (startNode: int) (endNode: int) =
         vertexGroup .[group2Root] <- group1Root
         true
 
-let computeMinSpanTree() = 
+let computeMinSpanTree (arr: Edge array) = 
     let theMagicNumber: int = (5877-1)
     let result: Edge array = Array.zeroCreate theMagicNumber
     let mutable size = 0
     let mutable totalWeight = 0
     let mutable totalEdges = 0
+    let mutable i = 0
 
     while size < theMagicNumber do
-        let currentEdge = pop()
+        let currentEdge = arr.[i]
+        i <- i + 1
         if (union currentEdge.Start currentEdge.End) then
             result.[size] <- currentEdge
             size <- size + 1
@@ -125,8 +91,9 @@ let computeMinSpanTree() =
 
 [<EntryPoint>]
 let main argv =
-    readFileToHeap()
-    let (totalWeight, totalEdges) = computeMinSpanTree()
+    let arr = readFileToArr()
+    QuickSort arr 0 (arr.Length - 1)
+    let (totalWeight, totalEdges) = computeMinSpanTree arr
 
     printfn "Total weight: %i" totalWeight
     printfn "Total Edges: %i" totalEdges
