@@ -64,56 +64,6 @@ let Convolve (image: Bitmap) (kernel: float[,]) =
             test.SetPixel(x, y, Color.FromArgb((int)sum, (int)sum, (int)sum))
     test
 
-
-// https://epochabuse.com/gaussian-blur/
-let ConvolveSmart (srcImage: Bitmap) (kernel: float[,]) = 
-    let width = srcImage.Width
-    let height = srcImage.Height
-    
-    let srcData: BitmapData = srcImage.LockBits(Rectangle(0, 0, width, height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb)
-    
-    let bytes: int = srcData.Stride * srcData.Height
-    let buffer: byte[] = Array.zeroCreate bytes
-    let result: byte[] = Array.zeroCreate bytes
-    Marshal.Copy(srcData.Scan0, buffer, 0, bytes)
-    srcImage.UnlockBits(srcData)
-    
-    let colorChannels = 3
-    
-    let rgb: double[] = Array.zeroCreate colorChannels
-    let foff: int = (kernel.GetLength(0) - 1) / 2
-    let mutable kcenter: int = 0
-    let mutable kpixel: int = 0
-    for y in foff .. (height-foff)-1 do
-        for x in foff .. (width - foff)-1 do
-            for c in 0 .. colorChannels-1 do
-                rgb.[c] <- 0.0
-            
-            kcenter <- y * srcData.Stride + x * 4
-            
-            for fy in -foff .. foff do
-                for fx in -foff .. foff do
-                    kpixel <- kcenter + fy * srcData.Stride + fx * 4
-                    for c in 0 .. colorChannels-1 do
-                        rgb.[c] <- rgb.[c] + (double)(buffer.[kpixel + c]) * kernel.[fy + foff, fx + foff]
-            
-            for c in 0 .. colorChannels-1 do
-                if (rgb.[c] > 255.0) then
-                    rgb.[c] <- 255.0
-                else if (rgb.[c] < 0.0) then
-                    rgb.[c] <- 0.0
-            
-            for c in 0 .. colorChannels-1 do
-                result.[kcenter + c] <- (byte)rgb.[c]
-            
-            result.[kcenter + 3] <- (byte)255
-    
-    let resultImage: Bitmap = new Bitmap(width, height)
-    let resultData: BitmapData = resultImage.LockBits(Rectangle(0, 0, width, height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb)
-    Marshal.Copy(result, 0, resultData.Scan0, bytes)
-    resultImage.UnlockBits(resultData)
-    resultImage
-
 let hyp (num1: int) (num2: int) = 
     let hyp = (Math.Sqrt((float)(num1 * num1) + (float)(num2 * num2)))
     Math.Min(255, (int)hyp)
@@ -157,7 +107,6 @@ let computeIntensity (image: Bitmap) =
             if (num > max) then
                 max <- num
             thetaQ.[i, j] <- num
-    printfn "Max: %i" max
     
     (g, thetaQ)
 
@@ -250,50 +199,22 @@ let hysteresis (img: Bitmap) =
 
 [<EntryPoint>]
 let main argv =
-    let stop = System.Diagnostics.Stopwatch.StartNew()
     //let image: Bitmap = new Bitmap("benchmarks/canny_edge_detector/download.jpg")
     let mutable image: Bitmap = new Bitmap("../download.jpg")
-    //let mutable image: Bitmap = new Bitmap("../Casper.jpg")
-
-    let stopGray = System.Diagnostics.Stopwatch.StartNew()
+    
     image <- toGrayScale image
-    stopGray.Stop()
-    printfn "stopGray: %i" stopGray.ElapsedMilliseconds
-    image.Save("gray.png")
-
-    let stopGau = System.Diagnostics.Stopwatch.StartNew()
+    
     let gauFilt = GaussianFilter 5 1.0
     let gau = Convolve image gauFilt
-    stopGau.Stop()
-    printfn "stopGau: %i" stopGau.ElapsedMilliseconds
-    gau.Save("blur.png")
     
-    let stopInt = System.Diagnostics.Stopwatch.StartNew()
     let (intensity, theta) = computeIntensity gau
-    stopInt.Stop()
-    printfn "stopInt: %i" stopInt.ElapsedMilliseconds
-    intensity.Save("intensity.png")
     
-    let stopNon = System.Diagnostics.Stopwatch.StartNew()
     let nonMax = nonMaxSuppresion intensity theta
-    stopNon.Stop()
-    printfn "stopNon: %i" stopNon.ElapsedMilliseconds
-    nonMax.Save("nonMax.png")
-
-    let stopDouble = System.Diagnostics.Stopwatch.StartNew()
+    
     let doubleThreashold = doubleThreashold nonMax
-    stopDouble.Stop()
-    printfn "stopDouble: %i" stopDouble.ElapsedMilliseconds
-    doubleThreashold.Save("double.png")
-
-    let stopRes = System.Diagnostics.Stopwatch.StartNew()
+    
     let hysteresis = hysteresis doubleThreashold
-    stopRes.Stop()
-    printfn "stopRes: %i" stopRes.ElapsedMilliseconds
     hysteresis.Save("Final.png")
-
-    printfn "Time: %i" stop.ElapsedMilliseconds
-
     0 // return an integer exit code
 
 // Steps:
