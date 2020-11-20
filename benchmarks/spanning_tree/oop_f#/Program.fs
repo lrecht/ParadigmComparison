@@ -58,7 +58,8 @@ type Edge(startVertex, endVertex, cost) =
         
 
 type Graph(edges:Edge[], vertexCount) =
-    let edges = SortedSet<Edge>(edges);
+    do Array.Sort edges
+    let edges = edges
     let mutable totalWeight : int = 0
     let mutable totalEdges : int = 0
     member this.ComputeSpanningTree() = (this :> ISpanningTree).ComputeSpanningTree()
@@ -66,9 +67,10 @@ type Graph(edges:Edge[], vertexCount) =
         member __.ComputeSpanningTree() = 
             let res = List<Edge>()
             let uf = UnionFind()
+            let mutable i = 0
             while res.Count < vertexCount - 1 do
-                let mutable currentEdge = edges.Min
-                edges.Remove(currentEdge) |> ignore
+                let mutable currentEdge = edges.[i]
+                i <- i+1
                 if uf.Union currentEdge.Start currentEdge.End
                 then
                     res.Add(currentEdge)
