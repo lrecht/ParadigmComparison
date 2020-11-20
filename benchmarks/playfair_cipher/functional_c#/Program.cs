@@ -77,7 +77,14 @@ namespace functional_c_
         {
             var prep = prepInput(str.ToImmutableList());
 
-            return codeHelper(func, prep, table);
+            var insertedRare = prep.Aggregate(ImmutableList<char>.Empty, ((acc, c) => acc.Count % 2 == 1 && acc.Last() == c ? acc.Add(rare).Add(c) : acc.Add(c)));
+            var evenLengthString = insertedRare.Count % 2 == 0 ? insertedRare : insertedRare.Add(rare);
+
+            return evenLengthString
+                .Where((c, i) => i % 2 == 0)
+                .Select((c, i) => (c, evenLengthString[i * 2 + 1]))
+                .Select(charPair => func(charPair.c, charPair.Item2, table))
+                .Aggregate((str1, str2) => str1.AddRange(str2));
         }
 
         private static ImmutableList<char> encodePair(
@@ -126,19 +133,5 @@ namespace functional_c_
         private static char findVal(int x, int y, (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char> values) table)
             => table.values[(x, y)];
 
-        private static ImmutableList<char> codeHelper(
-            Func<char, char, (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>), ImmutableList<char>> codeFunc, 
-            ImmutableList<char> input,
-            (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>) table)
-        {
-            var insertedRare = input.Aggregate(ImmutableList<char>.Empty, ((acc, c) => acc.Count % 2 == 1 && acc.Last() == c ? acc.Add(rare).Add(c) : acc.Add(c)));
-            var evenLengthString = insertedRare.Count % 2 == 0 ? insertedRare : insertedRare.Add(rare);
-
-            return evenLengthString
-                .Where((c, i) => i % 2 == 0)
-                .Select((c, i) => (c, evenLengthString[i * 2 + 1]))
-                .Select(charPair => codeFunc(charPair.c, charPair.Item2, table))
-                .Aggregate((str1, str2) => str1.AddRange(str2));
-        }
     }
 }
