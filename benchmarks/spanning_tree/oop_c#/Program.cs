@@ -28,23 +28,24 @@ namespace oop_c_
 
     public class Graph : ISpanningTree
     {
-        SortedSet<Edge> edges; // collection of all edges, sorted by weight
+        Edge[] edges; // collection of all edges, sorted by weight
         private int vertexCount, totalWeight, totalEdges;
 
         public Graph(Edge[] edges, int vertexCount)
         {
             this.vertexCount = vertexCount;
-            this.edges = new SortedSet<Edge>(edges);
+            Array.Sort(edges);
+            this.edges = edges;
         }
 
         public (int, int) ComputeSpanningTree()
         {
             List<Edge> res = new List<Edge>();
             UnionFind uf = new UnionFind(vertexCount);
+            int i = 0;
             while (res.Count < vertexCount - 1)
             {
-                Edge currentEdge = edges.Min;
-                edges.Remove(edges.Min);
+                Edge currentEdge = edges[i++];
                 if (uf.Union(currentEdge.Node1, currentEdge.Node2))
                 {
                     res.Add(currentEdge);
