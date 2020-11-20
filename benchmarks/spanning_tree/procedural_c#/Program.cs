@@ -21,33 +21,38 @@ namespace procedural_c_
 			}
 
 			//Do the spanning
-			ReadFileToHeap();
-			var (weight, edges) = computeMinspanTree();
+			var arr = ReadFileToArr();
+			Quick_Sort(arr,0,arr.Length-1);
+			var (weight, edges) = computeMinspanTree(arr);
 
 			Console.WriteLine("Total weight: " + weight);
 			Console.WriteLine("Total Edges: " + edges);
 		}
 
-		public static void ReadFileToHeap()
+		public static Edge[] ReadFileToArr()
 		{
-			var lines = System.IO.File.ReadAllLines("benchmarks/spanning_tree/graph.csv");
-			foreach (var line in lines)
+			var lines = System.IO.File.ReadAllLines("/home/lars/Documents/9. Semester/ParadigmComparison/benchmarks/spanning_tree/graph.csv");//("benchmarks/spanning_tree/graph.csv");
+			var c = lines.Length;
+			Edge[] arr = new Edge[c];
+			for (int i = 0; i < c;i++)
 			{
-				var split = line.Split(',');
-				insert(new Edge { Start = int.Parse(split[0]), End = int.Parse(split[1]), Weight = int.Parse(split[2]) });
+				var split = lines[i].Split(',');
+				arr[i] = new Edge { Start = int.Parse(split[0]), End = int.Parse(split[1]), Weight = int.Parse(split[2]) };
 			}
+			return arr;
 		}
 
-		public static (int, int) computeMinspanTree()
+		public static (int, int) computeMinspanTree(Edge[] arr)
 		{
 			var magic = 5877 - 1;
 			var result = new Edge[magic];
 			var size = 0;
 			var totalWeight = 0;
 			var totalEdges = 0;
+			var i = 0;
 			while (size < magic)
 			{
-				var current = pop();
+				var current = arr[i++];
 				if (union(current.Start, current.End))
 				{
 					result[size] = current;
@@ -88,98 +93,47 @@ namespace procedural_c_
 			}
 		}
 
-		// --- Heap suff here
-		public static Heap heap = new Heap()
-		{
-			array = new Edge[1024],
-			maxSize = 1024,
-			size = 0
-		};
+		// Made by https://www.w3resource.com/csharp-exercises/searching-and-sorting-algorithm/searching-and-sorting-algorithm-exercise-9.php
+		private static void Quick_Sort(Edge[] arr, int left, int right) 
+        {
+            if (left < right)
+            {
+                int pivot = Partition(arr, left, right);
 
-		public struct Heap
-		{
-			public int size;
-			public int maxSize;
-			public Edge[] array;
-		}
+                if (pivot > 1)
+                    Quick_Sort(arr, left, pivot - 1);
 
-		public static void insert(Edge element)
-		{
-			if (heap.size == heap.maxSize)
-			{
-				Array.Resize(ref heap.array, heap.size * 2);
-				heap.maxSize *= 2;
-			}
+                if (pivot + 1 < right)
+                    Quick_Sort(arr, pivot + 1, right);
+            }
+        }
 
-			heap.array[heap.size] = element;
-			heap.size += 1;
-			heapifyNode(heap.size - 1);
-		}
+        private static int Partition(Edge[] arr, int left, int right)
+        {
+            int pivot = arr[left].Weight;
+            while (true) 
+            {
+                while (arr[left].Weight < pivot) 
+                    left++;
 
-		public static Edge pop()
-		{
-			Edge res = heap.array[0];
-			heap.array[0] = heap.array[heap.size - 1];
-			heap.size -= 1;
-			heapify(0);
+                while (arr[right].Weight > pivot)
+                    right--;
 
-			return res;
-		}
-
-		public static void heapifyNode(int index)
-		{
-			// Find parent 
-			int parent = (index - 1) / 2;
-
-			// For Max-Heap 
-			// If current node is greater than its parent 
-			// Swap both of them and call heapify again 
-			// for the parent 
-			if (smallerThan(heap.array[index], heap.array[parent]))
-			{
-				swap(index, parent);
-
-				// Recursively heapify the parent node 
-				heapifyNode(parent);
-			}
-		}
-
-		public static void heapify(int index)
-		{
-			// Code from https://www.geeksforgeeks.org/heap-sort/
-			int smallest = index; // Initialize smallest as root 
-			int l = 2 * index + 1; // left = 2*i + 1 
-			int r = 2 * index + 2; // right = 2*i + 2 
-
-			// If left child is smaller than root 
-			if (l < heap.size && smallerThan(heap.array[l], heap.array[smallest]))
-				smallest = l;
-
-			// If right child is smaller than smallest so far 
-			if (r < heap.size && smallerThan(heap.array[r], heap.array[smallest]))
-				smallest = r;
-
-			// If smallest is not root 
-			if (smallest != index)
-			{
-				swap(index, smallest);
-
-				// Recursively heapify the affected sub-tree 
-				heapify(smallest);
-			}
-		}
-
-		public static void swap(int index1, int index2)
-		{
-			var swap = heap.array[index1];
-			heap.array[index1] = heap.array[index2];
-			heap.array[index2] = swap;
-		}
-
-		public static bool smallerThan(Edge elem1, Edge elem2)
-		{
-			return elem1.Weight < elem2.Weight;
-		}
-		// -- End of heap stuff
+                if (left < right)
+                {
+                    if (arr[left].Weight == arr[right].Weight){
+						left++;
+						right--;
+					}
+					else {
+						Edge temp = arr[left];
+						arr[left] = arr[right];
+						arr[right] = temp;
+					}
+                }
+                else 
+                    return right;
+            }
+        }
 	}
 }
