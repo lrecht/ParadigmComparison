@@ -31,7 +31,7 @@ namespace procedural_c_
 
 		public static Edge[] ReadFileToArr()
 		{
-			var lines = System.IO.File.ReadAllLines("/home/lars/Documents/9. Semester/ParadigmComparison/benchmarks/spanning_tree/graph.csv");//("benchmarks/spanning_tree/graph.csv");
+			var lines = System.IO.File.ReadAllLines("benchmarks/spanning_tree/graph.csv");
 			var c = lines.Length;
 			Edge[] arr = new Edge[c];
 			for (int i = 0; i < c;i++)
