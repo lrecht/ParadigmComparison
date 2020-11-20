@@ -100,12 +100,9 @@ let computeIntensity (image: Bitmap) =
     
     let theta = arctan Iy Ix
     let thetaQ = Array2D.create (theta.GetLength(0)) (theta.GetLength(1)) 0
-    let mutable max = 0
     for i in 0 .. theta.GetLength(0)-1 do
         for j in 0 .. theta.GetLength(1)-1 do
             let num = ((int) (Math.Round(theta.[i,j] * (5.0 / Math.PI))) + 5) % 5
-            if (num > max) then
-                max <- num
             thetaQ.[i, j] <- num
     
     (g, thetaQ)
