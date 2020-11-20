@@ -10,6 +10,16 @@ let black = Color.FromArgb(0, 0, 0)
 let white = Color.FromArgb(255, 255, 255)
 let getPixel (image: Bitmap) (x: int) (y: int) = (int)(image.GetPixel(x, y).R)
 
+let kernelHor = array2D [
+    [-1.0; 0.0; 1.0]
+    [-2.0; 0.0; 2.0]
+    [-1.0; 0.0; 1.0]]
+let kernelVer = array2D [
+    [1.0; 2.0; 1.0]
+    [0.0; 0.0; 0.0]
+    [-1.0; -2.0; -1.0]]
+
+
 // https://epochabuse.com/gaussian-blur/
 let GaussianFilter (length: int) (weight: float) = 
     let kernel = Array2D.create length length 0.0
@@ -133,35 +143,25 @@ let arctan (image1: Bitmap) (image2: Bitmap) =
 
 
 let computeIntensity (image: Bitmap) = 
-    let kx = array2D [
-        [-1.0; 0.0; 1.0]
-        [-2.0; 0.0; 2.0]
-        [-1.0; 0.0; 1.0]]
-    let ky = array2D [
-        [1.0; 2.0; 1.0]
-        [0.0; 0.0; 0.0]
-        [-1.0; -2.0; -1.0]]
-
-    let Ix = Convolve image kx
-    let Iy = Convolve image ky
-    Ix.Save("Ix.png")
-    Iy.Save("Iy.png")
+    let Ix = Convolve image kernelHor
+    let Iy = Convolve image kernelVer
     
     let g = hypot Ix Iy
     
     let theta = arctan Iy Ix
     let thetaQ = Array2D.create (theta.GetLength(0)) (theta.GetLength(1)) 0
-    //thetaQ = (np.round(theta * (5.0 / np.pi)) + 5) % 5 #Quantize direction
+    let mutable max = 0
     for i in 0 .. theta.GetLength(0)-1 do
         for j in 0 .. theta.GetLength(1)-1 do
             let num = ((int) (Math.Round(theta.[i,j] * (5.0 / Math.PI))) + 5) % 5
+            if (num > max) then
+                max <- num
             thetaQ.[i, j] <- num
-
-    (g, theta)
+    printfn "Max: %i" max
     
-    //theta = np.arctan2(Iy, Ix)
+    (g, thetaQ)
 
-let nonMaxSuppresion (image: Bitmap) (theta: double[,]) =
+let nonMaxSuppresion (image: Bitmap) (theta: int[,]) =
     // Non-maximum suppression
     let gradSup: Bitmap = image
 
@@ -172,7 +172,7 @@ let nonMaxSuppresion (image: Bitmap) (theta: double[,]) =
                 gradSup.SetPixel(r, c, black)
             
             else
-                let tq = (int)(theta.[r, c] % (float)4)
+                let tq = (int)(theta.[r, c] % 4)
                 if tq = 0 then //0 is E-W (horizontal)
                     if image.GetPixel(r, c).R <= image.GetPixel(r, c-1).R || image.GetPixel(r, c).R <= image.GetPixel(r, c+1).R then
                         gradSup.SetPixel(r, c, black)
@@ -253,6 +253,7 @@ let main argv =
     let stop = System.Diagnostics.Stopwatch.StartNew()
     //let image: Bitmap = new Bitmap("benchmarks/canny_edge_detector/download.jpg")
     let mutable image: Bitmap = new Bitmap("../download.jpg")
+    //let mutable image: Bitmap = new Bitmap("../Casper.jpg")
 
     let stopGray = System.Diagnostics.Stopwatch.StartNew()
     image <- toGrayScale image
@@ -261,7 +262,7 @@ let main argv =
     image.Save("gray.png")
 
     let stopGau = System.Diagnostics.Stopwatch.StartNew()
-    let gauFilt = GaussianFilter 15 1.0
+    let gauFilt = GaussianFilter 5 1.0
     let gau = Convolve image gauFilt
     stopGau.Stop()
     printfn "stopGau: %i" stopGau.ElapsedMilliseconds
