@@ -6,9 +6,9 @@ open System.Drawing.Imaging
 open System.Runtime.InteropServices
 
 let weak = 100
-
-let getPixel (image: Bitmap) (x: int) (y: int) =
-    (int)(image.GetPixel(x, y).R)
+let black = Color.FromArgb(0, 0, 0)
+let white = Color.FromArgb(255, 255, 255)
+let getPixel (image: Bitmap) (x: int) (y: int) = (int)(image.GetPixel(x, y).R)
 
 // https://epochabuse.com/gaussian-blur/
 let GaussianFilter (length: int) (weight: float) = 
@@ -26,11 +26,37 @@ let GaussianFilter (length: int) (weight: float) =
     for y in 0 .. length-1 do
         for x in 0 .. length-1 do
             kernel.[y, x] <- kernel.[y, x] * 1.0 / kernelSum
-    
     kernel
 
+//My own slow Convolve
+let Convolve (image: Bitmap) (kernel: float[,]) =
+    let width = image.Width
+    let height = image.Height
+    let test = new Bitmap(width, height)
+    //Kernel has to be an odd number
+    let halfKernel = kernel.GetLength(0) / 2
+    for x in 0 .. width-1 do
+        for y in 0 .. height-1 do
+            let mutable sum = 0.0
+            for kx in -halfKernel .. halfKernel do
+                for ky in -halfKernel .. halfKernel do
+                    let posX = x + kx
+                    let posY = y + ky
+                    // not edges
+                    if not (posX <= 0 || posX >= width-1 || posY <= 0 || posY >= height - 1) then
+                        sum <- sum + ((float)(getPixel image posX posY) * (kernel.[kx+halfKernel, ky+halfKernel]))
+            
+            if (sum > 255.0) then
+                sum <- 255.0
+            else if (sum < 0.0) then
+                sum <- 0.0
+
+            test.SetPixel(x, y, Color.FromArgb((int)sum, (int)sum, (int)sum))
+    test
+
+
 // https://epochabuse.com/gaussian-blur/
-let Convolve (srcImage: Bitmap) (kernel: float[,]) = 
+let ConvolveSmart (srcImage: Bitmap) (kernel: float[,]) = 
     let width = srcImage.Width
     let height = srcImage.Height
     
@@ -87,11 +113,11 @@ let hypot (image1: Bitmap) (image2: Bitmap) =
     
     for x in 0 .. image1.Width-1 do
         for y in 0 .. image1.Height-1 do
-            let color1 = image1.GetPixel(x, y)
-            let color2 = image2.GetPixel(x, y)
+            let color1 = getPixel image1 x y
+            let color2 = getPixel image2 x y
             
-            
-            let newColor = Color.FromArgb((hyp ((int)color1.R) ((int)color2.R)), (hyp ((int)color1.G) ((int)color2.G)), (hyp ((int)color1.B) ((int)color2.B)));
+            let hypColor = hyp color1 color2
+            let newColor = Color.FromArgb(hypColor, hypColor, hypColor);
             result.SetPixel(x, y, newColor)
     result
     
@@ -107,18 +133,19 @@ let arctan (image1: Bitmap) (image2: Bitmap) =
 
 
 let computeIntensity (image: Bitmap) = 
-    let xs = [| -1.0; 0.0; 1.0; -2.0; 0.0; 2.0; -1.0; 0.0; 1.0; |]
-    let kx = Array2D.zeroCreate 3 3 
-    for i in 0 .. xs.Length-1 do
-        kx.[i/3, i % 3] <- xs.[i]
-
-    let ys = [|1.0; 2.0; 1.0; 0.0; 0.0; 0.0; -1.0; -2.0; -1.0 |]
-    let ky = Array2D.zeroCreate 3 3 
-    for i in 0 .. ys.Length-1 do
-        ky.[i/3, i % 3] <- ys.[i]
+    let kx = array2D [
+        [-1.0; 0.0; 1.0]
+        [-2.0; 0.0; 2.0]
+        [-1.0; 0.0; 1.0]]
+    let ky = array2D [
+        [1.0; 2.0; 1.0]
+        [0.0; 0.0; 0.0]
+        [-1.0; -2.0; -1.0]]
 
     let Ix = Convolve image kx
     let Iy = Convolve image ky
+    Ix.Save("Ix.png")
+    Iy.Save("Iy.png")
     
     let g = hypot Ix Iy
     
@@ -142,23 +169,22 @@ let nonMaxSuppresion (image: Bitmap) (theta: double[,]) =
         for c in 0 .. image.Height-1 do
             //Suppress pixels at the image edge
             if r = 0 || r = image.Width-1 || c = 0 || c = image.Height - 1 then
-                let newColor = Color.FromArgb(0, 0, 0)
-                gradSup.SetPixel(r, c, newColor)
+                gradSup.SetPixel(r, c, black)
             
             else
                 let tq = (int)(theta.[r, c] % (float)4)
                 if tq = 0 then //0 is E-W (horizontal)
                     if image.GetPixel(r, c).R <= image.GetPixel(r, c-1).R || image.GetPixel(r, c).R <= image.GetPixel(r, c+1).R then
-                        gradSup.SetPixel(r, c, Color.FromArgb(0, 0, 0))
+                        gradSup.SetPixel(r, c, black)
                 if tq = 1 then //1 is NE-SW
                     if image.GetPixel(r, c).R <= image.GetPixel(r-1, c+1).R || image.GetPixel(r, c).R <= image.GetPixel(r+1, c-1).R then
-                        gradSup.SetPixel(r, c, Color.FromArgb(0, 0, 0))
+                        gradSup.SetPixel(r, c, black)
                 if tq = 2 then //2 is N-S (vertical)
                     if image.GetPixel(r, c).R <= image.GetPixel(r-1, c).R || image.GetPixel(r, c).R <= image.GetPixel(r+1, c).R then
-                        gradSup.SetPixel(r, c, Color.FromArgb(0, 0, 0))
+                        gradSup.SetPixel(r, c, black)
                 if tq = 3 then //#3 is NW-SE
                     if image.GetPixel(r, c).R <= image.GetPixel(r-1, c-1).R || image.GetPixel(r, c).R <= image.GetPixel(r+1, c+1).R then
-                        gradSup.SetPixel(r, c, Color.FromArgb(0, 0, 0))
+                        gradSup.SetPixel(r, c, black)
     gradSup
 
 // This gray scale is slow but easy.
@@ -177,22 +203,21 @@ let maxValue (image: Bitmap) =
         for y in 0 .. image.Height-1 do
             if (int)(image.GetPixel(x, y).R) > max then
                 max <- (int)(image.GetPixel(x, y).R)
-    printfn "Max: %i" max
     max
 
 let doubleThreashold (image: Bitmap) = 
-    let highThreshold = 50.0//(float)(maxValue image) * 0.9
-    let lowThreshold = 10.0//highThreshold * 0.5
-    printfn "Low: %f" lowThreshold
-    printfn "High: %f" highThreshold
+    //let highThreshold = 50.0
+    let highThreshold = (float)(maxValue image) * 0.09
+    //let lowThreshold = 10.0
+    let lowThreshold = highThreshold * 0.05
     let double = new Bitmap(image.Width, image.Height)
 
     for x in 0 .. image.Width-1 do
         for y in 0 .. image.Height-1 do
             if (float)(image.GetPixel(x, y).R) <= lowThreshold then
-                double.SetPixel(x, y, Color.FromArgb(0, 0, 0))
+                double.SetPixel(x, y, black)
             else if (float)(image.GetPixel(x, y).R) >= highThreshold then
-                double.SetPixel(x, y, Color.FromArgb(255, 255, 255))
+                double.SetPixel(x, y, white)
             else
                 double.SetPixel(x, y, Color.FromArgb(weak, weak, weak))
     double
@@ -216,9 +241,9 @@ let hysteresis (img: Bitmap) =
         for y in 0 .. img.Height-1 do
             if (int)(img.GetPixel(x, y).R) = weak then
                 if (hasStrongNeighbor img x y) then
-                    image.SetPixel(x, y, Color.FromArgb(0, 0, 0))
+                    image.SetPixel(x, y, black)
                 else 
-                    image.SetPixel(x, y, Color.FromArgb(255, 255, 255))
+                    image.SetPixel(x, y, white)
             else
                 image.SetPixel(x, y, img.GetPixel(x, y))
     image
@@ -236,7 +261,7 @@ let main argv =
     image.Save("gray.png")
 
     let stopGau = System.Diagnostics.Stopwatch.StartNew()
-    let gauFilt = GaussianFilter 5 1.0
+    let gauFilt = GaussianFilter 15 1.0
     let gau = Convolve image gauFilt
     stopGau.Stop()
     printfn "stopGau: %i" stopGau.ElapsedMilliseconds
