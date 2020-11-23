@@ -2,7 +2,6 @@ import argparse
 from program import *
 from datetime import datetime
 import email_service as es
-import sys
 import sestoft
 import cochran
 
@@ -11,10 +10,6 @@ benchmarks_path = "./benchmarks"
 all_paradigms = ["functional", "oop", "procedural"]
 all_languages = ["c#", "f#"]
 language_discover_funcs = {}
-
-#sys.stderr.line_buffering=False
-def error_print(*args, **kwargs):
-    print(*args, file=sys.stderr, **kwargs)
 
 #Used to validate benchmark folders
 class readable_dir(argparse.Action):

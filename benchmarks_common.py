@@ -1,6 +1,12 @@
+import sys
 import pyRAPL
 import stats as stat
 import subprocess
+
+#sys.stderr.line_buffering=False
+def error_print(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
+
 
 def run(benchmark):
     meter = pyRAPL.Measurement(label=benchmark.get_run_command())
