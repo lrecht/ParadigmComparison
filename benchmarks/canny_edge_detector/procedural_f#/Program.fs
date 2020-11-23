@@ -2,8 +2,6 @@
 
 open System
 open System.Drawing
-open System.Drawing.Imaging
-open System.Runtime.InteropServices
 
 let weak = 100
 let black = Color.FromArgb(0, 0, 0)
@@ -196,6 +194,7 @@ let hysteresis (img: Bitmap) =
 
 [<EntryPoint>]
 let main argv =
+    let stop = System.Diagnostics.Stopwatch.StartNew()
     //let image: Bitmap = new Bitmap("benchmarks/canny_edge_detector/download.jpg")
     let mutable image: Bitmap = new Bitmap("../download.jpg")
     
@@ -212,6 +211,9 @@ let main argv =
     
     let hysteresis = hysteresis doubleThreashold
     hysteresis.Save("Final.png")
+    
+    stop.Stop()
+    printfn "Time: %i" stop.ElapsedMilliseconds
     0 // return an integer exit code
 
 // Steps:
