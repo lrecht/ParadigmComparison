@@ -4,8 +4,8 @@ open System
 open System.Drawing
 
 let weak = 100
-let black = Color.FromArgb(0, 0, 0)
-let white = Color.FromArgb(255, 255, 255)
+let black = 0
+let white = 255
 let getPixel (image: Bitmap) (x: int) (y: int) = (int)(image.GetPixel(x, y).R)
 
 let kernelHor = array2D [
@@ -122,16 +122,16 @@ let nonMaxSuppresion (image: int[,]) (theta: int[,]) =
                 let tq = (int)(theta.[r, c] % 4)
                 if tq = 0 then //0 is E-W (horizontal)
                     if image.[r, c] <= image.[r, c-1] || image.[r, c] <= image.[r, c+1] then
-                        gradSup.[r, c] <- 0
+                        gradSup.[r, c] <- black
                 if tq = 1 then //1 is NE-SW
                     if image.[r, c] <= image.[r-1, c+1] || image.[r, c] <= image.[r+1, c-1] then
-                        gradSup.[r, c] <- 0
+                        gradSup.[r, c] <- black
                 if tq = 2 then //2 is N-S (vertical)
                     if image.[r, c] <= image.[r-1, c] || image.[r, c] <= image.[r+1, c] then
-                        gradSup.[r, c] <- 0
+                        gradSup.[r, c] <- black
                 if tq = 3 then //#3 is NW-SE
                     if image.[r, c] <= image.[r-1, c-1] || image.[r, c] <= image.[r+1, c+1] then
-                        gradSup.[r, c] <- 0
+                        gradSup.[r, c] <- black
     gradSup
 
 // This gray scale is slow but easy.
@@ -149,17 +149,17 @@ let doubleThreashold (image: int[,]) =
     let width = image.GetLength(0)
     let height = image.GetLength(1)
     //let highThreshold = 50.0
-    let highThreshold = 255.0 * 0.09
+    let highThreshold = 255.0 * 0.25
     //let lowThreshold = 10.0
-    let lowThreshold = highThreshold * 0.05
+    let lowThreshold = highThreshold * 0.12
     let double: int[,] = Array2D.zeroCreate width height
 
     for x in 0 .. width-1 do
         for y in 0 .. height-1 do
             if (float)(image.[x, y]) <= lowThreshold then
-                double.[x, y] <- 0
+                double.[x, y] <- black
             else if (float)(image.[x, y]) >= highThreshold then
-                double.[x, y] <- 255
+                double.[x, y] <- white
             else
                 double.[x, y] <- weak
     double
@@ -187,9 +187,9 @@ let hysteresis (img: int[,]) =
         for y in 0 .. height-1 do
             if img.[x, y] = weak then
                 if (hasStrongNeighbor img x y) then
-                    image.SetPixel(x, y, black)
+                    image.SetPixel(x, y, Color.Black)
                 else 
-                    image.SetPixel(x, y, white)
+                    image.SetPixel(x, y, Color.White)
             else
                 let value = img.[x, y]
                 image.SetPixel(x, y, Color.FromArgb(value, value, value))
@@ -197,6 +197,7 @@ let hysteresis (img: int[,]) =
 
 [<EntryPoint>]
 let main argv =
+    let stop = System.Diagnostics.Stopwatch.StartNew()
     let image: Bitmap = new Bitmap("benchmarks/canny_edge_detector/download.jpg")
     
     let imageArrGray = toGrayScale image
@@ -212,6 +213,10 @@ let main argv =
     
     let hysteresis = hysteresis doubleThreashold
     hysteresis.Save("Final.png")
+
+    stop.Stop()
+    printfn "Time: %i" stop.ElapsedMilliseconds
+
     0 // return an integer exit code
 
 // Steps:
