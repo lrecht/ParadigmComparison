@@ -30,6 +30,19 @@ class F_Sharp_Program(Dotnet_Program):
         return command + self.paradigm + "_f#"
 
 
+class Custom_Program(Program):
+    def __init__(self, path, build_cmd, run_cmd):
+        self.build_cmd = build_cmd
+        self.run_cmd = run_cmd
+        self.path = path
+
+    def get_build_command(self):
+        return self.build_cmd
+
+    def get_run_command(self):
+        return self.run_cmd
+
+
 #Discovers f# project folders based on naming convention (functional_f# or oop_f#)
 def discover_fsharp_program(path):
     results = []
