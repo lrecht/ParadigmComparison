@@ -110,7 +110,7 @@ if __name__ == '__main__':
     if args.sestoft_approach:
         sestoft.perform_benchmarks(benchmark_programs, iterations, time_limit, output_file, skip_build, skip_runs)
     else:
-        cochran.perform_benchmarks(benchmark_programs, output_file)
+        cochran.perform_benchmarks(benchmark_programs, output_file, time_limit)
 
     if(email is not None):
         es.send_results(email, output_file)
