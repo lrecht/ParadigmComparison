@@ -7,13 +7,11 @@ namespace procedural_c_
 	{
 		static void Main(string[] args)
 		{
-			var stop = System.Diagnostics.Stopwatch.StartNew();
-			//let image: Bitmap = new Bitmap("benchmarks/canny_edge_detector/download.jpg")
-			var image = new Bitmap("../download.jpg");
-			image = toGrayScale(image);
+			var image = new Bitmap("benchmarks/canny_edge_detector/download.jpg");
+			var grayImg = toGrayScale(image);
 
 			var gauFilt = GaussianFilter(5, 1.0);
-			var gau = Convolve(image, gauFilt);
+			var gau = Convolve(grayImg, gauFilt);
 
 			var (intensity, theta) = computeIntensity(gau);
 
@@ -23,9 +21,6 @@ namespace procedural_c_
 
 			var final = hysteresis(doubleT);
 			final.Save("Final.png");
-
-			stop.Stop();
-			Console.WriteLine("Time: " + stop.ElapsedMilliseconds);
 		}
 
 		public static int weak = 100;
@@ -70,13 +65,15 @@ namespace procedural_c_
 			return kernel;
 		}
 
-		public static Bitmap Convolve(Bitmap image, double[,] kernel)
+		public static int[,] Convolve(int[,] image, double[,] kernel)
 		{
-			var test = new Bitmap(image.Width, image.Height);
+			var width = image.GetLength(0);
+			var height = image.GetLength(1);
+			var test = new int[width, height];
 			var halfKernel = kernel.GetLength(0) / 2;
-			for (int x = 0; x < image.Width; x++)
+			for (int x = 0; x < width; x++)
 			{
-				for (int y = 0; y < image.Height; y++)
+				for (int y = 0; y < height; y++)
 				{
 					var sum = 0.0;
 					for (int kx = -halfKernel; kx <= halfKernel; kx++)
@@ -86,9 +83,9 @@ namespace procedural_c_
 							var posX = x + kx;
 							var posY = y + ky;
 							// not edges
-							if (!(posX <= 0 || posX >= image.Width - 1 || posY <= 0 || posY >= image.Height - 1))
+							if (!(posX <= 0 || posX >= width - 1 || posY <= 0 || posY >= height - 1))
 							{
-								sum += (((double)image.GetPixel(posX, posY).R) * (kernel[kx + halfKernel, ky + halfKernel]));
+								sum += (image[posX, posY] * (kernel[kx + halfKernel, ky + halfKernel]));
 							}
 						}
 					}
@@ -101,7 +98,7 @@ namespace procedural_c_
 						sum = 0.0;
 					}
 
-					test.SetPixel(x, y, Color.FromArgb((int)sum, (int)sum, (int)sum));
+					test[x, y] = (int)sum;
 				}
 			}
 			return test;
@@ -113,42 +110,45 @@ namespace procedural_c_
 			return Math.Min(255, (int)hyp);
 		}
 
-		public static Bitmap hypot(Bitmap image1, Bitmap image2)
+		public static int[,] hypot(int[,] image1, int[,] image2)
 		{
-			var result = new Bitmap(image1.Width, image1.Height);
+			var width = image1.GetLength(0);
+			var height = image1.GetLength(1);
+			var result = new int[width, height];
 
-			for (int x = 0; x < image1.Width; x++)
+			for (int x = 0; x < width; x++)
 			{
-				for (int y = 0; y < image1.Height; y++)
+				for (int y = 0; y < height; y++)
 				{
-					var color1 = getPixel(image1, x, y);
-					var color2 = getPixel(image2, x, y);
+					var color1 = image1[x, y];
+					var color2 = image2[x, y];
 
 					var hypColor = hyp(color1, color2);
-					var newColor = Color.FromArgb(hypColor, hypColor, hypColor);
-					result.SetPixel(x, y, newColor);
+					result[x, y] = hypColor;
 				}
 			}
 			return result;
 		}
 
-		public static double[,] arctan(Bitmap image1, Bitmap image2)
+		public static double[,] arctan(int[,] image1, int[,] image2)
 		{
-			var result = new double[image1.Width, image1.Height];
+			var width = image1.GetLength(0);
+			var height = image1.GetLength(1);
+			var result = new double[width, height];
 
-			for (int x = 0; x < image1.Width; x++)
+			for (int x = 0; x < width; x++)
 			{
-				for (int y = 0; y < image1.Height; y++)
+				for (int y = 0; y < height; y++)
 				{
-					var color1 = image1.GetPixel(x, y);
-					var color2 = image2.GetPixel(x, y);
-					result[x, y] = (Math.Atan2((float)color1.R, (float)color2.R));
+					var color1 = image1[x, y];
+					var color2 = image2[x, y];
+					result[x, y] = Math.Atan2(color1, color2);
 				}
 			}
 			return result;
 		}
 
-		public static (Bitmap, int[,]) computeIntensity(Bitmap image)
+		public static (int[,], int[,]) computeIntensity(int[,] image)
 		{
 			var Ix = Convolve(image, kernelHor);
 			var Iy = Convolve(image, kernelVer);
@@ -156,10 +156,12 @@ namespace procedural_c_
 			var g = hypot(Ix, Iy);
 
 			var theta = arctan(Iy, Ix);
-			var thetaQ = new int[theta.GetLength(0), theta.GetLength(1)];
-			for (int i = 0; i < theta.GetLength(0); i++)
+			var thetaWidth = theta.GetLength(0);
+			var thetaHeight = theta.GetLength(1);
+			var thetaQ = new int[thetaWidth, thetaHeight];
+			for (int i = 0; i < thetaWidth; i++)
 			{
-				for (int j = 0; j < theta.GetLength(1); j++)
+				for (int j = 0; j < thetaHeight; j++)
 				{
 					var num = ((int)(Math.Round(theta[i, j] * (5.0 / Math.PI))) + 5) % 5;
 					thetaQ[i, j] = num;
@@ -169,97 +171,83 @@ namespace procedural_c_
 			return (g, thetaQ);
 		}
 
-		public static Bitmap nonMaxSuppresion(Bitmap image, int[,] theta)
+		public static int[,] nonMaxSuppresion(int[,] image, int[,] theta)
 		{
 			// Non-maximum suppression
+			var width = image.GetLength(0);
+			var height = image.GetLength(1);
 			var gradSup = image;
 
-			for (int r = 0; r < image.Width; r++)
+			for (int r = 0; r < width; r++)
 			{
-				for (int c = 0; c < image.Height; c++)
+				for (int c = 0; c < height; c++)
 				{
 					//Suppress pixels at the image edge
-					if (r == 0 || r == image.Width - 1 || c == 0 || c == image.Height - 1)
+					if (r == 0 || r == width - 1 || c == 0 || c == height - 1)
 					{
-						gradSup.SetPixel(r, c, black);
+						gradSup[r, c] = 0;
 					}
-
 					else
 					{
 						var tq = (int)(theta[r, c] % 4);
 						if (tq == 0) //0 is E-W (horizontal)
-							if (image.GetPixel(r, c).R <= image.GetPixel(r, c - 1).R || image.GetPixel(r, c).R <= image.GetPixel(r, c + 1).R)
-								gradSup.SetPixel(r, c, black);
+							if (image[r, c] <= image[r, c - 1] || image[r, c] <= image[r, c + 1])
+								gradSup[r, c] = 0;
 						if (tq == 1) //1 is NE-SW
-							if (image.GetPixel(r, c).R <= image.GetPixel(r - 1, c + 1).R || image.GetPixel(r, c).R <= image.GetPixel(r + 1, c - 1).R)
-								gradSup.SetPixel(r, c, black);
+							if (image[r, c] <= image[r - 1, c + 1] || image[r, c] <= image[r + 1, c - 1])
+								gradSup[r, c] = 0;
 						if (tq == 2) //2 is N-S (vertical)
-							if (image.GetPixel(r, c).R <= image.GetPixel(r - 1, c).R || image.GetPixel(r, c).R <= image.GetPixel(r + 1, c).R)
-								gradSup.SetPixel(r, c, black);
+							if (image[r, c] <= image[r - 1, c] || image[r, c] <= image[r + 1, c])
+								gradSup[r, c] = 0;
 						if (tq == 3) //#3 is NW-SE
-							if (image.GetPixel(r, c).R <= image.GetPixel(r - 1, c - 1).R || image.GetPixel(r, c).R <= image.GetPixel(r + 1, c + 1).R)
-								gradSup.SetPixel(r, c, black);
+							if (image[r, c] <= image[r - 1, c - 1] || image[r, c] <= image[r + 1, c + 1])
+								gradSup[r, c] = 0;
 					}
 				}
 			}
 			return gradSup;
 		}
 
-		public static Bitmap toGrayScale(Bitmap image)
+		public static int[,] toGrayScale(Bitmap image)
 		{
-
-			for (int x = 0; x < image.Width; x++)
+			var width = image.Width;
+			var height = image.Height;
+			var result = new int[width, height];
+			for (int x = 0; x < width; x++)
 			{
-				for (int y = 0; y < image.Height; y++)
+				for (int y = 0; y < height; y++)
 				{
 					var c = image.GetPixel(x, y);
 					var grayScale = (int)(((float)c.R * 0.3) + ((float)c.G * 0.59) + ((float)c.B * +0.11));
-					image.SetPixel(x, y, Color.FromArgb(grayScale, grayScale, grayScale));
+					result[x, y] = grayScale;
 				}
 			}
-			return image;
+			return result;
 		}
 
-		public static int maxValue(Bitmap image)
+		public static int[,] doubleThreashold(int[,] image)
 		{
-			var max = 0;
-			for (int x = 0; x < image.Width; x++)
-			{
-				for (int y = 0; y < image.Height; y++)
-				{
-					if (image.GetPixel(x, y).R > max)
-					{
-						max = image.GetPixel(x, y).R;
-					}
-				}
-			}
-			return max;
-		}
-
-		public static Bitmap doubleThreashold(Bitmap image)
-		{
-			var highThreshold = maxValue(image) * 0.09;
+			var highThreshold = 255 * 0.09;
 			var lowThreshold = highThreshold * 0.05;
-			var doubleMap = new Bitmap(image.Width, image.Height);
-			int no = 0, low = 0, high = 0;
-			for (int x = 0; x < image.Width; x++)
+			var width = image.GetLength(0);
+			var height = image.GetLength(1);
+			var doubleMap = new int[width, height];
+
+			for (int x = 0; x < width; x++)
 			{
-				for (int y = 0; y < image.Height; y++)
+				for (int y = 0; y < height; y++)
 				{
-					if ((float)(image.GetPixel(x, y).R) <= lowThreshold)
+					if (image[x, y] <= lowThreshold)
 					{
-						doubleMap.SetPixel(x, y, black);
-						no++;
+						doubleMap[x, y] = 0;
 					}
-					else if ((float)(image.GetPixel(x, y).R) >= highThreshold)
+					else if (image[x, y] >= highThreshold)
 					{
-						doubleMap.SetPixel(x, y, white);
-						high++;
+						doubleMap[x, y] = 255;
 					}
 					else
 					{
-						low++;
-						doubleMap.SetPixel(x, y, Color.FromArgb(weak, weak, weak));
+						doubleMap[x, y] = weak;
 					}
 				}
 			}
@@ -267,9 +255,11 @@ namespace procedural_c_
 			return doubleMap;
 		}
 
-		public static bool hasStrongNeighbor(Bitmap image, int x, int y)
+		public static bool hasStrongNeighbor(int[,] image, int x, int y)
 		{
 			var strong = 0;
+			var width = image.GetLength(0);
+			var height = image.GetLength(1);
 
 			var result = false;
 			for (int i = -1; i <= 1; i++)
@@ -279,21 +269,25 @@ namespace procedural_c_
 					var posX = x + i;
 					var posY = y + j;
 					// not edges or itself
-					if (!((i == 1 && j == 1) || posX <= 0 || posX >= image.Width - 1 || posY <= 0 || posY >= image.Height - 1))
-						result = result || (getPixel(image, posX, posY) == strong);
+					if (!((i == 1 && j == 1) || posX <= 0 || posX >= width - 1 || posY <= 0 || posY >= height - 1))
+					{
+						result = result || image[posX, posY] == strong;
+					}
 				}
 			}
 			return result;
 		}
 
-		public static Bitmap hysteresis(Bitmap img)
+		public static Bitmap hysteresis(int[,] img)
 		{
-			var image = new Bitmap(img.Width, img.Height);
-			for (int x = 0; x < img.Width; x++)
+			var width = img.GetLength(0);
+			var height = img.GetLength(1);
+			var image = new Bitmap(width, height);
+			for (int x = 0; x < width; x++)
 			{
-				for (int y = 0; y < img.Height; y++)
+				for (int y = 0; y < height; y++)
 				{
-					if (img.GetPixel(x, y).R == weak)
+					if (img[x, y] == weak)
 					{
 						if (hasStrongNeighbor(img, x, y))
 							image.SetPixel(x, y, black);
@@ -301,7 +295,10 @@ namespace procedural_c_
 							image.SetPixel(x, y, white);
 					}
 					else
-						image.SetPixel(x, y, img.GetPixel(x, y));
+					{
+						var value = img[x, y];
+						image.SetPixel(x, y, Color.FromArgb(value, value, value));
+					}
 				}
 			}
 			return image;

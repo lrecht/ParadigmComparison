@@ -37,10 +37,10 @@ let GaussianFilter (length: int) (weight: float) =
     kernel
 
 //My own slow Convolve
-let Convolve (image: Bitmap) (kernel: float[,]) =
-    let width = image.Width
-    let height = image.Height
-    let test = new Bitmap(width, height)
+let Convolve (image: int[,]) (kernel: float[,]) =
+    let width = image.GetLength(0)
+    let height = image.GetLength(1)
+    let test: int[,] = Array2D.zeroCreate width height
     //Kernel has to be an odd number
     let halfKernel = kernel.GetLength(0) / 2
     for x in 0 .. width-1 do
@@ -52,122 +52,122 @@ let Convolve (image: Bitmap) (kernel: float[,]) =
                     let posY = y + ky
                     // not edges
                     if not (posX <= 0 || posX >= width-1 || posY <= 0 || posY >= height - 1) then
-                        sum <- sum + ((float)(getPixel image posX posY) * (kernel.[kx+halfKernel, ky+halfKernel]))
+                        sum <- sum + ((float)(image.[posX, posY]) * (kernel.[kx+halfKernel, ky+halfKernel]))
             
             if (sum > 255.0) then
                 sum <- 255.0
             else if (sum < 0.0) then
                 sum <- 0.0
 
-            test.SetPixel(x, y, Color.FromArgb((int)sum, (int)sum, (int)sum))
+            test.[x, y] <- (int)sum
     test
 
 let hyp (num1: int) (num2: int) = 
     let hyp = (Math.Sqrt((float)(num1 * num1) + (float)(num2 * num2)))
     Math.Min(255, (int)hyp)
 
-let hypot (image1: Bitmap) (image2: Bitmap) = 
-    let result: Bitmap = new Bitmap(image1.Width, image1.Height)
-    
-    for x in 0 .. image1.Width-1 do
-        for y in 0 .. image1.Height-1 do
-            let color1 = getPixel image1 x y
-            let color2 = getPixel image2 x y
+let hypot (image1: int[,]) (image2: int[,]) = 
+    let result: int[,] = Array2D.zeroCreate (image1.GetLength(0)) (image1.GetLength(1))
+    let width = image1.GetLength(0)
+    let height = image1.GetLength(1)
+    for x in 0 .. width-1 do
+        for y in 0 .. height-1 do
+            let color1 = image1.[x, y]
+            let color2 = image2.[x, y]
             
             let hypColor = hyp color1 color2
-            let newColor = Color.FromArgb(hypColor, hypColor, hypColor);
-            result.SetPixel(x, y, newColor)
-    result
-    
-let arctan (image1: Bitmap) (image2: Bitmap) = 
-    let result: (double)[,] = Array2D.create image1.Width image1.Height (0.0)
-    
-    for x in 0 .. image1.Width-1 do
-        for y in 0 .. image1.Height-1 do
-            let color1 = image1.GetPixel(x, y)
-            let color2 = image2.GetPixel(x, y)
-            result.[x, y] <- (Math.Atan2((float)color1.R, (float)color2.R))
+            result.[x, y] <- hypColor;
     result
 
+let arctan (image1: int[,]) (image2: int[,]) = 
+    let width = image1.GetLength(0)
+    let height = image1.GetLength(1)
+    let result: (double)[,] = Array2D.zeroCreate width height
+    for x in 0 .. width-1 do
+        for y in 0 .. height-1 do
+            let color1 = image1.[x, y]
+            let color2 = image2.[x, y]
+            result.[x, y] <- (Math.Atan2((float)color1, (float)color2))
+    result
 
-let computeIntensity (image: Bitmap) = 
+let computeIntensity (image: int[,]) = 
     let Ix = Convolve image kernelHor
     let Iy = Convolve image kernelVer
     
     let g = hypot Ix Iy
     
     let theta = arctan Iy Ix
-    let thetaQ = Array2D.create (theta.GetLength(0)) (theta.GetLength(1)) 0
-    for i in 0 .. theta.GetLength(0)-1 do
-        for j in 0 .. theta.GetLength(1)-1 do
+    let thetaWidth = theta.GetLength(0)
+    let thetaHeight = theta.GetLength(1)
+    let thetaQ = Array2D.zeroCreate thetaWidth thetaHeight
+    for i in 0 .. thetaWidth-1 do
+        for j in 0 .. thetaHeight-1 do
             let num = ((int) (Math.Round(theta.[i,j] * (5.0 / Math.PI))) + 5) % 5
             thetaQ.[i, j] <- num
     
     (g, thetaQ)
 
-let nonMaxSuppresion (image: Bitmap) (theta: int[,]) =
+let nonMaxSuppresion (image: int[,]) (theta: int[,]) =
     // Non-maximum suppression
-    let gradSup: Bitmap = image
-
-    for r in 0 .. image.Width-1 do
-        for c in 0 .. image.Height-1 do
+    let gradSup: int[,] = image
+    let width = image.GetLength(0)
+    let height = image.GetLength(1)
+    for r in 0 .. width-1 do
+        for c in 0 .. height-1 do
             //Suppress pixels at the image edge
-            if r = 0 || r = image.Width-1 || c = 0 || c = image.Height - 1 then
-                gradSup.SetPixel(r, c, black)
+            if r = 0 || r = width-1 || c = 0 || c = height - 1 then
+                gradSup.[r, c] <- 0
             
             else
                 let tq = (int)(theta.[r, c] % 4)
                 if tq = 0 then //0 is E-W (horizontal)
-                    if image.GetPixel(r, c).R <= image.GetPixel(r, c-1).R || image.GetPixel(r, c).R <= image.GetPixel(r, c+1).R then
-                        gradSup.SetPixel(r, c, black)
+                    if image.[r, c] <= image.[r, c-1] || image.[r, c] <= image.[r, c+1] then
+                        gradSup.[r, c] <- 0
                 if tq = 1 then //1 is NE-SW
-                    if image.GetPixel(r, c).R <= image.GetPixel(r-1, c+1).R || image.GetPixel(r, c).R <= image.GetPixel(r+1, c-1).R then
-                        gradSup.SetPixel(r, c, black)
+                    if image.[r, c] <= image.[r-1, c+1] || image.[r, c] <= image.[r+1, c-1] then
+                        gradSup.[r, c] <- 0
                 if tq = 2 then //2 is N-S (vertical)
-                    if image.GetPixel(r, c).R <= image.GetPixel(r-1, c).R || image.GetPixel(r, c).R <= image.GetPixel(r+1, c).R then
-                        gradSup.SetPixel(r, c, black)
+                    if image.[r, c] <= image.[r-1, c] || image.[r, c] <= image.[r+1, c] then
+                        gradSup.[r, c] <- 0
                 if tq = 3 then //#3 is NW-SE
-                    if image.GetPixel(r, c).R <= image.GetPixel(r-1, c-1).R || image.GetPixel(r, c).R <= image.GetPixel(r+1, c+1).R then
-                        gradSup.SetPixel(r, c, black)
+                    if image.[r, c] <= image.[r-1, c-1] || image.[r, c] <= image.[r+1, c+1] then
+                        gradSup.[r, c] <- 0
     gradSup
 
 // This gray scale is slow but easy.
 // https://web.archive.org/web/20110827032809/http://www.switchonthecode.com/tutorials/csharp-tutorial-convert-a-color-image-to-grayscale
 let toGrayScale (image: Bitmap) =
+    let imageArr: int[,] = Array2D.zeroCreate image.Width image.Height
     for x in 0 .. image.Width-1 do
         for y in 0 .. image.Height-1 do
             let c = image.GetPixel(x, y);
             let grayScale = (int)(((float)c.R * 0.3) + ((float)c.G * 0.59) + ((float)c.B * + 0.11))
-            image.SetPixel(x, y, Color.FromArgb(grayScale, grayScale, grayScale));
-    image
+            imageArr.[x, y] <- grayScale
+    imageArr
 
-let maxValue (image: Bitmap) = 
-    let mutable max = 0
-    for x in 0 .. image.Width-1 do
-        for y in 0 .. image.Height-1 do
-            if (int)(image.GetPixel(x, y).R) > max then
-                max <- (int)(image.GetPixel(x, y).R)
-    max
-
-let doubleThreashold (image: Bitmap) = 
+let doubleThreashold (image: int[,]) = 
+    let width = image.GetLength(0)
+    let height = image.GetLength(1)
     //let highThreshold = 50.0
-    let highThreshold = (float)(maxValue image) * 0.09
+    let highThreshold = 255.0 * 0.09
     //let lowThreshold = 10.0
     let lowThreshold = highThreshold * 0.05
-    let double = new Bitmap(image.Width, image.Height)
+    let double: int[,] = Array2D.zeroCreate width height
 
-    for x in 0 .. image.Width-1 do
-        for y in 0 .. image.Height-1 do
-            if (float)(image.GetPixel(x, y).R) <= lowThreshold then
-                double.SetPixel(x, y, black)
-            else if (float)(image.GetPixel(x, y).R) >= highThreshold then
-                double.SetPixel(x, y, white)
+    for x in 0 .. width-1 do
+        for y in 0 .. height-1 do
+            if (float)(image.[x, y]) <= lowThreshold then
+                double.[x, y] <- 0
+            else if (float)(image.[x, y]) >= highThreshold then
+                double.[x, y] <- 255
             else
-                double.SetPixel(x, y, Color.FromArgb(weak, weak, weak))
+                double.[x, y] <- weak
     double
 
-let hasStrongNeighbor (image: Bitmap) (x: int) (y: int) = 
+let hasStrongNeighbor (image: int[,]) (x: int) (y: int) = 
     let strong = 0
+    let width = image.GetLength(0)
+    let height = image.GetLength(1)
     
     let mutable result = false
     for i in -1 .. 1 do
@@ -175,33 +175,34 @@ let hasStrongNeighbor (image: Bitmap) (x: int) (y: int) =
             let posX = x + i
             let posY = y + j
             // not edges or itself
-            if not ((i = 1 && j = 1) || posX <= 0 || posX >= image.Width-1 || posY <= 0 || posY >= image.Height - 1) then
-                result <- result || ((getPixel image posX posY) = strong)
+            if not ((i = 1 && j = 1) || posX <= 0 || posX >= width-1 || posY <= 0 || posY >= height - 1) then
+                result <- result || (image.[posX, posY] = strong)
     result
 
-let hysteresis (img: Bitmap) = 
-    let image = new Bitmap(img.Width, img.Height)
-    for x in 0 .. img.Width-1 do
-        for y in 0 .. img.Height-1 do
-            if (int)(img.GetPixel(x, y).R) = weak then
+let hysteresis (img: int[,]) = 
+    let width = img.GetLength(0)
+    let height = img.GetLength(1)
+    let image = new Bitmap(width, height)
+    for x in 0 .. width-1 do
+        for y in 0 .. height-1 do
+            if img.[x, y] = weak then
                 if (hasStrongNeighbor img x y) then
                     image.SetPixel(x, y, black)
                 else 
                     image.SetPixel(x, y, white)
             else
-                image.SetPixel(x, y, img.GetPixel(x, y))
+                let value = img.[x, y]
+                image.SetPixel(x, y, Color.FromArgb(value, value, value))
     image
 
 [<EntryPoint>]
 let main argv =
-    let stop = System.Diagnostics.Stopwatch.StartNew()
-    //let image: Bitmap = new Bitmap("benchmarks/canny_edge_detector/download.jpg")
-    let mutable image: Bitmap = new Bitmap("../download.jpg")
+    let image: Bitmap = new Bitmap("benchmarks/canny_edge_detector/download.jpg")
     
-    image <- toGrayScale image
+    let imageArrGray = toGrayScale image
     
     let gauFilt = GaussianFilter 5 1.0
-    let gau = Convolve image gauFilt
+    let gau = Convolve imageArrGray gauFilt
     
     let (intensity, theta) = computeIntensity gau
     
@@ -211,9 +212,6 @@ let main argv =
     
     let hysteresis = hysteresis doubleThreashold
     hysteresis.Save("Final.png")
-    
-    stop.Stop()
-    printfn "Time: %i" stop.ElapsedMilliseconds
     0 // return an integer exit code
 
 // Steps:
