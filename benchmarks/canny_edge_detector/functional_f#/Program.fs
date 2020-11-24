@@ -1,13 +1,8 @@
-﻿// Learn more about F# at http://fsharp.org
-
-open System
+﻿open System
 open System.Drawing
-open System.Runtime.InteropServices
 
 let weak = 100
 
-let black = Color.FromArgb(0, 0, 0)
-let white = Color.FromArgb(255, 255, 255)
 let getPixel (image: Bitmap) (x: int) (y: int) = (int)(image.GetPixel(x, y).R)
 
 let kernelHor = Array.mapi (fun index v -> (index%3-1,index/3-1,v)) [|-1.0; 0.0; 1.0; -2.0; 0.0; 2.0; -1.0; 0.0; 1.0|]
@@ -96,7 +91,7 @@ let nonMaxSuppression ((gradient:(int*int*int) array),direction) =
     Array.map2 (fun (x,y,w1) (_,_,w2) -> x,y,maxSuppressionOne width height gradient x y w1 w2) gradient direction
 
 
-let doubleThreshhold image = 
+let doubleThreshold image = 
     let max = Array.fold (fun acc (_,_,w) -> if w > acc then w else acc) 0 image
     let high = (float max) * 0.12
     let low = high*0.07
@@ -125,13 +120,12 @@ let cannyBoi image =
     |> gFilter 5 1.0
     |> intensityGradients
     |> nonMaxSuppression
-    |> doubleThreshhold
+    |> doubleThreshold
     |> hysteresis
 
 [<EntryPoint>]
 let main argv =
     let image = new Bitmap("benchmarks/canny_edge_detector/download.jpg")
-    let res = cannyBoi (toRgbArray image) 
-    (res |> toBitmap).Save("Final.png")
+    let res = cannyBoi (toRgbArray image)
     printfn "%i" (Array.fold (fun acc (_,_,w) -> if w > 0 then acc + 1 else acc) 0 res)
     0 // return an integer exit code
