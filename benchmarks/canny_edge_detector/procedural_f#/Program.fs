@@ -213,10 +213,3 @@ let main argv =
     printfn "Time: %i" stop.ElapsedMilliseconds
 
     0 // return an integer exit code
-
-// Steps:
-// 1. Noise reduction. May be performed by Gaussian filter
-// 2. Compute intensity gradient
-// 3. Non-maximum suppression.
-// 4. Tracing edges with hysteresis.
-
