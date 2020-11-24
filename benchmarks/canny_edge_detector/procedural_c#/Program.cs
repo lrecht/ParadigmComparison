@@ -170,31 +170,23 @@ namespace procedural_c_
 			var height = image.GetLength(1);
 			var gradSup = image;
 
-			for (int r = 0; r < width; r++)
+			for (int r = 1; r < width-1; r++)
 			{
-				for (int c = 0; c < height; c++)
+				for (int c = 1; c < height-1; c++)
 				{
-					//Suppress pixels at the image edge
-					if (r == 0 || r == width - 1 || c == 0 || c == height - 1)
-					{
-						gradSup[r, c] = 0;
-					}
-					else
-					{
-						var tq = (int)(theta[r, c] % 4);
-						if (tq == 0) //0 is E-W (horizontal)
-							if (image[r, c] <= image[r, c - 1] || image[r, c] <= image[r, c + 1])
-								gradSup[r, c] = 0;
-						if (tq == 1) //1 is NE-SW
-							if (image[r, c] <= image[r - 1, c + 1] || image[r, c] <= image[r + 1, c - 1])
-								gradSup[r, c] = 0;
-						if (tq == 2) //2 is N-S (vertical)
-							if (image[r, c] <= image[r - 1, c] || image[r, c] <= image[r + 1, c])
-								gradSup[r, c] = 0;
-						if (tq == 3) //#3 is NW-SE
-							if (image[r, c] <= image[r - 1, c - 1] || image[r, c] <= image[r + 1, c + 1])
-								gradSup[r, c] = 0;
-					}
+					var tq = (int)(theta[r, c] % 4);
+					if (tq == 0) //0 is E-W (horizontal)
+						if (image[r, c] <= image[r, c - 1] || image[r, c] <= image[r, c + 1])
+							gradSup[r, c] = 0;
+					if (tq == 1) //1 is NE-SW
+						if (image[r, c] <= image[r - 1, c + 1] || image[r, c] <= image[r + 1, c - 1])
+							gradSup[r, c] = 0;
+					if (tq == 2) //2 is N-S (vertical)
+						if (image[r, c] <= image[r - 1, c] || image[r, c] <= image[r + 1, c])
+							gradSup[r, c] = 0;
+					if (tq == 3) //#3 is NW-SE
+						if (image[r, c] <= image[r - 1, c - 1] || image[r, c] <= image[r + 1, c + 1])
+							gradSup[r, c] = 0;
 				}
 			}
 			return gradSup;
