@@ -222,17 +222,11 @@ namespace procedural_c_
 				for (int y = 0; y < height; y++)
 				{
 					if (image[x, y] <= lowThreshold)
-					{
 						doubleMap[x, y] = 0;
-					}
 					else if (image[x, y] >= highThreshold)
-					{
 						doubleMap[x, y] = 255;
-					}
 					else
-					{
 						doubleMap[x, y] = weak;
-					}
 				}
 			}
 
