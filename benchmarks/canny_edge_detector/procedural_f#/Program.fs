@@ -57,7 +57,7 @@ let Convolve (image: int[,]) (filter: float[,]) =
                     if not (posX < 0 || posX > width-1 || posY < 0 || posY > height - 1) then
                         sum <- sum + ((float)(image.[posX, posY]) * (filter.[kx+halfKernel, ky+halfKernel]))
             
-            test.[x, y] <- (int)sum
+            test.[x, y] <- (int) sum
     test
 
 let hyp (num1: int) (num2: int) = 
@@ -66,8 +66,6 @@ let hyp (num1: int) (num2: int) =
 let computeIntensity (image: int[,]) = 
     let Ix = Convolve image kernelHor
     let Iy = Convolve image kernelVer
-    printfn "%A" Ix.[0..Ix.GetLength(0)-1, 0]
-    printfn "%A" Iy.[0..Iy.GetLength(0)-1, 0]
     
     let g: int[,] = Array2D.zeroCreate (image.GetLength(0)) (image.GetLength(1))
     let thetaWidth = Iy.GetLength(0)
@@ -128,12 +126,11 @@ let getMax (image: int[,]) =
         for y in 0 .. height-1 do
             if image.[x, y] > max then
                 max <- image.[x, y]
-    printfn "Max: %i" max
     max
 
 let doubleThreashold (image: int[,]) = 
-    let highThreshold = (float)(getMax image) * 0.09
-    let lowThreshold = highThreshold * 0.5
+    let highThreshold = (float)(getMax image) * 0.12
+    let lowThreshold = highThreshold * 0.07
     let width = image.GetLength(0)
     let height = image.GetLength(1)
     let double: int[,] = Array2D.zeroCreate width height
@@ -167,16 +164,21 @@ let hysteresis (img: int[,]) =
     let width = img.GetLength(0)
     let height = img.GetLength(1)
     let image = new Bitmap(width, height)
+    let mutable num = 0
     for x in 0 .. width-1 do
         for y in 0 .. height-1 do
             if img.[x, y] = weak then
                 if (hasStrongNeighbor img x y) then
                     image.SetPixel(x, y, Color.White)
+                    num <- num + 1
                 else 
                     image.SetPixel(x, y, Color.Black)
             else
                 let value = img.[x, y]
+                if (value = white) then
+                    num <- num + 1
                 image.SetPixel(x, y, Color.FromArgb(value, value, value))
+    printfn "Num: %i" num
     image
 
 let arrayToBit (intArr: int[,]) = 
