@@ -193,7 +193,6 @@ let arrayToBit (intArr: int[,]) =
 
 [<EntryPoint>]
 let main argv =
-    let stop = System.Diagnostics.Stopwatch.StartNew()
     let image: Bitmap = new Bitmap("../download.jpg")
     
     let imageArrGray = toGrayScale image
@@ -208,8 +207,5 @@ let main argv =
     let doubleThreashold = doubleThreashold nonMax
     let hysteresis = hysteresis doubleThreashold
     hysteresis.Save("Final.png")
-
-    stop.Stop()
-    printfn "Time: %i" stop.ElapsedMilliseconds
 
     0 // return an integer exit code
