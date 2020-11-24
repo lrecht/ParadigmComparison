@@ -9,8 +9,7 @@ namespace oop_c_
     {
         static void Main(string[] args)
         {
-            Bitmap detectedEdges = new Canny("../download.jpg").CannyEdges();
-            ImageUtils.PlotBitmap(detectedEdges, "canny_edge_detection.jpg");
+            Bitmap detectedEdges = new Canny("benchmarks/canny_edge_detection/download.jpg").CannyEdges();
         }
     }
     public enum Direction
@@ -36,6 +35,7 @@ namespace oop_c_
         // Gaussian parameters
         private static int GAUSSIAN_LENGTH = 5;
         private static double GAUSSIAN_INTENSITY = 1;
+
         Bitmap originalImage;
         public Canny(string filename)
         {
@@ -46,11 +46,9 @@ namespace oop_c_
         {
             // 0) Make greyscale
             int[,] output = ImageUtils.ToGreyScaleArray(originalImage);
-            //ImageUtils.PlotArrayAsBitmap(output, "greyscale.jpg");
 
             // 1) Reduce noise using gaussian blur
             output = Gaussian.BlurGreyscale(output, GAUSSIAN_LENGTH, GAUSSIAN_INTENSITY);
-            //ImageUtils.PlotArrayAsBitmap(output, "gaussianblur.jpg");
 
             // 2) Compute intensity gradient using Sobel operators.
             // The Gradient calculation step detects the edge intensity and 
@@ -58,11 +56,9 @@ namespace oop_c_
             // detection operators.
             Direction[,] direction;
             (output, direction) = Sobel.IntensityGradient(output);
-            //ImageUtils.PlotArrayAsBitmap(output, "sobel.jpg");
 
             // 3) Non-max suppresion
             output = nonMaxSuppresion(output, direction);
-            //ImageUtils.PlotArrayAsBitmap(output, "nonmax.jpg");
 
             // 4) Tracing edges with hysteresis
             Bitmap detectedEdges = hysteresis(output, HIGH_THRESHOLD_VOODOO, LOW_THRESHOLD_VOODOO);
@@ -79,17 +75,14 @@ namespace oop_c_
                 {
                     int magnitude = image[x, y];
                     Direction dir = direction[x, y];
-                    //If vertical: Check left and right neighbors
-                    if (dir == Direction.Vertical && (magnitude < image[x - 1, y] || magnitude < image[x + 1, y]))
-                        image[x, y] = (int)Colors.Black;
-                    //If DiagonalRL: Check diagonal (upper left and lower right) neighbors
-                    else if (dir == Direction.DiagonalRL && (magnitude < image[x - 1, y + 1] || magnitude < image[x + 1, y - 1]))
-                        image[x, y] = (int)Colors.Black;
-                    //If horizontal: Check top and bottom neighbors
-                    else if (dir == Direction.Horizontal && (magnitude < image[x, y - 1] || magnitude < image[x, y + 1]))
-                        image[x, y] = (int)Colors.Black;
-                    //If DiagonalLR: Check diagonal (upper right and lower left) neighbors
-                    else if (dir == Direction.DiagonalLR && (magnitude < image[x + 1, y + 1] || magnitude < image[x - 1, y - 1]))
+                        //If vertical: Check left and right neighbors
+                    if  ((dir == Direction.Vertical && (magnitude < image[x - 1, y] || magnitude < image[x + 1, y])) ||
+                        //If DiagonalRL: Check diagonal (upper left and lower right) neighbors
+                        (dir == Direction.DiagonalRL && (magnitude < image[x - 1, y + 1] || magnitude < image[x + 1, y - 1])) ||
+                        //If horizontal: Check top and bottom neighbors
+                        (dir == Direction.Horizontal && (magnitude < image[x, y - 1] || magnitude < image[x, y + 1])) ||
+                        //If DiagonalLR: Check diagonal (upper right and lower left) neighbors
+                        (dir == Direction.DiagonalLR && (magnitude < image[x + 1, y + 1] || magnitude < image[x - 1, y - 1])))
                         image[x, y] = (int)Colors.Black;
                 }
             }
@@ -148,7 +141,7 @@ namespace oop_c_
     {
         // Send this method a grayscale image, an int radius, and a double intensity 
         // to blur the image with a Gaussian filter of that radius and intensity.
-        public static int[,] BlurGreyscale(int[,] image, int length = 7, double intensity = 1.5)
+        public static int[,] BlurGreyscale(int[,] image, int length = 5, double intensity = 1)
         {
             (int width, int height) = (image.GetLength(0), image.GetLength(1));
             int[,] output = new int[width - length, height - length];
@@ -161,19 +154,19 @@ namespace oop_c_
             return output;
         }
 
-        public static double[,] initialiseKernel(int length, double weight)
+        public static double[,] initialiseKernel(int length, double intensity)
         {
             int radius = (int)length / 2;
             double[,] kernel = new double[length, length];
             double sumTotal = 0;
             double distance = 0;
-            double calculatedEuler = 1.0 / (2.0 * Math.PI * Math.Pow(weight, 2));
+            double calculatedEuler = 1.0 / (2.0 * Math.PI * Math.Pow(intensity, 2));
 
             for (int filterX = -radius; filterX <= radius; filterX++)
             {
                 for (int filterY = -radius; filterY <= radius; filterY++)
                 {
-                    distance = ((filterX * filterX) + (filterY * filterY)) / (2 * (weight * weight));
+                    distance = ((filterX * filterX) + (filterY * filterY)) / (2 * (intensity * intensity));
                     kernel[filterX + radius, filterY + radius] = calculatedEuler * Math.Exp(-distance);
                     sumTotal += kernel[filterX + radius, filterY + radius];
                 }
@@ -202,7 +195,7 @@ namespace oop_c_
             int[,] verticalIntensity = Convolver.Convolve(image, KERNEL_V); // Iy
 
             // Compute magnitude G as  sqrt(Ix^2+Iy^2) and
-            // direction: slope of the gradient as arctan(Iy/Ix) converted to degrees.
+            // direction: slope of the gradient as arctan(Iy/Ix) converted to degrees and then to compass directions.
             (int[,] gradient, Direction[,] direction) = magnitude(horizontalIntensity, verticalIntensity);
             return (gradient, direction);
 
@@ -214,7 +207,7 @@ namespace oop_c_
             (int width, int height) = (image1.GetLength(0), image1.GetLength(1));
             int[,] output = new int[width, height];
             Direction[,] direction = new Direction[width, height];
-            // N/S, NE/SW, E/W, NW/SE
+                                                    // N/S,              NE/SW,                E/W,                  NW/SE
             var compassDirection = new Direction[] { Direction.Vertical, Direction.DiagonalRL, Direction.Horizontal, Direction.DiagonalLR };
             double piRad = 180 / Math.PI;
             for (int x = 0; x < width; x++)
