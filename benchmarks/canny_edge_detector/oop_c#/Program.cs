@@ -10,7 +10,7 @@ namespace oop_c_
         static void Main(string[] args)
         {
             Bitmap detectedEdges = new Canny("../download.jpg").CannyEdges();
-            //ImageUtils.PlotBitmap(detectedEdges, "canny_edge_detection.jpg");
+            ImageUtils.PlotBitmap(detectedEdges, "canny_edge_detection.jpg");
         }
     }
     public enum Direction
@@ -29,6 +29,10 @@ namespace oop_c_
 
     public class Canny
     {
+        // Canny parameters
+        private static double HIGH_THRESHOLD_VOODOO = 0.09;
+        private static double LOW_THRESHOLD_VOODOO = 0.5;
+
         // Gaussian parameters
         private static int GAUSSIAN_LENGTH = 5;
         private static double GAUSSIAN_INTENSITY = 1;
@@ -61,7 +65,7 @@ namespace oop_c_
             //ImageUtils.PlotArrayAsBitmap(output, "nonmax.jpg");
 
             // 4) Tracing edges with hysteresis
-            Bitmap detectedEdges = hysteresis(output);
+            Bitmap detectedEdges = hysteresis(output, HIGH_THRESHOLD_VOODOO, LOW_THRESHOLD_VOODOO);
             return detectedEdges;
         }
 
@@ -92,16 +96,16 @@ namespace oop_c_
             return image;
         }
 
-        private Bitmap hysteresis(int[,] image)
+        private Bitmap hysteresis(int[,] image, double highVoodoo, double lowVoodoo)
         {
             (int width, int height) = (image.GetLength(0), image.GetLength(1));
             var arr = image.Cast<int>();
-            double mean = arr.Average();
-            double stdDev = Math.Sqrt(arr.Sum() / (arr.Count()));
-            double thresholdHigh = mean + (3 * stdDev); //(int)Colors.White * 0.09;
-            double thresholdLow = thresholdHigh * 0.2; //thresholdHigh * 0.5;
+            double thresholdHigh = arr.Max() * highVoodoo;
+            double thresholdLow = thresholdHigh * lowVoodoo;
             Bitmap output = new Bitmap(width, height);
             List<(int, int)> weak = new List<(int, int)>();
+
+            int count = 0;
 
             for (int x = 1; x < width - 1; x++)
             {
@@ -109,7 +113,10 @@ namespace oop_c_
                 {
                     int magnitude = image[x, y];
                     if (magnitude >= thresholdHigh) // strong
+                    {
+                        count++;
                         output.SetPixel(x, y, Color.White);
+                    }
                     else if (magnitude < thresholdLow) // zero
                         output.SetPixel(x, y, Color.Black);
                     else // weak
@@ -119,8 +126,10 @@ namespace oop_c_
             foreach (var (x, y) in weak)
             {
                 bool connected = hasStrongNeighbour(image, thresholdHigh, x, y);
+                if (connected) count++;
                 output.SetPixel(x, y, connected ? Color.White : Color.Black);
             }
+            System.Console.WriteLine(count);
             return output;
         }
 
@@ -129,7 +138,7 @@ namespace oop_c_
             bool connected = false;
             for (int i = -1; i < 2; i++)
                 for (int j = -1; j < 2; j++)
-                    if (image[x + i, y + j] >= thresholdHigh)
+                    if (image[x + i, y + j] > thresholdHigh)
                         connected = true;
             return connected;
         }
@@ -181,8 +190,8 @@ namespace oop_c_
     public static class Sobel
     {
         //The masks for each Sobel convolution
-        private static double[,] KERNEL_H = { { 1, 0, -1 }, { 2, 0, -2 }, { 1, 0, -1 } };
-        private static double[,] KERNEL_V = { { 1, 2, 1 }, { 0, 0, 0 }, { -1, -2, -1 } };
+        private static double[,] KERNEL_H = { { -1, 0, 1 }, { -2, 0, 2 }, { -1, 0, 1 } };
+        private static double[,] KERNEL_V = { { -1, -2, -1 }, { 0, 0, 0 }, { 1, 2, 1 } };
 
         public static (int[,], Direction[,]) IntensityGradient(int[,] image)
         {
@@ -232,24 +241,15 @@ namespace oop_c_
             (int width, int height) = (image.GetLength(0), image.GetLength(1));
             int halfKernel = kernel.GetLength(0) / 2;
             int[,] output = new int[width - halfKernel, height - halfKernel];
-            for (int x = 1; x < width - halfKernel; x++)
+            for (int x = halfKernel; x < width - halfKernel; x++)
             {
-                for (int y = 1; y < height - halfKernel; y++)
+                for (int y = halfKernel; y < height - halfKernel; y++)
                 {
                     double sum = 0;
                     for (int kernelX = -halfKernel; kernelX <= halfKernel; kernelX++)
-                    {
                         for (int kernelY = -halfKernel; kernelY <= halfKernel; kernelY++)
-                        {
-                            int posX = x + kernelX;
-                            int posY = y + kernelY;
-                            if (posX < 0 || posY < 0)
-                                continue;
-                            sum += kernel[kernelX + halfKernel, kernelY + halfKernel] * image[posX, posY]; ;
-
-                        }
-                    }
-                    output[x, y] = (int)sum;
+                            sum += kernel[kernelX + halfKernel, kernelY + halfKernel] * image[kernelX + x, kernelY + y];
+                    output[x - halfKernel, y - halfKernel] = (int)sum;
                 }
             }
             return output;
