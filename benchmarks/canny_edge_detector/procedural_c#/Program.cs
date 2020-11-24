@@ -89,14 +89,6 @@ namespace procedural_c_
 							}
 						}
 					}
-					if (sum > 255.0)
-					{
-						sum = 255.0;
-					}
-					else if (sum < 0.0)
-					{
-						sum = 0.0;
-					}
 
 					test[x, y] = (int)sum;
 				}
