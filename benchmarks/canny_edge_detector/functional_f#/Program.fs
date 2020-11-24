@@ -21,7 +21,7 @@ let getWH (a:(int*int*int)array) =
     fst a.[a.Length-1] + 1,
     snd a.[a.Length-1] + 1
 
-// Line 23-36 are from http://www.fssnip.net/sn/title/Bitmap-Primitives-Helpers
+// The following 13 lines are from http://www.fssnip.net/sn/title/Bitmap-Primitives-Helpers
 let toRgbArray (bmp : Bitmap) =
     [| for y in 0..bmp.Height-1 do
        for x in 0..bmp.Width-1 -> x,y,(bmp.GetPixel(x,y)) |]   
@@ -49,7 +49,6 @@ let createGaussianFilter length weight =
                         (offX,offY,constant * Math.Exp(-(float(offY*offY + (offX * offX)) / (2.0 * weight * weight))))) kernel
     let sum = Array.fold (fun sum (_,_,x) -> sum+x) 0.0 filter
     Array.map (fun (a,b,x) -> a,b,x/sum) filter
-
 
 let convolveOne (image:(int*int*int)array) imageLength imageHeight filter (x,y,_) =
     x,y,(int)(Array.fold (fun sum (fx,fy,weight) -> 
@@ -99,8 +98,8 @@ let nonMaxSuppression ((gradient:(int*int*int) array),direction) =
 
 let doubleThreshhold image = 
     let max = Array.fold (fun acc (_,_,w) -> if w > acc then w else acc) 0 image
-    let high = (float max) * 0.09
-    let low = high*0.05
+    let high = (float max) * 0.12
+    let low = high*0.07
     Array.map (fun (x,y,w) -> x,y,if float w <= low then 0 elif float w < high then weak else 255) image
 
 let strongNeighbour (image:(int*int*int)array) width height x y =
@@ -132,6 +131,7 @@ let cannyBoi image =
 [<EntryPoint>]
 let main argv =
     let image = new Bitmap("benchmarks/canny_edge_detector/download.jpg")
-    let res = cannyBoi (toRgbArray image) |> toBitmap
-    res.Save("Final.png")
+    let res = cannyBoi (toRgbArray image) 
+    (res |> toBitmap).Save("Final.png")
+    printfn "%i" (Array.fold (fun acc (_,_,w) -> if w > 0 then acc + 1 else acc) 0 res)
     0 // return an integer exit code
