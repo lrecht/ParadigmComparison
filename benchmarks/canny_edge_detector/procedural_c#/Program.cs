@@ -99,7 +99,7 @@ namespace procedural_c_
 		public static int hyp(int num1, int num2)
 		{
 			var hyp = (Math.Sqrt((num1 * num1) + (num2 * num2)));
-			return Math.Min(255, (int)hyp);
+			return (int)hyp;
 		}
 
 		public static int[,] hypot(int[,] image1, int[,] image2)
