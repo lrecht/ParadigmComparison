@@ -193,7 +193,7 @@ let arrayToBit (intArr: int[,]) =
 
 [<EntryPoint>]
 let main argv =
-    let image: Bitmap = new Bitmap("../download.jpg")
+    let image: Bitmap = new Bitmap("benchmarks/canny_edge_detector/download.jpg")
     
     let imageArrGray = toGrayScale image
     
