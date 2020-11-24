@@ -206,6 +206,5 @@ let main argv =
     
     let doubleThreashold = doubleThreashold nonMax
     let hysteresis = hysteresis doubleThreashold
-    hysteresis.Save("Final.png")
 
     0 // return an integer exit code
