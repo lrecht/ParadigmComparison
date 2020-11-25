@@ -144,7 +144,7 @@ namespace procedural_c_
 					//Suppress pixels at the image edge
 					if (r == 0 || r == width - 1 || c == 0 || c == height - 1)
 					{
-						gradSup[r, c] = black;
+						gradSup[r, c] = image[r, c];
 					}
 					else
 					{
@@ -199,8 +199,8 @@ namespace procedural_c_
 
 		public static int[,] doubleThreshold(int[,] image)
 		{
-			var highThreshold = getMax(image) * 0.12;
-			var lowThreshold = highThreshold * 0.07;
+			var highThreshold = getMax(image) * 0.09;
+			var lowThreshold = highThreshold * 0.5;
 			var width = image.GetLength(0);
 			var height = image.GetLength(1);
 			var doubleMap = new int[width, height];

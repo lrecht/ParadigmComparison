@@ -93,7 +93,7 @@ let nonMaxSuppresion (image: int[,]) (theta: int[,]) =
         for c in 0 .. height-1 do
             //Suppress pixels at the image edge
             if r = 0 || r = width-1 || c = 0 || c = height - 1 then
-                gradSup.[r, c] <- black
+                gradSup.[r, c] <- image.[r, c]
             else
                 let tq = (int)(theta.[r, c] % 4)
                 
@@ -128,8 +128,8 @@ let getMax (image: int[,]) =
     max
 
 let doubleThreshold (image: int[,]) = 
-    let highThreshold = (float)(getMax image) * 0.12
-    let lowThreshold = highThreshold * 0.07
+    let highThreshold = (float)(getMax image) * 0.09
+    let lowThreshold = highThreshold * 0.5
     let width = image.GetLength(0)
     let height = image.GetLength(1)
     let double: int[,] = Array2D.zeroCreate width height
@@ -195,6 +195,7 @@ let main argv =
     
     let doubleThreshold = doubleThreshold nonMax
     let (imageFinal, numWhite) = hysteresis doubleThreshold
+    imageFinal.Save("test.png")
     printfn "White: %i" numWhite
 
     0 // return an integer exit code
