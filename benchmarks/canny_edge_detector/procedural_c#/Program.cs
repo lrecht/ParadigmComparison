@@ -244,7 +244,7 @@ namespace procedural_c_
 					        return true;
 				}
 			}
-			return result;
+			return false;
 		}
 
 		public static (Bitmap, int) hysteresis(int[,] img)
