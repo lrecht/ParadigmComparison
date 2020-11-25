@@ -2,9 +2,6 @@
 open System.Drawing
 
 let weak = 100
-
-let getPixel (image: Bitmap) (x: int) (y: int) = (int)(image.GetPixel(x, y).R)
-
 let kernelHor = Array.mapi (fun index v -> (index%3-1,index/3-1,v)) [|-1.0; 0.0; 1.0; -2.0; 0.0; 2.0; -1.0; 0.0; 1.0|]
 let kernelVer = Array.mapi (fun index v -> (index%3-1,index/3-1,v)) [|1.0; 2.0; 1.0; 0.0; 0.0; 0.0; -1.0; -2.0; -1.0|]
 
@@ -90,7 +87,6 @@ let nonMaxSuppression ((gradient:(int*int*int) array),direction) =
     let width,height = getWH gradient
     Array.map2 (fun (x,y,w1) (_,_,w2) -> x,y,maxSuppressionOne width height gradient x y w1 w2) gradient direction
 
-
 let doubleThreshold image = 
     let max = Array.fold (fun acc (_,_,w) -> if w > acc then w else acc) 0 image
     let high = (float max) * 0.12
@@ -127,5 +123,6 @@ let cannyBoi image =
 let main argv =
     let image = new Bitmap("benchmarks/canny_edge_detector/download.jpg")
     let res = cannyBoi (toRgbArray image)
+    //(res |> toBitmap).Save("Final.png")
     printfn "%i" (Array.fold (fun acc (_,_,w) -> if w > 0 then acc + 1 else acc) 0 res)
     0 // return an integer exit code
