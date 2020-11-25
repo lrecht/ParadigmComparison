@@ -1,6 +1,6 @@
 import sys
 import pyRAPL
-import stats as stat
+from . import stats as stat
 import subprocess
 
 def error_print(*args, **kwargs):

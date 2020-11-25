@@ -1,5 +1,5 @@
 import math
-import benchmark_utils as bm_utils
+from . import benchmark_utils as bm_utils
 import subprocess
 
 PILOT_ITERATIONS = 100
@@ -10,7 +10,7 @@ def perform_benchmarks(benchmark_programs, output_file, time_limit_secs):
     benchmark_count = len(benchmark_programs)
 
     for index, current_benchmark in enumerate(benchmark_programs):
-        print("Performing benchmark " + str(index) + " of " + str(benchmark_count), flush=True)
+        print("Performing benchmark " + str(index + 1) + " of " + str(benchmark_count), flush=True)
         print(current_benchmark.path, flush=True)
 
         # Build benchmark

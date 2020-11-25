@@ -1,13 +1,13 @@
 import argparse
 import os
-from benchmark_program import all_benchmarks
+from run.benchmark_program import all_benchmarks
 from datetime import datetime
-import email_service as es
-import sestoft
-import cochran
+import run.email_service as es
+import run.sestoft as sestoft
+import run.cochran as cochran
 
 parser = argparse.ArgumentParser()
-benchmarks_path = "../benchmarks"
+benchmarks_path = "./benchmarks"
 all_paradigms = ["functional", "oop", "procedural"]
 all_languages = ["c#", "f#"]
 

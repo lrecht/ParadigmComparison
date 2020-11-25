@@ -40,6 +40,9 @@ def all_benchmarks(path, lang):
         program_path = path + '/' + name
 
         if fnmatch.fnmatch(name, f"*_{lang}"):
-            results.append(F_Sharp_Program(program_path, name.split('_')[0]))
+            if(lang == "f#"):
+                results.append(F_Sharp_Program(program_path, name.split('_')[0]))
+            else:
+                results.append(C_Sharp_Program(program_path, name.split('_')[0]))
 
     return results
