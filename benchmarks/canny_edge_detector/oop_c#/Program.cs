@@ -152,7 +152,7 @@ namespace oop_c_
             //Create Gaussian kernel
             double[,] kernel = initialiseKernel(length, intensity);
 
-            //Convolve image with kernel horizontally
+            //Convolve image with guassian kernel
             output = Convolver.Convolve(image, kernel);
             return output;
         }
