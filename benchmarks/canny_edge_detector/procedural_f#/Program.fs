@@ -204,7 +204,6 @@ let main argv =
     
     let doubleThreshold = doubleThreshold nonMax
     let (imageFinal, numWhite) = hysteresis doubleThreshold
-    imageFinal.Save("test.png")
     printfn "White: %i" numWhite
 
     0 // return an integer exit code
