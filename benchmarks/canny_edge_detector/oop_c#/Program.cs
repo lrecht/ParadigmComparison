@@ -128,16 +128,15 @@ namespace oop_c_
 
         private bool hasStrongNeighbour(int[,] image, double thresholdHigh, int x, int y, int width, int height)
         {
-            bool connected = false;
             for (int i = -1; i < 2; i++)
                 for (int j = -1; j < 2; j++)
                 {
                     var posX = x + i;
                     var posY = y + j;
-                    if(i != j && posX >= 0 && posX < width && posY >= 0 && posY < height)
-                        connected |= image[x + i, y + j] > thresholdHigh;
+                    if((i != j && posX >= 0 && posX < width && posY >= 0 && posY < height) && image[x + i, y + j] > thresholdHigh)
+                        return true;
                 }
-            return connected;
+            return false;
         }
     }
 
