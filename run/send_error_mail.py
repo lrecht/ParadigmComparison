@@ -1,4 +1,4 @@
-from email_service import send_fail
+from .email_service import send_fail
 import argparse
 
 parser = argparse.ArgumentParser()

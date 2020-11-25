@@ -1,21 +1,15 @@
-import pyRAPL
 import argparse
-import subprocess
-import stats as stat
-from program import *
+import os
+from run.benchmark_program import all_benchmarks
 from datetime import datetime
-import email_service as es
-import sys
+import run.email_service as es
+import run.sestoft as sestoft
+import run.cochran as cochran
 
 parser = argparse.ArgumentParser()
 benchmarks_path = "./benchmarks"
 all_paradigms = ["functional", "oop", "procedural"]
 all_languages = ["c#", "f#"]
-language_discover_funcs = {}
-
-#sys.stderr.line_buffering=False
-def error_print(*args, **kwargs):
-    print(*args, file=sys.stderr, **kwargs)
 
 #Used to validate benchmark folders
 class readable_dir(argparse.Action):
@@ -39,8 +33,7 @@ def discover_programs(path, paradigms, languages):
     programs = []
     
     for lang in languages:
-        lang_discover_func = language_discover_funcs[lang]
-        discovered = lang_discover_func(path)
+        discovered = all_benchmarks(path, lang)
 
         for p in discovered:
             if p.paradigm in paradigms:
@@ -55,80 +48,9 @@ def get_benchmark_programs(benchmarks, paradigms, languages):
     
     for benchmark_path in benchmarks:
         program_paths = discover_programs(benchmark_path, paradigms, languages)
-
         benchmark_programs = benchmark_programs + program_paths
 
     return benchmark_programs
-
-# Adds function to discover functions dictionary
-language_discover_funcs["c#"] = discover_csharp_program
-
-# Adds function to discover functions dictionary
-language_discover_funcs["f#"] = discover_fsharp_program
-
-
-#Performs the list of benchmarks and saves to results to output csv file
-def perform_benchmarks(benchmarks, experiment_iterations, time_limit, output_file, skip_build, skip_runs):
-    #Setupsies
-    pyRAPL.setup()
-    statistics = stat.Aggregator(output_file)
-    csv_output = pyRAPL.outputs.CSVOutput(output_file)
-
-    benchmark_count = len(benchmarks)
-    current_benchmark = 0
-
-    for b in benchmarks:
-        skipped = 0
-        statistics.clear()
-        current_benchmark += 1
-
-        print('\r' + "Performing benchmark " + str(current_benchmark) + " of " + str(benchmark_count), end='', flush=True)
-        print("\n", b.path, flush=True)
-
-        if(not skip_build and b.get_build_command()):
-            subprocess.run(b.get_build_command(), shell=True, check=True, stdout=subprocess.DEVNULL)
-
-        #The measuring equipment
-        current = 0
-        (max_iter, get_next_iter) = get_iter_options(time_limit, experiment_iterations)
-        while(current < max_iter):
-            res = run(b)
-            if all([res.pkg, res.dram]):
-                if (skipped != skip_runs): 
-                    skipped += 1
-                else:
-                    handle_results(res, csv_output, statistics)
-                    current = get_next_iter(res, current)
-            else:
-                error_print("Failure in uptaining results from run: " + str(res))
-
-        statistics.compute()
-        statistics.save(b.path)
-        csv_output.save()
-    
-    print('\n')
-
-
-def get_iter_options(max_time, max_iter):
-    if max_time is not None:
-        return (max_time, lambda x, current: current + (x.duration / 1_000_000))
-    else:
-        return (max_iter, lambda _, current: current + 1)
-
-
-def run(benchmark):
-    meter = pyRAPL.Measurement(label=benchmark.get_run_command())
-    meter.begin()
-    
-    subprocess.run(benchmark.get_run_command(), shell=True, check=True, stdout=subprocess.DEVNULL)
-
-    meter.end()
-    return meter.result
-
-
-def handle_results(res, raw_results_csv, stats):
-    stats.add(res)
-    raw_results_csv.add(res)
 
 
 if __name__ == '__main__':
@@ -141,6 +63,7 @@ if __name__ == '__main__':
     parser.add_argument("-t", "--time-limit", type=int, help="Number of seconds to continousely run each benchmark")
     parser.add_argument("-e", "--send-results-email", type=str, help="Send email containing statistical results")
     parser.add_argument("-s", "--skip-runs", type=int, default=0, help="Skip first n runs of each benchmark to stabilise results")
+    parser.add_argument("--sestoft-approach", action='store_true', help="Old approach to run specified number of runs or of a specified amount of time")
 
     args = parser.parse_args()
 
@@ -176,6 +99,10 @@ if __name__ == '__main__':
 
     benchmark_programs = get_benchmark_programs(benchmarks, paradigms, languages)
 
-    perform_benchmarks(benchmark_programs, iterations, time_limit, output_file, skip_build, skip_runs)
+    if args.sestoft_approach:
+        sestoft.perform_benchmarks(benchmark_programs, iterations, time_limit, output_file, skip_build, skip_runs)
+    else:
+        cochran.perform_benchmarks(benchmark_programs, output_file, time_limit)
+
     if(email is not None):
         es.send_results(email, output_file)
