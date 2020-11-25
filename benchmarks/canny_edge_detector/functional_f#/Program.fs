@@ -89,8 +89,8 @@ let nonMaxSuppression ((gradient:(int*int*int) array),direction) =
 
 let doubleThreshold image = 
     let max = Array.fold (fun acc (_,_,w) -> if w > acc then w else acc) 0 image
-    let high = (float max) * 0.12
-    let low = high*0.07
+    let high = (float max) * 0.09
+    let low = high*0.5
     Array.map (fun (x,y,w) -> x,y,if float w <= low then 0 elif float w < high then weak else 255) image
 
 let strongNeighbour (image:(int*int*int)array) width height x y =
