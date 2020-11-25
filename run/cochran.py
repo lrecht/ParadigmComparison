@@ -2,7 +2,7 @@ import math
 from . import benchmark_utils as bm_utils
 import subprocess
 
-PILOT_ITERATIONS = 100
+SAMPLE_ITERATIONS = 100
 
 # Executes the list of benchmarks and saves results to ouput csv file
 def perform_benchmarks(benchmark_programs, output_file, time_limit_secs):
@@ -18,15 +18,15 @@ def perform_benchmarks(benchmark_programs, output_file, time_limit_secs):
                        shell=True, check=True, stdout=subprocess.DEVNULL)
         stats.clear()
 
-        # Run Pilot (simple random sample)
-        run_benchmark(current_benchmark, stats, PILOT_ITERATIONS, csv_output)
+        # Run random sample
+        run_benchmark(current_benchmark, stats, SAMPLE_ITERATIONS, csv_output)
         num_runs = math.ceil(compute_sample_size(stats))
 
-        # Maybe conduct additions runs.
-        if not is_enough_runs(num_runs, stats, PILOT_ITERATIONS):
-            print("Performing ", num_runs - PILOT_ITERATIONS,
+        # Maybe conduct additional runs
+        if not is_enough_runs(num_runs, stats, SAMPLE_ITERATIONS):
+            print("Performing ", num_runs - SAMPLE_ITERATIONS,
                   " addtitional runs to achive the desired statistical error", flush=True)
-            run_benchmark(current_benchmark, stats, num_runs - PILOT_ITERATIONS, csv_output, time_limit_secs)
+            run_benchmark(current_benchmark, stats, num_runs - SAMPLE_ITERATIONS, csv_output, time_limit_secs)
         bm_utils.save(stats, csv_output, current_benchmark.path)
 
 
