@@ -10,7 +10,7 @@ namespace oop_c_
         static void Main(string[] args)
         {
             Bitmap detectedEdges = new Canny("../download.jpg").CannyEdges();
-            //ImageUtils.PlotBitmap(detectedEdges, "canny_edge_detection.jpg");
+            ImageUtils.PlotBitmap(detectedEdges, "canny_edge_detection.jpg");
         }
     }
     public enum Direction
@@ -234,16 +234,20 @@ namespace oop_c_
         {
             (int width, int height) = (image.GetLength(0), image.GetLength(1));
             int halfKernel = kernel.GetLength(0) / 2;
-            int[,] output = new int[width - halfKernel, height - halfKernel];
-            for (int x = halfKernel; x < width - halfKernel; x++)
+            int[,] output = new int[width, height];
+            for (int x = 0; x < width; x++)
             {
-                for (int y = halfKernel; y < height - halfKernel; y++)
+                for (int y = 0; y < height; y++)
                 {
                     double sum = 0;
                     for (int kernelX = -halfKernel; kernelX <= halfKernel; kernelX++)
                         for (int kernelY = -halfKernel; kernelY <= halfKernel; kernelY++)
-                            sum += kernel[kernelX + halfKernel, kernelY + halfKernel] * image[kernelX + x, kernelY + y];
-                    output[x - halfKernel, y - halfKernel] = (int)sum;
+                        {
+                            (int posX, int posY) = (kernelX + x, kernelY + y);
+                            if (posX >= 0 && posX < width && posY >= 0 && posY < height)
+                                sum += kernel[kernelX + halfKernel, kernelY + halfKernel] * image[posX, posY];
+                        }
+                    output[x, y] = (int)sum;
                 }
             }
             return output;
