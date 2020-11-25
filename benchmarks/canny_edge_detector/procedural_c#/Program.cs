@@ -240,10 +240,8 @@ namespace procedural_c_
 					var posX = x + i;
 					var posY = y + j;
 					// not edges or itself
-					if (!((i == 1 && j == 1) || posX <= 0 || posX >= width - 1 || posY <= 0 || posY >= height - 1))
-					{
-						result = result || image[posX, posY] == strong;
-					}
+					if (!((i == 1 && j == 1) || posX <= 0 || posX >= width - 1 || posY <= 0 || posY >= height - 1) && image[posX, posY] == strong)
+					        return true;
 				}
 			}
 			return result;
