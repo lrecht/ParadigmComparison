@@ -282,21 +282,6 @@ namespace oop_c_
             return result;
         }
 
-        public static void PlotArrayAsBitmap(int[,] image, string filename)
-        {
-            (int width, int height) = (image.GetLength(0), image.GetLength(1));
-            Bitmap output = new Bitmap(width, height);
-            for (int x = 0; x < width; x++)
-            {
-                for (int y = 0; y < height; y++)
-                {
-                    int value = Math.Min(255, image[x, y]);
-                    output.SetPixel(x, y, Color.FromArgb(value, value, value));
-                }
-            }
-            PlotBitmap(output, filename);
-        }
-
         public static void PlotBitmap(Bitmap image, string filename)
         {
             image.Save(filename);
