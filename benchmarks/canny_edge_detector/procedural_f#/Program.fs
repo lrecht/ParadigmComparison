@@ -150,14 +150,23 @@ let hasStrongNeighbor (image: int[,]) (x: int) (y: int) =
     let height = image.GetLength(1)
     
     let mutable result = false
-    for i in -1 .. 1 do
-        for j in -1 .. 1 do
+    let rec testNeighbor i j =
+        if i > 1 then
+            false
+        else if j > 1 then
+            testNeighbor (i+1) -1
+        else 
             let posX = x + i
             let posY = y + j
-            // not edges or itself
             if not ((i = 0 && j = 0) || posX <= 0 || posX >= width-1 || posY <= 0 || posY >= height - 1) then
-                result <- result || (image.[posX, posY] = strong)
-    result
+                if (image.[posX, posY] = strong) then
+                    true
+                else 
+                    testNeighbor i (j + 1)
+            else 
+                testNeighbor i (j + 1)
+    
+    testNeighbor -1 -1
 
 let hysteresis (img: int[,]) = 
     let width = img.GetLength(0)
