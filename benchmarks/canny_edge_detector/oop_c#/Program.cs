@@ -9,7 +9,8 @@ namespace oop_c_
     {
         static void Main(string[] args)
         {
-            Bitmap detectedEdges = new Canny("../download.jpg").CannyEdges();
+            (Bitmap detectedEdges, int whiteCount) = new Canny("../download.jpg").CannyEdges();
+            System.Console.WriteLine(whiteCount);
             ImageUtils.PlotBitmap(detectedEdges, "canny_edge_detection.jpg");
         }
     }
@@ -43,7 +44,7 @@ namespace oop_c_
             originalImage = new Bitmap(filename);
         }
 
-        public Bitmap CannyEdges()
+        public (Bitmap, int) CannyEdges()
         {
             // 0) Make greyscale
             int[,] output = ImageUtils.ToGreyScaleArray(originalImage);
@@ -62,8 +63,8 @@ namespace oop_c_
             output = nonMaxSuppresion(output, direction);
 
             // 4) Tracing edges with hysteresis
-            Bitmap detectedEdges = hysteresis(output, HIGH_THRESHOLD_VOODOO, LOW_THRESHOLD_VOODOO);
-            return detectedEdges;
+            (Bitmap detectedEdges, int whiteCount) = hysteresis(output, HIGH_THRESHOLD_VOODOO, LOW_THRESHOLD_VOODOO);
+            return (detectedEdges, whiteCount);
         }
 
         private int[,] nonMaxSuppresion(int[,] image, Direction[,] direction)
@@ -90,7 +91,7 @@ namespace oop_c_
             return image;
         }
 
-        private Bitmap hysteresis(int[,] image, double highVoodoo, double lowVoodoo)
+        private (Bitmap,int) hysteresis(int[,] image, double highVoodoo, double lowVoodoo)
         {
             (int width, int height) = (image.GetLength(0), image.GetLength(1));
             var arr = image.Cast<int>();
@@ -123,8 +124,7 @@ namespace oop_c_
                 if (connected) count++;
                 output.SetPixel(x, y, connected ? Color.White : Color.Black);
             }
-            System.Console.WriteLine(count);
-            return output;
+            return (output,count);
         }
 
         private bool hasStrongNeighbour(int[,] image, double thresholdHigh, int x, int y, int width, int height)
@@ -204,8 +204,6 @@ namespace oop_c_
             // direction: slope of the gradient as arctan(Iy/Ix) converted to degrees and then to compass directions.
             (int[,] gradient, Direction[,] direction) = magnitude(horizontalIntensity, verticalIntensity);
             return (gradient, direction);
-
-
         }
 
         private static (int[,], Direction[,]) magnitude(int[,] image1, int[,] image2)
