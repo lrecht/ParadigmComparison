@@ -1,15 +1,15 @@
 import argparse
-from program import *
+import os
+from benchmark_program import all_benchmarks
 from datetime import datetime
 import email_service as es
 import sestoft
 import cochran
 
 parser = argparse.ArgumentParser()
-benchmarks_path = "./benchmarks"
+benchmarks_path = "../benchmarks"
 all_paradigms = ["functional", "oop", "procedural"]
 all_languages = ["c#", "f#"]
-language_discover_funcs = {}
 
 #Used to validate benchmark folders
 class readable_dir(argparse.Action):
@@ -33,8 +33,7 @@ def discover_programs(path, paradigms, languages):
     programs = []
     
     for lang in languages:
-        lang_discover_func = language_discover_funcs[lang]
-        discovered = lang_discover_func(path)
+        discovered = all_benchmarks(path, lang)
 
         for p in discovered:
             if p.paradigm in paradigms:
@@ -49,16 +48,9 @@ def get_benchmark_programs(benchmarks, paradigms, languages):
     
     for benchmark_path in benchmarks:
         program_paths = discover_programs(benchmark_path, paradigms, languages)
-
         benchmark_programs = benchmark_programs + program_paths
 
     return benchmark_programs
-
-# Adds function to discover functions dictionary
-language_discover_funcs["c#"] = discover_csharp_program
-
-# Adds function to discover functions dictionary
-language_discover_funcs["f#"] = discover_fsharp_program
 
 
 if __name__ == '__main__':

@@ -30,8 +30,7 @@ class F_Sharp_Program(Dotnet_Program):
         return command + self.paradigm + "_f#"
 
 
-#Discovers f# project folders based on naming convention (functional_f# or oop_f#)
-def discover_fsharp_program(path):
+def all_benchmarks(path, lang):
     results = []
 
     for name in os.listdir(path):
@@ -40,22 +39,7 @@ def discover_fsharp_program(path):
 
         program_path = path + '/' + name
 
-        if fnmatch.fnmatch(name, "*_f#"):
+        if fnmatch.fnmatch(name, f"*_{lang}"):
             results.append(F_Sharp_Program(program_path, name.split('_')[0]))
-
-    return results
-
-#Discovers c# project folders based on naming convention (functional_c# or oop_c#)
-def discover_csharp_program(path):
-    results = []
-
-    for name in os.listdir(path):
-        if not os.path.isdir(path + '/' + name):
-            continue
-
-        program_path = path + '/' + name
-
-        if fnmatch.fnmatch(name, "*_c#"):
-            results.append(C_Sharp_Program(program_path, name.split('_')[0]))
 
     return results

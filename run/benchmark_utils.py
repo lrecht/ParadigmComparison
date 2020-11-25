@@ -3,7 +3,6 @@ import pyRAPL
 import stats as stat
 import subprocess
 
-#sys.stderr.line_buffering=False
 def error_print(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
@@ -11,9 +10,7 @@ def error_print(*args, **kwargs):
 def run(benchmark):
     meter = pyRAPL.Measurement(label=benchmark.get_run_command())
     meter.begin()
-    
     subprocess.run(benchmark.get_run_command(), shell=True, check=True, stdout=subprocess.DEVNULL)
-
     meter.end()
     return meter.result
 
