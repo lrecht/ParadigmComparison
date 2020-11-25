@@ -76,8 +76,8 @@ namespace oop_c_
                 {
                     int magnitude = image[x, y];
                     Direction dir = direction[x, y];
-                        //If vertical: Check left and right neighbors
-                    if  ((dir == Direction.Vertical && (magnitude < image[x - 1, y] || magnitude < image[x + 1, y])) ||
+                    //If vertical: Check left and right neighbors
+                    if ((dir == Direction.Vertical && (magnitude < image[x - 1, y] || magnitude < image[x + 1, y])) ||
                         //If DiagonalRL: Check diagonal (upper left and lower right) neighbors
                         (dir == Direction.DiagonalRL && (magnitude < image[x - 1, y + 1] || magnitude < image[x + 1, y - 1])) ||
                         //If horizontal: Check top and bottom neighbors
@@ -101,9 +101,9 @@ namespace oop_c_
 
             int count = 0;
 
-            for (int x = 1; x < width - 1; x++)
+            for (int x = 0; x < width; x++)
             {
-                for (int y = 1; y < height - 1; y++)
+                for (int y = 0; y < height; y++)
                 {
                     int magnitude = image[x, y];
                     if (magnitude >= thresholdHigh) // strong
@@ -119,7 +119,7 @@ namespace oop_c_
             }
             foreach (var (x, y) in weak)
             {
-                bool connected = hasStrongNeighbour(image, thresholdHigh, x, y);
+                bool connected = hasStrongNeighbour(image, thresholdHigh, x, y, width, height);
                 if (connected) count++;
                 output.SetPixel(x, y, connected ? Color.White : Color.Black);
             }
@@ -127,13 +127,18 @@ namespace oop_c_
             return output;
         }
 
-        private bool hasStrongNeighbour(int[,] image, double thresholdHigh, int x, int y)
+        private bool hasStrongNeighbour(int[,] image, double thresholdHigh, int x, int y, int width, int height)
         {
             bool connected = false;
             for (int i = -1; i < 2; i++)
                 for (int j = -1; j < 2; j++)
-                    if (image[x + i, y + j] > thresholdHigh)
-                        connected = true;
+                {
+                    var posX = x + i;
+                    var posY = y + j;
+                    // not edges or itself
+                    if(i != j && posX >= 0 && posX < width && posY >= 0 && posY < height)
+                        connected |= image[x + i, y + j] > thresholdHigh;
+                }
             return connected;
         }
     }
@@ -208,7 +213,7 @@ namespace oop_c_
             (int width, int height) = (image1.GetLength(0), image1.GetLength(1));
             int[,] output = new int[width, height];
             Direction[,] direction = new Direction[width, height];
-                                                    // N/S,              NE/SW,                E/W,                  NW/SE
+            // N/S,              NE/SW,                E/W,                  NW/SE
             var compassDirection = new Direction[] { Direction.Vertical, Direction.DiagonalRL, Direction.Horizontal, Direction.DiagonalLR };
             double piRad = 180 / Math.PI;
             for (int x = 0; x < width; x++)
@@ -277,7 +282,7 @@ namespace oop_c_
         }
         static Color ToGrayscaleColor(Color color)
         {
-			var level = (int)(color.R * 0.3 + color.G * 0.59 + color.B * +0.11);
+            var level = (int)(color.R * 0.3 + color.G * 0.59 + color.B * +0.11);
             var result = Color.FromArgb(level, level, level);
             return result;
         }
