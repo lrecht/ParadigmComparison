@@ -6,7 +6,6 @@ open System.Drawing
 let weak = 100
 let black = 0
 let white = 255
-let getPixel (image: Bitmap) (x: int) (y: int) = (int)(image.GetPixel(x, y).R)
 
 let kernelHor = array2D [
     [-1.0; 0.0; 1.0]
@@ -44,7 +43,7 @@ let Convolve (image: int[,]) (filter: float[,]) =
     //Kernel has to be an odd number
     let halfKernel = filter.GetLength(0) / 2
     
-    let test: int[,] = Array2D.zeroCreate width height
+    let convolvedImage: int[,] = Array2D.zeroCreate width height
     for x in 0 .. width-1 do
         for y in 0 .. height-1 do
             
@@ -57,8 +56,8 @@ let Convolve (image: int[,]) (filter: float[,]) =
                     if not (posX < 0 || posX > width-1 || posY < 0 || posY > height - 1) then
                         sum <- sum + ((float)(image.[posX, posY]) * (filter.[kx+halfKernel, ky+halfKernel]))
             
-            test.[x, y] <- (int) sum
-    test
+            convolvedImage.[x, y] <- (int) sum
+    convolvedImage
 
 let hyp (num1: int) (num2: int) = 
     (int) (Math.Sqrt((float)(num1 * num1) + (float)(num2 * num2)))
@@ -128,7 +127,7 @@ let getMax (image: int[,]) =
                 max <- image.[x, y]
     max
 
-let doubleThreashold (image: int[,]) = 
+let doubleThreshold (image: int[,]) = 
     let highThreshold = (float)(getMax image) * 0.12
     let lowThreshold = highThreshold * 0.07
     let width = image.GetLength(0)
@@ -178,18 +177,8 @@ let hysteresis (img: int[,]) =
                 if (value = white) then
                     num <- num + 1
                 image.SetPixel(x, y, Color.FromArgb(value, value, value))
-    printfn "Num: %i" num
-    image
-
-let arrayToBit (intArr: int[,]) = 
-    let width = intArr.GetLength(0)
-    let height = intArr.GetLength(1)
-    let image = new Bitmap(width, height)
-    for x in 0 .. width-1 do
-        for y in 0 .. height-1 do
-            let value = Math.Min(255, intArr.[x, y])
-            image.SetPixel(x, y, Color.FromArgb(value, value, value))
-    image
+    
+    (image, num)
 
 [<EntryPoint>]
 let main argv =
@@ -204,7 +193,8 @@ let main argv =
     
     let nonMax = nonMaxSuppresion intensity theta
     
-    let doubleThreashold = doubleThreashold nonMax
-    let hysteresis = hysteresis doubleThreashold
+    let doubleThreshold = doubleThreshold nonMax
+    let (imageFinal, numWhite) = hysteresis doubleThreshold
+    printfn "White: %i" numWhite
 
     0 // return an integer exit code

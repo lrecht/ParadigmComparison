@@ -8,25 +8,25 @@ namespace procedural_c_
 		static void Main(string[] args)
 		{
 			var image = new Bitmap("benchmarks/canny_edge_detector/download.jpg");
-			var grayImg = toGrayScale(image);
+
+			var imageArrGray = toGrayScale(image);
 
 			var gauFilt = GaussianFilter(5, 1.0);
-			var gau = Convolve(grayImg, gauFilt);
+			var gau = Convolve(imageArrGray, gauFilt);
 
 			var (intensity, theta) = computeIntensity(gau);
 
 			var nonMax = nonMaxSuppresion(intensity, theta);
 
-			var doubleT = doubleThreashold(nonMax);
+			var doubleTh = doubleThreshold(nonMax);
+			var (imageFinal, numWhite) = hysteresis(doubleTh);
 
-			var final = hysteresis(doubleT);
-			final.Save("Final.png");
+			Console.WriteLine("White: " + numWhite);
 		}
 
 		public static int weak = 100;
-		public static Color black = Color.FromArgb(0, 0, 0);
-		public static Color white = Color.FromArgb(255, 255, 255);
-		public static int getPixel(Bitmap image, int x, int y) => image.GetPixel(x, y).R;
+		public static int black = 0;
+		public static int white = 255;
 
 		public static double[,] kernelHor = {
 			{-1.0, 0.0, 1.0},
@@ -65,12 +65,14 @@ namespace procedural_c_
 			return kernel;
 		}
 
-		public static int[,] Convolve(int[,] image, double[,] kernel)
+		public static int[,] Convolve(int[,] image, double[,] filter)
 		{
 			var width = image.GetLength(0);
 			var height = image.GetLength(1);
-			var test = new int[width, height];
-			var halfKernel = kernel.GetLength(0) / 2;
+			//Kernel has to be an odd number
+			var halfKernel = filter.GetLength(0) / 2;
+
+			var convolvedImage = new int[width, height];
 			for (int x = 0; x < width; x++)
 			{
 				for (int y = 0; y < height; y++)
@@ -83,61 +85,21 @@ namespace procedural_c_
 							var posX = x + kx;
 							var posY = y + ky;
 							// not edges
-							if (!(posX <= 0 || posX >= width - 1 || posY <= 0 || posY >= height - 1))
+							if (!(posX < 0 || posX > width - 1 || posY < 0 || posY > height - 1))
 							{
-								sum += (image[posX, posY] * (kernel[kx + halfKernel, ky + halfKernel]));
+								sum += ((float)(image[posX, posY]) * (filter[kx + halfKernel, ky + halfKernel]));
 							}
 						}
 					}
-
-					test[x, y] = (int)sum;
+					convolvedImage[x, y] = (int)sum;
 				}
 			}
-			return test;
+			return convolvedImage;
 		}
 
 		public static int hyp(int num1, int num2)
 		{
-			var hyp = (Math.Sqrt((num1 * num1) + (num2 * num2)));
-			return (int)hyp;
-		}
-
-		public static int[,] hypot(int[,] image1, int[,] image2)
-		{
-			var width = image1.GetLength(0);
-			var height = image1.GetLength(1);
-			var result = new int[width, height];
-
-			for (int x = 0; x < width; x++)
-			{
-				for (int y = 0; y < height; y++)
-				{
-					var color1 = image1[x, y];
-					var color2 = image2[x, y];
-
-					var hypColor = hyp(color1, color2);
-					result[x, y] = hypColor;
-				}
-			}
-			return result;
-		}
-
-		public static double[,] arctan(int[,] image1, int[,] image2)
-		{
-			var width = image1.GetLength(0);
-			var height = image1.GetLength(1);
-			var result = new double[width, height];
-
-			for (int x = 0; x < width; x++)
-			{
-				for (int y = 0; y < height; y++)
-				{
-					var color1 = image1[x, y];
-					var color2 = image2[x, y];
-					result[x, y] = Math.Atan2(color1, color2);
-				}
-			}
-			return result;
+			return (int)Math.Sqrt((num1 * num1) + (num2 * num2));
 		}
 
 		public static (int[,], int[,]) computeIntensity(int[,] image)
@@ -145,18 +107,23 @@ namespace procedural_c_
 			var Ix = Convolve(image, kernelHor);
 			var Iy = Convolve(image, kernelVer);
 
-			var g = hypot(Ix, Iy);
-
-			var theta = arctan(Iy, Ix);
-			var thetaWidth = theta.GetLength(0);
-			var thetaHeight = theta.GetLength(1);
+			var g = new int[image.GetLength(0), image.GetLength(1)];
+			var thetaWidth = Iy.GetLength(0);
+			var thetaHeight = Iy.GetLength(1);
 			var thetaQ = new int[thetaWidth, thetaHeight];
-			for (int i = 0; i < thetaWidth; i++)
+			for (int x = 0; x < thetaWidth; x++)
 			{
-				for (int j = 0; j < thetaHeight; j++)
+				for (int y = 0; y < thetaHeight; y++)
 				{
-					var num = ((int)(Math.Round(theta[i, j] * (5.0 / Math.PI))) + 5) % 5;
-					thetaQ[i, j] = num;
+					var color1 = Ix[x, y];
+					var color2 = Iy[x, y];
+					var hypColor = hyp(color1, color2);
+					g[x, y] = hypColor;
+
+					//Calc theta
+					var theta = (Math.Atan2((float)Iy[x, y], (float)Ix[x, y]));
+					var num = ((int)(Math.Round(theta * (5.0 / Math.PI))) + 5) % 5;
+					thetaQ[x, y] = num;
 				}
 			}
 
@@ -166,27 +133,30 @@ namespace procedural_c_
 		public static int[,] nonMaxSuppresion(int[,] image, int[,] theta)
 		{
 			// Non-maximum suppression
+			var gradSup = image;
 			var width = image.GetLength(0);
 			var height = image.GetLength(1);
-			var gradSup = image;
 
-			for (int r = 1; r < width-1; r++)
+			for (int r = 0; r < width - 1; r++)
 			{
-				for (int c = 1; c < height-1; c++)
+				for (int c = 0; c < height - 1; c++)
 				{
-					var tq = (int)(theta[r, c] % 4);
-					if (tq == 0) //0 is E-W (horizontal)
-						if (image[r, c] <= image[r, c - 1] || image[r, c] <= image[r, c + 1])
-							gradSup[r, c] = 0;
-					if (tq == 1) //1 is NE-SW
-						if (image[r, c] <= image[r - 1, c + 1] || image[r, c] <= image[r + 1, c - 1])
-							gradSup[r, c] = 0;
-					if (tq == 2) //2 is N-S (vertical)
-						if (image[r, c] <= image[r - 1, c] || image[r, c] <= image[r + 1, c])
-							gradSup[r, c] = 0;
-					if (tq == 3) //#3 is NW-SE
-						if (image[r, c] <= image[r - 1, c - 1] || image[r, c] <= image[r + 1, c + 1])
-							gradSup[r, c] = 0;
+					//Suppress pixels at the image edge
+					if (r == 0 || r == width - 1 || c == 0 || c == height - 1)
+					{
+						gradSup[r, c] = black;
+					}
+					else
+					{
+						var tq = (int)(theta[r, c] % 4);
+						if ((tq == 0 && (image[r, c] <= image[r, c - 1] || image[r, c] <= image[r, c + 1]))
+							|| tq == 1 && (image[r, c] <= image[r - 1, c + 1] || image[r, c] <= image[r + 1, c - 1])
+							|| tq == 2 && (image[r, c] <= image[r - 1, c] || image[r, c] <= image[r + 1, c])
+							|| tq == 3 && (image[r, c] <= image[r - 1, c - 1] || image[r, c] <= image[r + 1, c + 1]))
+						{
+							gradSup[r, c] = black;
+						}
+					}
 				}
 			}
 			return gradSup;
@@ -209,10 +179,28 @@ namespace procedural_c_
 			return result;
 		}
 
-		public static int[,] doubleThreashold(int[,] image)
+		public static int getMax(int[,] image)
 		{
-			var highThreshold = 255 * 0.09;
-			var lowThreshold = highThreshold * 0.05;
+			var width = image.GetLength(0);
+			var height = image.GetLength(1);
+			var max = 0;
+			for (int x = 0; x < width; x++)
+			{
+				for (int y = 0; y < height; y++)
+				{
+					if (image[x, y] > max)
+					{
+						max = image[x, y];
+					}
+				}
+			}
+			return max;
+		}
+
+		public static int[,] doubleThreshold(int[,] image)
+		{
+			var highThreshold = getMax(image) * 0.12;
+			var lowThreshold = highThreshold * 0.07;
 			var width = image.GetLength(0);
 			var height = image.GetLength(1);
 			var doubleMap = new int[width, height];
@@ -222,20 +210,25 @@ namespace procedural_c_
 				for (int y = 0; y < height; y++)
 				{
 					if (image[x, y] <= lowThreshold)
-						doubleMap[x, y] = 0;
+					{
+						doubleMap[x, y] = black;
+					}
 					else if (image[x, y] >= highThreshold)
-						doubleMap[x, y] = 255;
+					{
+						doubleMap[x, y] = white;
+					}
 					else
+					{
 						doubleMap[x, y] = weak;
+					}
 				}
 			}
-
 			return doubleMap;
 		}
 
 		public static bool hasStrongNeighbor(int[,] image, int x, int y)
 		{
-			var strong = 0;
+			var strong = 255;
 			var width = image.GetLength(0);
 			var height = image.GetLength(1);
 
@@ -256,11 +249,12 @@ namespace procedural_c_
 			return result;
 		}
 
-		public static Bitmap hysteresis(int[,] img)
+		public static (Bitmap, int) hysteresis(int[,] img)
 		{
 			var width = img.GetLength(0);
 			var height = img.GetLength(1);
 			var image = new Bitmap(width, height);
+			var num = 0;
 			for (int x = 0; x < width; x++)
 			{
 				for (int y = 0; y < height; y++)
@@ -268,18 +262,27 @@ namespace procedural_c_
 					if (img[x, y] == weak)
 					{
 						if (hasStrongNeighbor(img, x, y))
-							image.SetPixel(x, y, black);
+						{
+							image.SetPixel(x, y, Color.White);
+							num++;
+						}
 						else
-							image.SetPixel(x, y, white);
+						{
+							image.SetPixel(x, y, Color.Black);
+						}
 					}
 					else
 					{
 						var value = img[x, y];
+						if (value == white)
+						{
+							num++;
+						}
 						image.SetPixel(x, y, Color.FromArgb(value, value, value));
 					}
 				}
 			}
-			return image;
+			return (image, num);
 		}
 	}
 }
