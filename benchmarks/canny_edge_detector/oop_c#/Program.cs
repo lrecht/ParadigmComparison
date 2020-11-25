@@ -9,7 +9,8 @@ namespace oop_c_
     {
         static void Main(string[] args)
         {
-            Bitmap detectedEdges = new Canny("benchmarks/canny_edge_detection/download.jpg").CannyEdges();
+            Bitmap detectedEdges = new Canny("../download.jpg").CannyEdges();
+            //ImageUtils.PlotBitmap(detectedEdges, "canny_edge_detection.jpg");
         }
     }
     public enum Direction
@@ -29,8 +30,8 @@ namespace oop_c_
     public class Canny
     {
         // Canny parameters
-        private static double HIGH_THRESHOLD_VOODOO = 0.09;
-        private static double LOW_THRESHOLD_VOODOO = 0.5;
+        private static double HIGH_THRESHOLD_VOODOO = 0.12;
+        private static double LOW_THRESHOLD_VOODOO = 0.07;
 
         // Gaussian parameters
         private static int GAUSSIAN_LENGTH = 5;
@@ -272,7 +273,7 @@ namespace oop_c_
         }
         static Color ToGrayscaleColor(Color color)
         {
-            var level = (byte)((color.R + color.G + color.B) / 3);
+			var level = (int)(color.R * 0.3 + color.G * 0.59 + color.B * +0.11);
             var result = Color.FromArgb(level, level, level);
             return result;
         }
