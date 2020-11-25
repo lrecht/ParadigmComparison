@@ -30,8 +30,8 @@ namespace oop_c_
     public class Canny
     {
         // Canny parameters
-        private static double HIGH_THRESHOLD_VOODOO = 0.12;
-        private static double LOW_THRESHOLD_VOODOO = 0.07;
+        private static double HIGH_THRESHOLD_VOODOO = 0.09;
+        private static double LOW_THRESHOLD_VOODOO = 0.5;
 
         // Gaussian parameters
         private static int GAUSSIAN_LENGTH = 5;
@@ -77,13 +77,13 @@ namespace oop_c_
                     int magnitude = image[x, y];
                     Direction dir = direction[x, y];
                     //If vertical: Check left and right neighbors
-                    if ((dir == Direction.Vertical && (magnitude < image[x - 1, y] || magnitude < image[x + 1, y])) ||
+                    if ((dir == Direction.Vertical && (magnitude <= image[x - 1, y] || magnitude <= image[x + 1, y])) ||
                         //If DiagonalRL: Check diagonal (upper left and lower right) neighbors
-                        (dir == Direction.DiagonalRL && (magnitude < image[x - 1, y + 1] || magnitude < image[x + 1, y - 1])) ||
+                        (dir == Direction.DiagonalRL && (magnitude <= image[x - 1, y + 1] || magnitude <= image[x + 1, y - 1])) ||
                         //If horizontal: Check top and bottom neighbors
-                        (dir == Direction.Horizontal && (magnitude < image[x, y - 1] || magnitude < image[x, y + 1])) ||
+                        (dir == Direction.Horizontal && (magnitude <= image[x, y - 1] || magnitude <= image[x, y + 1])) ||
                         //If DiagonalLR: Check diagonal (upper right and lower left) neighbors
-                        (dir == Direction.DiagonalLR && (magnitude < image[x + 1, y + 1] || magnitude < image[x - 1, y - 1])))
+                        (dir == Direction.DiagonalLR && (magnitude <= image[x + 1, y + 1] || magnitude <= image[x - 1, y - 1])))
                         image[x, y] = (int)Colors.Black;
                 }
             }
@@ -134,7 +134,6 @@ namespace oop_c_
                 {
                     var posX = x + i;
                     var posY = y + j;
-                    // not edges or itself
                     if(i != j && posX >= 0 && posX < width && posY >= 0 && posY < height)
                         connected |= image[x + i, y + j] > thresholdHigh;
                 }
