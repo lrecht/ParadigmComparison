@@ -73,7 +73,7 @@ let intensityGradients image =
 
 let maxSuppressionOne width height (image:(int*int*int)array) x y w1 w2 =
     if x = 0 || x = width-1 || y = 0 || y = height - 1 then
-        0
+        w1
     else
         let tq = (int)(w2 % 4)
         if (tq = 0 && (w1 <= trd image.[x+(y-1)*width] || w1 <= trd image.[x+(y+1)*width])) //0 is E-W (horizontal)
