@@ -9,9 +9,8 @@ namespace oop_c_
     {
         static void Main(string[] args)
         {
-            (Bitmap detectedEdges, int whiteCount) = new Canny("../download.jpg").CannyEdges();
+            (Bitmap detectedEdges, int whiteCount) = new Canny("benchmarks/canny_edge_detector/download.jpg").CannyEdges();
             System.Console.WriteLine(whiteCount);
-            ImageUtils.PlotBitmap(detectedEdges, "canny_edge_detection.jpg");
         }
     }
     public enum Direction
