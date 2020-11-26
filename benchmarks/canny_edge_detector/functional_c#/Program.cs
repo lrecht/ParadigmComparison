@@ -145,16 +145,15 @@ namespace functional_c_
 
         private static int convolveOne(ImmutableList<(int x, int y, int colour)> pic, int width, int height, ImmutableList<(int x, int y, double w)> filter, (int x, int y, int) pixel) //TODO: double or int? TODO: index in stead of pixel?
         {
-            return (int)filter.Select(f => {
+            return (int)filter.Aggregate(0.0, (acc, f) => {
                 var xIndex = pixel.x + f.x;
                 var yIndex = pixel.y + f.y;
 
-                if (xIndex < 0 || yIndex < 0 || xIndex >= width || yIndex >= height) //TODO: Potential performance by having const values
-                    return 0;
+                if (xIndex < 0 || yIndex < 0 || xIndex >= width || yIndex >= height)
+                    return acc;
                 else
-                    return f.w * (pic[yIndex * width + xIndex].colour);
-            })
-            .Sum(); //TODO: PErformance by using aggregate?
+                    return acc + (f.w * (pic[yIndex * width + xIndex].colour));
+            });
         }
 
         private static ImmutableList<(int x, int y, double w)> createGaussianFilter(int length, int weight) //TODO: SHould weight be double or int?
