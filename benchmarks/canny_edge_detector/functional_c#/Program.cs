@@ -61,9 +61,9 @@ namespace functional_c_
             .ToImmutableList();
         }
 
+        static readonly ImmutableList<(int x, int y)> range = Enumerable.Range(-1, 3).SelectMany(x => Enumerable.Range(-1, 3).Select(y => (x, y))).ToImmutableList();
         private static bool strongNeighbour(ImmutableList<(int x, int y, int w)> pic, int width, int height, int x, int y)
         {
-            var range = Enumerable.Range(-1, 3).SelectMany(x => Enumerable.Range(-1, 3).Select(y => (x, y))).ToImmutableList(); //TODO: Performance by making this static?
             return range
                 .Select(f => {
                     var posX = x + f.x;
