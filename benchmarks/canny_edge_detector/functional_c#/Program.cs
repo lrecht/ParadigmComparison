@@ -59,13 +59,12 @@ namespace functional_c_
         private static bool strongNeighbour(ImmutableList<(int x, int y, int w)> pic, int width, int height, int x, int y)
         {
             return range
-                .Select(f => {
+                .Any(f => {
                     var posX = x + f.x;
                     var posY = y + f.y;
-                    return (f.x, f.y, posX, posY);
-                })
-                .Where(f => !((f.x == 1 && f.y == 1) || f.posX <= 0 || f.posX >= width - 1 || f.posY <= 0 || f.posY >= height - 1))
-                .Any(f => pic[f.posY * width + f.posX].w == 255);
+                    return !((f.x == 1 && f.y == 1) || posX <= 0 || posX >= width - 1 || posY <= 0 || posY >= height - 1) 
+                            && pic[posY * width + posX].w == 255;
+                });
         }
 
         private static ImmutableList<(int, int, int)> doubleThreshold(ImmutableList<(int x, int y, int w)> pic)
