@@ -14,7 +14,6 @@ namespace functional_c_
             var pic = new Bitmap("benchmarks/hough_transform/Pentagon.png");
             var res = computeHoughTransformation(pic);
             System.Console.WriteLine(res.Select(x => x.Item3).Sum());
-
         }
 
         private static ImmutableArray<(int,int,int)> computeHoughTransformation(Bitmap pic)
