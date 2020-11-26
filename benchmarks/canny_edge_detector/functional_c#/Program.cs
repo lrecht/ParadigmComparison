@@ -173,9 +173,11 @@ namespace functional_c_
 
         private static ImmutableList<(int x, int y, int colour)> greyScale(Bitmap pic, ImmutableList<(int x, int y)> pixelCords)
         {
-            return pixelCords.Select(p => (p.x, p.y, pic.GetPixel(p.x, p.y)))
-                    .Select(t => (t.x, t.y, (int)(t.Item3.R * 0.3 + t.Item3.G * 0.59 + t.Item3.B * 0.11)))
-                    .ToImmutableList(); //TODO: More performance here by combining into one select?
+            return pixelCords.Select(p => {
+                var pixel = pic.GetPixel(p.x, p.y);
+                return (p.x, p.y, (int)(pixel.R * 0.3 + pixel.G * 0.59 + pixel.B * 0.11));
+            })
+            .ToImmutableList();
         }
 
 
