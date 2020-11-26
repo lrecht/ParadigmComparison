@@ -17,7 +17,6 @@ namespace functional_c_
         }
 
         private static ImmutableArray<(int,int,int)> computeHoughTransformation(Bitmap pic)
-
         {
             var width = pic.Width;
             var height = pic.Height;
