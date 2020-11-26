@@ -16,7 +16,6 @@ namespace oop_c_
 
     public class HoughTransform
     {
-
         int[,] transformed { get; set; }
         PictureData pictureData { get; set; }
         int rhoAxisSize { get; }
