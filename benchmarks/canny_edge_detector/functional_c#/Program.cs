@@ -12,6 +12,7 @@ namespace functional_c_
         static readonly ImmutableList<(int x, int y, double v)> kernelHori = horr.Select((v, i) => (i % 3 - 1, i / 3 - 1, v)).ToImmutableList();
         static readonly ImmutableList<(int x, int y, double v)> kernelVert = verr.Select((v, i) => (i % 3 - 1, i / 3 - 1, v)).ToImmutableList();
         static readonly int weak = 100;
+        
         static void Main(string[] args)
         {
             var pic = new Bitmap("benchmarks/canny_edge_detector/download.jpg");
@@ -21,23 +22,16 @@ namespace functional_c_
 
         private static ImmutableList<(int x, int y, int w)> cannyEdge(Bitmap pic)
         {
-            var pixelCords = Enumerable.Range(0, pic.Height).SelectMany(y => Enumerable.Range(0, pic.Width).Select(x => (x, y))).ToImmutableList();
-
-            var greyscaled = greyScale(pic, pixelCords);
-            //saveComputedPic(greyscaled, "greyscaled");
+            var greyscaled = greyScale(pic);
 
             var gaussianPic = BlurGreyscale(greyscaled);
-            //saveComputedPic(gaussianPic, "blurred");
 
             var (intensityGradientsPic, direction) = intensityGradients(gaussianPic);
-            //saveComputedPic(intensityGradientsPic, "intensity");
 
             var nonMaxSupressedPic = nonMaxSupression(intensityGradientsPic, direction);
-            //saveComputedPic(nonMaxSupressedPic, "nonMaxSupressed");
 
             var doubleThresholdedPic = doubleThreshold(nonMaxSupressedPic);
             var hysteresisedPic = hysteresis(doubleThresholdedPic);
-            //saveComputedPic(hysteresisedPic, "hysteresis");
 
             return hysteresisedPic;
         }
@@ -113,9 +107,6 @@ namespace functional_c_
             var hori = convolve(pic, kernelHori);
             var vert = convolve(pic, kernelVert);
 
-            //saveComputedPic(hori, "hori"); //TODO: Remove
-            //saveComputedPic(vert, "vert");
-
             var gradiant = hori.Zip(vert, (h, v) => (h.x, h.y, hyp(h.Item3, v.Item3))).ToImmutableList();
             var direction = hori.Zip(vert, (h, v) => (h.x, h.y, arctan(h.Item3, v.Item3))).ToImmutableList();
 
@@ -130,7 +121,7 @@ namespace functional_c_
 
         private static ImmutableList<(int x, int y, int colour)> BlurGreyscale(ImmutableList<(int x, int y, int colour)> pic)
         {
-            var filter = createGaussianFilter(5, 1);  //TODO: REMOVE HARDCODED STUFFS
+            var filter = createGaussianFilter(5, 1);
             return convolve(pic, filter);
         }
 
@@ -156,7 +147,7 @@ namespace functional_c_
             });
         }
 
-        private static ImmutableList<(int x, int y, double w)> createGaussianFilter(int length, int weight) //TODO: SHould weight be double or int?
+        private static ImmutableList<(int x, int y, double w)> createGaussianFilter(int length, int weight)
         {
             var foff = length / 2;
             var calculatedEuler = 1.0 / (2.0 * Math.PI * Math.Pow(weight, 2));
@@ -171,8 +162,9 @@ namespace functional_c_
             return filter.Select(x => (x.offX, x.offY, x.Item3 / sum)).ToImmutableList();
         }
 
-        private static ImmutableList<(int x, int y, int colour)> greyScale(Bitmap pic, ImmutableList<(int x, int y)> pixelCords)
+        private static ImmutableList<(int x, int y, int colour)> greyScale(Bitmap pic)
         {
+            var pixelCords = Enumerable.Range(0, pic.Height).SelectMany(y => Enumerable.Range(0, pic.Width).Select(x => (x, y))).ToImmutableList();
             return pixelCords.Select(p => {
                 var pixel = pic.GetPixel(p.x, p.y);
                 return (p.x, p.y, (int)(pixel.R * 0.3 + pixel.G * 0.59 + pixel.B * 0.11));
@@ -180,8 +172,6 @@ namespace functional_c_
             .ToImmutableList();
         }
 
-
-        //TODO: Remove
         public static void saveComputedPic(ImmutableList<(int x, int y, int colour)> pixels, string name){
             var newPic = new Bitmap(pixels.Last().x + 1, pixels.Last().y + 1);
             pixels.Select(p => (p.x, p.y, p.colour <= 255 ? (p.colour >= 0 ? p.colour : 0) : 255))
