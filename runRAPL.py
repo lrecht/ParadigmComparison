@@ -61,7 +61,6 @@ if __name__ == '__main__':
     parser.add_argument("-o", "--output", default="results.csv", help="Output csv file for results. Default is results.csv")
     parser.add_argument("-i", "--iterations", default=10, type=int, help="Number of iterations for each benchmark")
     parser.add_argument("-t", "--time-limit", type=int, help="Number of seconds to continousely run each benchmark")
-    parser.add_argument("-e", "--send-results-email", type=str, help="Send email containing statistical results")
     parser.add_argument("-s", "--skip-runs", type=int, default=0, help="Skip first n runs of each benchmark to stabilise results")
     parser.add_argument("--sestoft-approach", action='store_true', help="Old approach to run specified number of runs or of a specified amount of time")
     
@@ -69,6 +68,10 @@ if __name__ == '__main__':
     mx_group.add_argument("-b", "--benchmarks", action=readable_dir, nargs='+', help="Run only specified benchmarks")
     mx_group.add_argument("-c", "--csv", type=argparse.FileType('r'), help="CSV configuration file")
 
+    email_group = parser.add_mutually_exclusive_group()
+    email_group.add_argument("-e", "--send-results-email", type=str, help="Send email containing statistical results")
+    email_group.add_argument("-e+", "--send-full-results-emails", type=str, help="Send email containing statistical results and seperate email containing raw results")
+    
     args = parser.parse_args()
 
     benchmark_programs = []
@@ -92,7 +95,7 @@ if __name__ == '__main__':
     output_file     = "[{0}]{1}".format(datetime.now().isoformat(),args.output)
     iterations      = args.iterations
     time_limit      = args.time_limit
-    email           = args.send_results_email
+    email           = args.send_results_email if args.send_results_email else args.send_full_results_emails
     skip_runs       = args.skip_runs
 
 
@@ -112,3 +115,6 @@ if __name__ == '__main__':
 
     if(email is not None):
         es.send_results(email, output_file)
+
+        if(args.send_full_results_emails):
+            es.send_raw_results(email, output_file)
