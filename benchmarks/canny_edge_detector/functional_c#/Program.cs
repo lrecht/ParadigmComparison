@@ -9,8 +9,8 @@ namespace functional_c_
     {
         static readonly double[] horr = {-1.0, 0.0, 1.0, -2.0, 0.0, 2.0, -1.0, 0.0, 1.0};
         static readonly double[] verr = {1.0, 2.0, 1.0, 0.0, 0.0, 0.0, -1.0, -2.0, -1.0};
-        static readonly ImmutableList<(int x, int y, double v)> kernelHori = horr.Select((v, i) => (i % 3 - 1, i / 3 - 1, v)).ToImmutableList();
-        static readonly ImmutableList<(int x, int y, double v)> kernelVert = verr.Select((v, i) => (i % 3 - 1, i / 3 - 1, v)).ToImmutableList();
+        static readonly ImmutableArray<(int x, int y, double v)> kernelHori = horr.Select((v, i) => (i % 3 - 1, i / 3 - 1, v)).ToImmutableArray();
+        static readonly ImmutableArray<(int x, int y, double v)> kernelVert = verr.Select((v, i) => (i % 3 - 1, i / 3 - 1, v)).ToImmutableArray();
         static readonly int weak = 100;
         
         static void Main(string[] args)
@@ -20,7 +20,7 @@ namespace functional_c_
             System.Console.WriteLine(res.Count(p => p.w > 0));
         }
 
-        private static ImmutableList<(int x, int y, int w)> cannyEdge(Bitmap pic)
+        private static ImmutableArray<(int x, int y, int w)> cannyEdge(Bitmap pic)
         {
             var greyscaled = greyScale(pic);
 
@@ -36,7 +36,7 @@ namespace functional_c_
             return hysteresisedPic;
         }
 
-        private static ImmutableList<(int, int, int)> hysteresis(ImmutableList<(int x, int y, int w)> pic)
+        private static ImmutableArray<(int, int, int)> hysteresis(ImmutableArray<(int x, int y, int w)> pic)
         {
             var temp = pic.Last();
             var width = temp.x + 1;
@@ -52,11 +52,11 @@ namespace functional_c_
                 else
                     return (p.x, p.y, p.w);
             })
-            .ToImmutableList();
+            .ToImmutableArray();
         }
 
-        static readonly ImmutableList<(int x, int y)> range = Enumerable.Range(-1, 3).SelectMany(x => Enumerable.Range(-1, 3).Select(y => (x, y))).ToImmutableList();
-        private static bool strongNeighbour(ImmutableList<(int x, int y, int w)> pic, int width, int height, int x, int y)
+        static readonly ImmutableArray<(int x, int y)> range = Enumerable.Range(-1, 3).SelectMany(x => Enumerable.Range(-1, 3).Select(y => (x, y))).ToImmutableArray();
+        private static bool strongNeighbour(ImmutableArray<(int x, int y, int w)> pic, int width, int height, int x, int y)
         {
             return range
                 .Any(f => {
@@ -67,26 +67,26 @@ namespace functional_c_
                 });
         }
 
-        private static ImmutableList<(int, int, int)> doubleThreshold(ImmutableList<(int x, int y, int w)> pic)
+        private static ImmutableArray<(int, int, int)> doubleThreshold(ImmutableArray<(int x, int y, int w)> pic)
         {
             var max = pic.Max(p => p.w);
             var high = max * 0.09;
             var low = high * 0.5;
             return pic.Select(p => (p.x, p.y, p.w <= low ? 0 : (p.w < high ? weak : 255)))
-                    .ToImmutableList();
+                    .ToImmutableArray();
         }
 
-        private static ImmutableList<(int, int, int)> nonMaxSupression(ImmutableList<(int x, int y, int)> pic, ImmutableList<(int, int, int)> direction)
+        private static ImmutableArray<(int, int, int)> nonMaxSupression(ImmutableArray<(int x, int y, int)> pic, ImmutableArray<(int, int, int)> direction)
         {
             var temp = pic.Last();
             var width = temp.x + 1;
             var height = temp.y + 1;
 
             return pic.Zip(direction, (g, d) => (g.x, g.y, maxSupressionOne(width, height, pic, g.x, g.y, g.Item3, d.Item3)))
-                    .ToImmutableList();
+                    .ToImmutableArray();
         }
 
-        private static int maxSupressionOne(int width, int height, ImmutableList<(int x, int y, int)> pic, int x, int y, int w1, int w2)
+        private static int maxSupressionOne(int width, int height, ImmutableArray<(int x, int y, int)> pic, int x, int y, int w1, int w2)
         {
             if(x == 0 || x == width - 1 || y == 0 || y == height - 1)
                 return w1;
@@ -101,13 +101,13 @@ namespace functional_c_
                 return w1;
         }
 
-        private static (ImmutableList<(int, int, int)> gradient, ImmutableList<(int, int, int)> direction) intensityGradients(ImmutableList<(int x, int y, int colour)> pic)
+        private static (ImmutableArray<(int, int, int)> gradient, ImmutableArray<(int, int, int)> direction) intensityGradients(ImmutableArray<(int x, int y, int colour)> pic)
         {
             var hori = convolve(pic, kernelHori);
             var vert = convolve(pic, kernelVert);
 
-            var gradiant = hori.Zip(vert, (h, v) => (h.x, h.y, hyp(h.Item3, v.Item3))).ToImmutableList();
-            var direction = hori.Zip(vert, (h, v) => (h.x, h.y, arctan(h.Item3, v.Item3))).ToImmutableList();
+            var gradiant = hori.Zip(vert, (h, v) => (h.x, h.y, hyp(h.Item3, v.Item3))).ToImmutableArray();
+            var direction = hori.Zip(vert, (h, v) => (h.x, h.y, arctan(h.Item3, v.Item3))).ToImmutableArray();
 
             return (gradiant, direction);
         }
@@ -118,22 +118,22 @@ namespace functional_c_
         private static int hyp(int x, int y)
             => (int)Math.Sqrt(Math.Pow(x, 2) + Math.Pow(y, 2));
 
-        private static ImmutableList<(int x, int y, int colour)> BlurGreyscale(ImmutableList<(int x, int y, int colour)> pic)
+        private static ImmutableArray<(int x, int y, int colour)> BlurGreyscale(ImmutableArray<(int x, int y, int colour)> pic)
         {
             var filter = createGaussianFilter(5, 1);
             return convolve(pic, filter);
         }
 
-        private static ImmutableList<(int x, int y, int)> convolve(ImmutableList<(int x, int y, int colour)> pic, ImmutableList<(int x, int y, double w)> filter)
+        private static ImmutableArray<(int x, int y, int)> convolve(ImmutableArray<(int x, int y, int colour)> pic, ImmutableArray<(int x, int y, double w)> filter)
         {
             var temp = pic.Last();
             var width = temp.x + 1;
             var height = temp.y + 1;
 
-            return pic.Select(p => (p.x, p.y, convolveOne(pic, width, height, filter, p))).ToImmutableList();
+            return pic.Select(p => (p.x, p.y, convolveOne(pic, width, height, filter, p))).ToImmutableArray();
         }
 
-        private static int convolveOne(ImmutableList<(int x, int y, int colour)> pic, int width, int height, ImmutableList<(int x, int y, double w)> filter, (int x, int y, int) pixel) //TODO: double or int? TODO: index in stead of pixel?
+        private static int convolveOne(ImmutableArray<(int x, int y, int colour)> pic, int width, int height, ImmutableArray<(int x, int y, double w)> filter, (int x, int y, int) pixel) //TODO: double or int? TODO: index in stead of pixel?
         {
             return (int)filter.Aggregate(0.0, (acc, f) => {
                 var xIndex = pixel.x + f.x;
@@ -146,7 +146,7 @@ namespace functional_c_
             });
         }
 
-        private static ImmutableList<(int x, int y, double w)> createGaussianFilter(int length, int weight)
+        private static ImmutableArray<(int x, int y, double w)> createGaussianFilter(int length, int weight)
         {
             var foff = length / 2;
             var calculatedEuler = 1.0 / (2.0 * Math.PI * Math.Pow(weight, 2));
@@ -158,20 +158,20 @@ namespace functional_c_
                         });
 
             var sum = filter.Sum(t => t.Item3);
-            return filter.Select(x => (x.offX, x.offY, x.Item3 / sum)).ToImmutableList();
+            return filter.Select(x => (x.offX, x.offY, x.Item3 / sum)).ToImmutableArray();
         }
 
-        private static ImmutableList<(int x, int y, int colour)> greyScale(Bitmap pic)
+        private static ImmutableArray<(int x, int y, int colour)> greyScale(Bitmap pic)
         {
-            var pixelCords = Enumerable.Range(0, pic.Height).SelectMany(y => Enumerable.Range(0, pic.Width).Select(x => (x, y))).ToImmutableList();
+            var pixelCords = Enumerable.Range(0, pic.Height).SelectMany(y => Enumerable.Range(0, pic.Width).Select(x => (x, y))).ToImmutableArray();
             return pixelCords.Select(p => {
                 var pixel = pic.GetPixel(p.x, p.y);
                 return (p.x, p.y, (int)(pixel.R * 0.3 + pixel.G * 0.59 + pixel.B * 0.11));
             })
-            .ToImmutableList();
+            .ToImmutableArray();
         }
 
-        public static void saveComputedPic(ImmutableList<(int x, int y, int colour)> pixels, string name){
+        public static void saveComputedPic(ImmutableArray<(int x, int y, int colour)> pixels, string name){
             var newPic = new Bitmap(pixels.Last().x + 1, pixels.Last().y + 1);
             pixels.Select(p => (p.x, p.y, p.colour <= 255 ? (p.colour >= 0 ? p.colour : 0) : 255))
                 .ToList()
