@@ -1,21 +1,16 @@
 import argparse
-from program import *
-import csv_benchmark_parser
+import os
+from run.benchmark_program import all_benchmarks
+import run.csv_benchmark_parser as csv_benchmark_parser
 from datetime import datetime
-import email_service as es
-import sys
-import sestoft
-import cochran
+import run.email_service as es
+import run.sestoft as sestoft
+import run.cochran as cochran
 
 parser = argparse.ArgumentParser()
 benchmarks_path = "./benchmarks"
 all_paradigms = ["functional", "oop", "procedural"]
 all_languages = ["c#", "f#"]
-language_discover_funcs = {}
-
-#sys.stderr.line_buffering=False
-def error_print(*args, **kwargs):
-    print(*args, file=sys.stderr, **kwargs)
 
 #Used to validate benchmark folders
 class readable_dir(argparse.Action):
@@ -39,8 +34,7 @@ def discover_programs(path, paradigms, languages):
     programs = []
     
     for lang in languages:
-        lang_discover_func = language_discover_funcs[lang]
-        discovered = lang_discover_func(path)
+        discovered = all_benchmarks(path, lang)
 
         for p in discovered:
             if p.paradigm in paradigms:
@@ -55,16 +49,9 @@ def get_benchmark_programs(benchmarks, paradigms, languages):
     
     for benchmark_path in benchmarks:
         program_paths = discover_programs(benchmark_path, paradigms, languages)
-
         benchmark_programs = benchmark_programs + program_paths
 
     return benchmark_programs
-
-# Adds function to discover functions dictionary
-language_discover_funcs["c#"] = discover_csharp_program
-
-# Adds function to discover functions dictionary
-language_discover_funcs["f#"] = discover_fsharp_program
 
 
 if __name__ == '__main__':
@@ -121,7 +108,7 @@ if __name__ == '__main__':
     if args.sestoft_approach:
         sestoft.perform_benchmarks(benchmark_programs, iterations, time_limit, output_file, skip_build, skip_runs)
     else:
-        cochran.perform_benchmarks(benchmark_programs, output_file)
+        cochran.perform_benchmarks(benchmark_programs, output_file, time_limit)
 
     if(email is not None):
         es.send_results(email, output_file)

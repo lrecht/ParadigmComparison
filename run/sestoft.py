@@ -1,19 +1,15 @@
-import benchmarks_common as bc
-import stats as stat
+from . import benchmark_utils as bc
 import subprocess
 
 #Performs the list of benchmarks and saves to results to output csv file
 def perform_benchmarks(benchmarks, experiment_iterations, time_limit, output_file, skip_build, skip_runs):
     statistics, csv_output = bc.setup(output_file)
     benchmark_count = len(benchmarks)
-    current_benchmark = 0
 
-    for b in benchmarks:
+    for index, b in enumerate(benchmarks):
         skipped = 0
         statistics.clear()
-        current_benchmark += 1
-
-        print('\r' + "Performing benchmark " + str(current_benchmark) + " of " + str(benchmark_count), end='', flush=True)
+        print('\r' + "Performing benchmark " + str(index + 1) + " of " + str(benchmark_count), end='', flush=True)
         print("\n", b.path, flush=True)
 
         if(not skip_build and b.get_build_command()):

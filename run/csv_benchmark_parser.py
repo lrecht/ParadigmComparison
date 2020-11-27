@@ -1,4 +1,4 @@
-from program import Custom_Program
+from .benchmark_program import Custom_Program
 
 def parse_open_csv(csv_file):
     """
