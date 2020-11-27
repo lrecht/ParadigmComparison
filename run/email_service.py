@@ -32,6 +32,18 @@ def create_mail(email, output_file):
     return message
 
 
+def create_raw_results_mail(email, output_file):
+    message = MIMEMultipart()
+    message["From"] = gmail_user
+    message["To"] = email
+    message["Subject"] = "Benchmark raw results"
+    message.attach(MIMEText("These are the unprocessed results from benchmarking", 'plain', 'utf-8'))
+
+    message.attach(create_attachment(output_file))
+
+    return message
+
+
 def create_fail_mail(email, *files):
     message = MIMEMultipart()
     message["From"] = gmail_user
@@ -44,6 +56,7 @@ def create_fail_mail(email, *files):
 
     return message
 
+
 def send_mail(email, message):
     server = smtplib.SMTP("smtp.gmail.com", 587)
     server.starttls()
@@ -51,8 +64,13 @@ def send_mail(email, message):
     server.sendmail(gmail_user, email, message.as_string())
     server.close()
 
+
 def send_results(email, output_file):
     message = create_mail(email, output_file)
+    send_mail(email, message)
+
+def send_raw_results(email, output_file):
+    message = create_raw_results_mail(email, output_file)
     send_mail(email, message)
 
 def send_fail(email, *files):
