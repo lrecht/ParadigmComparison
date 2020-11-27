@@ -17,9 +17,10 @@ namespace procedural_c_
 			var outputData = makeHoughSpaceData(cosTable, sinTable, image, thetaAxisSize, rhoAxisSize);
 
 			var sum = 0;
-			for (int x = 0; x < outputData.GetLength(0); x++)
+			(int width, int height) = (outputData.GetLength(0), outputData.GetLength(1));
+			for (int x = 0; x < width; x++)
 			{
-				for (int y = 0; y < outputData.GetLength(1); y++)
+				for (int y = 0; y < height; y++)
 				{
 					sum += outputData[x, y];
 				}
