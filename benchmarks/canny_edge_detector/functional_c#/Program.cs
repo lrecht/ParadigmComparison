@@ -21,20 +21,7 @@ namespace functional_c_
         }
 
         private static ImmutableArray<(int x, int y, int w)> cannyEdge(Bitmap pic)
-        {
-            var greyscaled = greyScale(pic);
-
-            var gaussianPic = BlurGreyscale(greyscaled);
-
-            var (intensityGradientsPic, direction) = intensityGradients(gaussianPic);
-
-            var nonMaxSupressedPic = nonMaxSupression(intensityGradientsPic, direction);
-
-            var doubleThresholdedPic = doubleThreshold(nonMaxSupressedPic);
-            var hysteresisedPic = hysteresis(doubleThresholdedPic);
-
-            return hysteresisedPic;
-        }
+            => hysteresis(doubleThreshold(nonMaxSupression(intensityGradients(BlurGreyscale(greyScale(pic))))));
 
         private static ImmutableArray<(int, int, int)> hysteresis(ImmutableArray<(int x, int y, int w)> pic)
         {
@@ -76,8 +63,9 @@ namespace functional_c_
                     .ToImmutableArray();
         }
 
-        private static ImmutableArray<(int, int, int)> nonMaxSupression(ImmutableArray<(int x, int y, int)> pic, ImmutableArray<(int, int, int)> direction)
+        private static ImmutableArray<(int, int, int)> nonMaxSupression((ImmutableArray<(int x, int y, int)> pic, ImmutableArray<(int, int, int)> direction) input)
         {
+            var (pic, direction) = input;
             var temp = pic.Last();
             var width = temp.x + 1;
             var height = temp.y + 1;
