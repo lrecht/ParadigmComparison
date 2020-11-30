@@ -14,7 +14,7 @@ namespace oop_c_
         static int N_HIDDEN = 5;
         static void Main(string[] args)
         {
-            var dataset = Utils.LoadCSV("benchmarks/NN/seeds_dataset.csv");
+            var dataset = Utils.LoadCSV("../seeds_dataset.csv");
             dataset = Utils.NormaliseColumns(dataset);
             (double[,] test, double[,] train) = Utils.GetTestTrainSplit(dataset, TRAIN_TEST_SPLIT);
             (double[,] testData, double[] testActual) = (test.GetCols(0, test.GetLength(1) - 2), test.GetCol(test.GetLength(1) - 1));
@@ -212,7 +212,6 @@ namespace oop_c_
                     // Adjust weights and biases
                     updateWeights(features, learningRate);
                 }
-                System.Console.WriteLine($"Epoch: {i} \t Error: {sumError}");
             }
         }
 
