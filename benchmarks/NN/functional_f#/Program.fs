@@ -78,7 +78,6 @@ let train network trainData lRate epochs nOutputs =
             let res = updateWeights backNet input lRate
             res,error
         let res,err = Array.fold trainOnData (net,0.0) trainData
-        //printfn ">epoch=%2i, lrate=%1.2f, error=%1.3f" i lRate err
         res
     List.fold trainOnce network [1 .. epochs]
 
@@ -105,7 +104,6 @@ let accuracy (guess:int[]) (truth:int[]) =
 
 [<EntryPoint>]
 let main argv =
-    //printfn "%A" init
     let hidden = 5
     let iterations = 500
     let learnRate = 0.3
