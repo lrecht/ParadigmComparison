@@ -27,8 +27,6 @@ namespace oop_c_
             (int[] predictions, double accuracy) = network.Predict(test, testActual);
             
             System.Console.WriteLine(accuracy);
-
-
         }
     }
 
@@ -48,7 +46,6 @@ namespace oop_c_
                     else
                         dataset[i, j] = double.Parse(values[j]);
                 }
-
             }
             return dataset;
         }
@@ -103,12 +100,10 @@ namespace oop_c_
     {
         int nOutputs { get; set; }
         List<Layer> layers { get; set; }
-        //IBackPropAlgorithm backPropAlgorithm { get; set; }
         IAccuracyMetric accuracyMetric { get; set; }
 
         public NeuralNetwork(IAccuracyMetric accuracyMetric)
         {
-            //this.backPropAlgorithm = backPropAlgorithm;
             this.accuracyMetric = accuracyMetric;
         }
 
