@@ -78,12 +78,11 @@ let train network trainData lRate epochs nOutputs =
             let res = updateWeights backNet input lRate
             res,error
         let res,err = Array.fold trainOnData (net,0.0) trainData
-        printfn ">epoch=%2i, lrate=%1.2f, error=%1.3f" i lRate err
+        //printfn ">epoch=%2i, lrate=%1.2f, error=%1.3f" i lRate err
         res
     List.fold trainOnce network [1 .. epochs]
 
 let predict network input =
-    printfn "%A" input
     let computeLayer acc layer =
         Array.map (fun (n:Map<string,float[]>) -> 
             activate n.["weights"] acc n.["bias"].[0] |> transfer) layer
@@ -100,6 +99,10 @@ let normaliseColumns (data:float[][]) =
     let changeRow data = Array.map2 (fun v (min,max) -> (v-min)/(max-min)) data minmax
     Array.map changeRow data
 
+let accuracy (guess:int[]) (truth:int[]) =
+    let corrects = Array.fold2 (fun acc g t -> if g = t then acc+1.0 else acc ) 0.0 guess truth
+    corrects/(float)guess.Length * 100.0
+
 [<EntryPoint>]
 let main argv =
     //printfn "%A" init
@@ -107,11 +110,15 @@ let main argv =
     let iterations = 500
     let learnRate = 0.3
     let data = readFile "benchmarks/NN/wheat-seeds.csv"
-    let ndata = normaliseColumns data
+    let ndata = normaliseColumns data |> Array.sortBy (fun _ -> rand.Next()) 
+    let splitAt = (int)(ndata.Length / 10)
+    let trainData = ndata.[splitAt+1..ndata.Length-1]
+    let testData = ndata.[0..splitAt]
     let nInput = Array.length data.[0] - 1
     let nOutput = Array.distinct (Array.map (fun (a:float[]) -> a.[a.Length-1]) data) |> Array.length
     let init = initialiseNetwork nInput hidden nOutput
-    let learnNet = train init ndata learnRate iterations nOutput
-    let dataNoRes = Array.map (fun (a:float[]) -> a.[0..a.Length-2]) ndata
-    printfn "%A" (Array.map (predict learnNet) dataNoRes)
+    let learnNet = train init trainData learnRate iterations nOutput
+    let dataNoRes = Array.map (fun (a:float[]) -> a.[0..a.Length-2]) testData
+    let res = Array.map (fun (a:float[]) -> (int)a.[a.Length-1]) testData
+    printfn "%f" (accuracy (Array.map (predict learnNet) dataNoRes) res)
     0 // return an integer exit code
