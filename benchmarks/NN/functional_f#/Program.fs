@@ -11,16 +11,15 @@ let readFile file =
 
 let initialiseNetwork nInput nHidden nOutput =
     let initMapsWithWeights maps weights =
-        Array.map (fun _ -> Map.empty) [|for i in 1 .. maps do i|]
-        |> Array.map (fun (dict:Map<string,float[]>) -> 
+        Array.map ((fun _ -> Map.empty) >> (fun (dict:Map<string,float[]>) -> 
             dict.Add("weights",[|for i in 1 .. weights do rand.NextDouble()|])
-                .Add("bias",[|rand.NextDouble()|]))
+                .Add("bias",[|rand.NextDouble()|]))) [|for i in 1 .. maps do i|]
     [(initMapsWithWeights nHidden nInput);
      (initMapsWithWeights nOutput nHidden)]
 
+let activate weights inputs bias = bias + (Array.map2 ( * ) weights inputs |> Array.sum)
+let transfer activation = 1.0 / (1.0 + Math.Exp (-activation))
 let forwardPropagate row network =
-    let activate weights inputs bias = bias + (Array.map2 ( * ) weights inputs |> Array.sum)
-    let transfer activation = 1.0 / (1.0 + Math.Exp (-activation))
     let propagateNeuron inputs (neuron:Map<string,float[]>) =
         let out = activate neuron.["weights"] inputs neuron.["bias"].[0] |> transfer
         neuron.Add("output",[|out|])
@@ -39,11 +38,12 @@ let backwardPropagateError network expected =
     let delta errors layer = Array.map2 error errors layer
 
     let neuronError previousLayer index _ = 
-        Array.map (fun (n:Map<string,float[]>) -> 
-            n.["weights"].[index] * n.["delta"].[0]) previousLayer |> Array.sum
+        Array.sumBy (fun (n:Map<string,float[]>) -> 
+            n.["weights"].[index] * n.["delta"].[0]) previousLayer
 
     let backProp res layer =
-        let errors = Array.mapi (neuronError (List.head res)) layer
+        let prevLayer =  List.head res
+        let errors = Array.mapi (neuronError prevLayer) layer
         let newLayer = delta errors layer
         newLayer::res
 
@@ -82,23 +82,36 @@ let train network trainData lRate epochs nOutputs =
         res
     List.fold trainOnce network [1 .. epochs]
 
+let predict network input =
+    printfn "%A" input
+    let computeLayer acc layer =
+        Array.map (fun (n:Map<string,float[]>) -> 
+            activate n.["weights"] acc n.["bias"].[0] |> transfer) layer
+    List.fold computeLayer input network 
+    |> Array.fold (fun (acc,i,index) n -> 
+        if acc < n then (n,index,index+1) else (acc,i,index+1)) (0.0,0,0)
+    |> (fun (_,i,_) -> i)
+
+let normaliseColumns (data:float[][]) =
+    let aggr func i = func (fun (e:float[]) -> e.[i]) data |> Array.item i
+    let len = data.[0].Length-1
+    let minmax = [|for i in 0 .. len do 
+                        if i = len then (0.0,1.0) else aggr Array.minBy i,aggr Array.maxBy i|]
+    let changeRow data = Array.map2 (fun v (min,max) -> (v-min)/(max-min)) data minmax
+    Array.map changeRow data
+
 [<EntryPoint>]
 let main argv =
-    let init = initialiseNetwork 2 2 2
     //printfn "%A" init
+    let hidden = 5
+    let iterations = 500
+    let learnRate = 0.3
     let data = readFile "benchmarks/NN/wheat-seeds.csv"
-     
-    let dataset = [|
-        [|2.7810836;2.550537003;0.0|]
-        [|1.465489372;2.362125076;0.0|]
-        [|3.396561688;4.400293529;0.0|]
-        [|1.38807019;1.850220317;0.0|]
-        [|3.06407232;3.005305973;0.0|]
-        [|7.627531214;2.759262235;1.0|]
-        [|5.332441248;2.088626775;1.0|]
-        [|6.922596716;1.77106367;1.0|]
-        [|8.675418651;-0.242068655;1.0|]
-        [|7.673756466;3.508563011;1.0|]|]
-    let learnNet = train init dataset 0.5 20 2
-    //printfn "%A" learnNet
+    let ndata = normaliseColumns data
+    let nInput = Array.length data.[0] - 1
+    let nOutput = Array.distinct (Array.map (fun (a:float[]) -> a.[a.Length-1]) data) |> Array.length
+    let init = initialiseNetwork nInput hidden nOutput
+    let learnNet = train init ndata learnRate iterations nOutput
+    let dataNoRes = Array.map (fun (a:float[]) -> a.[0..a.Length-2]) ndata
+    printfn "%A" (Array.map (predict learnNet) dataNoRes)
     0 // return an integer exit code
