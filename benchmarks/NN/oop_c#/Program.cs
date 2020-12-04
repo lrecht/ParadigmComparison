@@ -94,7 +94,7 @@ namespace oop_c_
             for (int i = 0; i < numRows; i++)
             {
                 int randIndex = rnd.Next(0, numRows);
-                // swap procedure: note, var h to store initial indicies[s] value
+                // swap procedure
                 var h = array.GetRow(i);
                 shuffledArray.SetRow(i, array.GetRow(randIndex));
                 shuffledArray.SetRow(randIndex, h);
