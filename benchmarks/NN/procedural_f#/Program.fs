@@ -105,7 +105,6 @@ let updateWeights (network: Layer[]) (inputs: float[]) (learningRate: float) =
 let trainNetwork (network: Layer[]) (data: float[,]) (learningRate: float) (epochs: int) (numOutputs: int) =
     let rows = data.GetLength(0)-1
     let cols = data.GetLength(1)-1
-    let errors: string[] = Array.zeroCreate epochs
     for epoch in 1 .. epochs do
         let mutable sumError = 0.0
         for rowIndex in 0 .. rows do
@@ -118,9 +117,6 @@ let trainNetwork (network: Layer[]) (data: float[,]) (learningRate: float) (epoc
             
             backwardPropagateError network expected
             updateWeights network row learningRate
-        errors.[epoch-1] <- epoch.ToString() + ";" + sumError.ToString()
-        //printfn ">Epoch = %i\terror = %f" epoch sumError
-    System.IO.File.WriteAllLines("errors.csv", errors)
 
 
 let predict (network: Layer[]) (data: float[]) =
