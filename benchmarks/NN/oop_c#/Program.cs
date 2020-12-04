@@ -36,7 +36,6 @@ namespace oop_c_
     {
         public static double[,] LoadCSV(string filepath)
         {
-            Random rnd = new Random();
             var file = File.ReadAllLines(filepath);
             double[,] dataset = new double[file.Length, file[0].Split(',').Length];
             for (int i = 0; i < file.Length; i++)
