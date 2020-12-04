@@ -13,7 +13,7 @@ namespace oop_c_
         static int N_HIDDEN = 5;
         static void Main(string[] args)
         {
-            var dataset = Utils.LoadCSV("benchmarks/NN/wheat-seeds.csv");
+            var dataset = Utils.LoadCSV("../wheat-seeds.csv");
             dataset = Utils.NormaliseColumns(dataset);
             (double[,] test, double[,] train) = Utils.GetTestTrainSplit(dataset, TRAIN_TEST_SPLIT);
             (double[,] testData, double[] testActual) = (test.GetCols(0, test.GetLength(1) - 2), test.GetCol(test.GetLength(1) - 1));
@@ -25,7 +25,7 @@ namespace oop_c_
             NeuralNetwork network = new NeuralNetwork(new AccuracyPercentage()).InitialiseLayers(nInputs, N_HIDDEN, nOutputs);
             network.Train(train, trainActual, LEARNING_RATE, N_EPOCHS);
             (int[] predictions, double accuracy) = network.Predict(test, testActual);
-            
+
             System.Console.WriteLine(accuracy);
         }
     }
@@ -88,10 +88,17 @@ namespace oop_c_
         private static T[,] shuffle<T>(Random random, T[,] array)
         {
             T[,] shuffledArray = new T[array.GetLength(0), array.GetLength(1)];
-            int numsRows = array.GetLength(0);
-            var indicies = Enumerable.Range(0, numsRows - 1).OrderBy(a => Guid.NewGuid()).ToArray();
-            for (int i = 0; i < numsRows - 1; i++)
-                shuffledArray.SetRow(indicies[i], array.GetRow(i));
+            int numRows = array.GetLength(0);
+            int[] indicies = new int[numRows];
+            Random rnd = new Random();
+            for (int i = 0; i < numRows; i++)
+            {
+                int randIndex = rnd.Next(0, numRows);
+                // swap procedure: note, var h to store initial indicies[s] value
+                var h = array.GetRow(i);
+                shuffledArray.SetRow(i, array.GetRow(randIndex));
+                shuffledArray.SetRow(randIndex, h);
+            }
             return shuffledArray;
         }
     }
@@ -386,7 +393,7 @@ namespace oop_c_
 
             for (int i = start; i < end; i++)
                 for (var j = 0; j < rowLength; j++)
-                    cols[j,i - start] = matrix[j,i];
+                    cols[j, i - start] = matrix[j, i];
             return cols;
         }
     }
