@@ -315,17 +315,6 @@ namespace procedural_c_
 			var prediction = backPropagation(trainSet, testSet, learningRate, epocs, nHidden);
 			float[] actual = testSet.GetCol(testSet.GetLength(1) - 1);
 
-			Console.WriteLine("Ac:");
-			foreach (var a in actual)
-			{
-				System.Console.Write(a + " ");
-			}
-			Console.WriteLine("\nPred:");
-			foreach (var p in prediction)
-			{
-				System.Console.Write(p + " ");
-			}
-
 			return accuracyMetric(actual, prediction);
 		}
 	}
