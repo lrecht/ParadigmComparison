@@ -67,7 +67,7 @@ namespace oop_c_
 
         public static (double[,], double[,]) GetTestTrainSplit(double[,] dataset, double percent)
         {
-            dataset = shuffle(new Random(), dataset);
+            dataset = shuffle(dataset);
             (int rows, int columns) = (dataset.GetLength(0), dataset.GetLength(1));
             int numTest = (int)(rows * percent);
             int numTrain = rows - numTest;
