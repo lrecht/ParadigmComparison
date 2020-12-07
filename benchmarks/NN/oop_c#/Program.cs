@@ -85,7 +85,8 @@ namespace oop_c_
             return (test, train);
         }
 
-        private static T[,] shuffle<T>(Random random, T[,] array)
+        private static T[,] shuffle<T>(T[,] array)
+
         {
             T[,] shuffledArray = new T[array.GetLength(0), array.GetLength(1)];
             int numRows = array.GetLength(0);
