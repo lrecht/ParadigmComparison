@@ -85,11 +85,11 @@ namespace oop_c_
             return (test, train);
         }
 
-        private static T[,] shuffle<T>(Random random, T[,] array)
+        private static T[,] shuffle<T>(T[,] array)
+
         {
             T[,] shuffledArray = new T[array.GetLength(0), array.GetLength(1)];
             int numRows = array.GetLength(0);
-            int[] indicies = new int[numRows];
             Random rnd = new Random();
             for (int i = 0; i < numRows; i++)
             {
@@ -227,13 +227,6 @@ namespace oop_c_
         {
             foreach (Layer layer in layers)
                 layer.UpdateWeights(row, learning_rate);
-        }
-
-        private double computeError(double sumError, double[] outputs, double[] expected)
-        {
-            for (int i = 0; i < nOutputs; i++)
-                sumError += Math.Pow(expected[i] - outputs[i], 2);
-            return sumError;
         }
     }
 
