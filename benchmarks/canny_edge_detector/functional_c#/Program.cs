@@ -151,12 +151,13 @@ namespace functional_c_
 
         private static ImmutableArray<(int x, int y, int colour)> greyScale(Bitmap pic)
         {
-            var pixelCords = Enumerable.Range(0, pic.Height).SelectMany(y => Enumerable.Range(0, pic.Width).Select(x => (x, y))).ToImmutableArray();
-            return pixelCords.Select(p => {
-                var pixel = pic.GetPixel(p.x, p.y);
-                return (p.x, p.y, (int)(pixel.R * 0.3 + pixel.G * 0.59 + pixel.B * 0.11));
-            })
-            .ToImmutableArray();
+            return Enumerable.Range(0, pic.Height).SelectMany(y => Enumerable.Range(0, pic.Width).Select(x => (x, y)))
+				.Select(p =>
+				{
+					var pixel = pic.GetPixel(p.x, p.y);
+					return (p.x, p.y, (int)(pixel.R * 0.3 + pixel.G * 0.59 + pixel.B * 0.11));
+				})
+				.ToImmutableArray();
         }
 
         public static void saveComputedPic(ImmutableArray<(int x, int y, int colour)> pixels, string name){
