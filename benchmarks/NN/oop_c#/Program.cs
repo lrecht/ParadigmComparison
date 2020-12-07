@@ -241,17 +241,15 @@ namespace oop_c_
     {
         public Neuron[] Neurons { get; set; }
         int numNeurons { get; set; }
-        IActivationStrategy activation { get; set; }
         Layer previousLayer { get; set; }
         public Layer(int nNeurons, int nNeuronInputConnections, Layer previous, IActivationStrategy activation)
         {
             numNeurons = nNeurons;
             previousLayer = previous;
-            this.activation = activation;
             Neurons = new Neuron[nNeurons];
             // Adds specified neurons
             for (int i = 0; i < nNeurons; i++)
-                Neurons[i] = new Neuron(nNeuronInputConnections);
+                Neurons[i] = new Neuron(nNeuronInputConnections, activation);
         }
 
         public double[] ForwardPropagate(double[] inputs)
@@ -259,7 +257,7 @@ namespace oop_c_
             List<double> newInputs = new List<double>();
             foreach (Neuron neuron in Neurons)
             {
-                double activation = this.activation.Activate(neuron.Weights, inputs);
+                double activation = neuron.Activate(inputs);
                 neuron.Output = activation;
                 newInputs.Add(activation);
             }
@@ -291,14 +289,16 @@ namespace oop_c_
         public double[] Weights { get; set; }
         public double Output { get; set; }
         public double Delta { get; set; }
+        IActivationStrategy actvationFunction { get; set; }
         public double Derivative
         {
             // Calculate the derivative of an neuron output
             // using the sigmoid transfer function
             get => Output * (1 - Output);
         }
-        public Neuron(int nInputs)
+        public Neuron(int nInputs, IActivationStrategy activationFunction)
         {
+            this.actvationFunction = activationFunction;
             Weights = new double[nInputs];
             Delta = 0;
             // Random weights for each input to the neuron
@@ -308,6 +308,7 @@ namespace oop_c_
                 Weights[i] = rand;
             }
         }
+        public double Activate(double[] inputs) => actvationFunction.Activate(Weights, inputs);
     }
 
     public interface IActivationStrategy
