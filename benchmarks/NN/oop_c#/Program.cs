@@ -229,13 +229,6 @@ namespace oop_c_
             foreach (Layer layer in layers)
                 layer.UpdateWeights(row, learning_rate);
         }
-
-        private double computeError(double sumError, double[] outputs, double[] expected)
-        {
-            for (int i = 0; i < nOutputs; i++)
-                sumError += Math.Pow(expected[i] - outputs[i], 2);
-            return sumError;
-        }
     }
 
     public class Layer
