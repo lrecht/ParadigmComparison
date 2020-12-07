@@ -249,11 +249,7 @@ namespace oop_c_
         {
             List<double> newInputs = new List<double>();
             foreach (Neuron neuron in Neurons)
-            {
-                double activation = neuron.Activate(inputs);
-                neuron.Output = activation;
-                newInputs.Add(activation);
-            }
+                newInputs.Add(neuron.Activate(inputs));
             return newInputs.ToArray();
         }
 
@@ -301,7 +297,11 @@ namespace oop_c_
                 Weights[i] = rand;
             }
         }
-        public double Activate(double[] inputs) => actvationFunction.Activate(Weights, inputs);
+        public double Activate(double[] inputs) 
+        {
+            Output = actvationFunction.Activate(Weights, inputs);
+            return Output;
+        }
     }
 
     public interface IActivationStrategy
