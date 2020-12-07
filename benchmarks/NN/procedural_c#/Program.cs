@@ -21,7 +21,6 @@ namespace procedural_c_
 
 		static void Main(string[] args)
 		{
-			var stop = System.Diagnostics.Stopwatch.StartNew();
 			var dataset = getDataset();
 			var nHidden = 5;
 			var learningRate = 0.3f;
@@ -30,10 +29,7 @@ namespace procedural_c_
 			normalizeDataset(dataset);
 
 			var score = evaluateAlgorithm(dataset, learningRate, epochs, nHidden);
-
-			stop.Stop();
 			Console.WriteLine("Score:" + score);
-			Console.WriteLine("Time: " + stop.ElapsedMilliseconds);
 		}
 
 		// ---- Initilizers
@@ -68,9 +64,6 @@ namespace procedural_c_
 			var activation = neuron.Weights[(neuron.Weights.Length - 1)];
 			for (int i = 0; i < neuron.Weights.Length - 1; i++)
 			{
-				if (i >= neuron.Weights.Length || i >= inputs.Length)
-					System.Console.WriteLine($"{i}\t{neuron.Weights.Length}\t{inputs.Length}");
-
 				activation += ((neuron.Weights[i]) * inputs[i]);
 			}
 			return activation;
