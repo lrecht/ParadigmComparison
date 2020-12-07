@@ -90,7 +90,6 @@ namespace oop_c_
         {
             T[,] shuffledArray = new T[array.GetLength(0), array.GetLength(1)];
             int numRows = array.GetLength(0);
-            int[] indicies = new int[numRows];
             Random rnd = new Random();
             for (int i = 0; i < numRows; i++)
             {
