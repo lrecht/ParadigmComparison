@@ -1,7 +1,7 @@
 ﻿// Learn more about F# at http://fsharp.org
 
 open System
-let rand = Random(1)
+let rand = Random(2)
 
 //global field stuff
 type Neuron = {
@@ -230,5 +230,4 @@ let main argv =
     
     printfn "Score: %f" score
     0 // return an integer exit code
-
 
