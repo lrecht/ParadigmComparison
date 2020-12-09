@@ -67,10 +67,10 @@ namespace functional_c_
             Func<ImmutableArray<Layer>, Layer, ImmutableArray<Layer>> backProp = (res, layer) => {
                 var errors = layer.Select((neuron, i) => neuronError(res[0], i)).ToImmutableArray();
                 var newLayer = delta(errors, layer);
-                return res.Prepend(newLayer).ToImmutableArray();
+                return res.Add(newLayer);
             };
 
-            return rest.Aggregate(ImmutableArray<Layer>.Empty.Add(delta(errors, outt)), (acc, r) => backProp(acc, r));
+            return rest.Aggregate(ImmutableArray<Layer>.Empty.Add(delta(errors, outt)), (acc, r) => backProp(acc, r).Reverse().ToImmutableArray());
         }
 
         private static (ImmutableArray<Layer>, ImmutableArray<double>) forwardPropagate(ImmutableArray<double> row, ImmutableArray<Layer> network)
@@ -80,10 +80,11 @@ namespace functional_c_
             Func<ImmutableArray<double>, Neuron, Neuron> propagateNeuron = (inputs, neuron) => new Neuron(neuron.weights, transfer(activate(neuron.weights, inputs, neuron.bias)), neuron.bias, neuron.delta);
             Func<Layer, ImmutableArray<double>> getOutput = (layer) => layer.Select(neuron => neuron.output).ToImmutableArray();
 
-            var propagatedLayers = network.Aggregate((row, ImmutableArray<Layer>.Empty), (acc, layer) => {
+            var propagatedLayersTemp = network.Aggregate((row, layers: ImmutableArray<Layer>.Empty), (acc, layer) => {
                 var newLayer = layer.Select(neuron => propagateNeuron(acc.Item1, neuron)).ToImmutableArray();
-                return (getOutput(newLayer), acc.Item2.Prepend(newLayer).ToImmutableArray()); //TODO: PErformance with prepend?
+                return (getOutput(newLayer), acc.Item2.Add(newLayer));
             });
+            var propagatedLayers = (propagatedLayersTemp.row, propagatedLayersTemp.layers.Reverse().ToImmutableArray());
 
             return (propagatedLayers.Item2, getOutput(propagatedLayers.Item2[0]));
         }
