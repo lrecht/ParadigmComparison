@@ -47,7 +47,7 @@ namespace functional_c_
 
             var trainedNetwork = trainNetwork(init, trainData, learningRate, epochs, nOutput);
  
-            ImmutableArray<(int prediction, int actual)> results = testData.Select(row => (predict(trainedNetwork, row), (int)row[^1])).ToImmutableArray();
+            var results = testData.Select(row => (prediction: predict(trainedNetwork, row), actual: (int)row[^1])).ToImmutableArray();
             var correctPredictions = results.Where(res => res.prediction == res.actual).Count();
             var accuracy = correctPredictions / (double)results.Length * 100.0;
             
@@ -130,14 +130,13 @@ namespace functional_c_
                     var somethingElse = updateWeights(something, row, learningRate);
                     return(somethingElse, sumError);
                 });
-                //System.Console.WriteLine("Epoch=" + epoch + " lrate=" + learningRate + " error=" + res.Item2);
                 return res.accNetwork;
             });
         }
 
         private static int predict(ImmutableArray<Layer> network, ImmutableArray<double> row){
             var (_, output) = forwardPropagate(row, network);
-            return output.IndexOf(output.Max()); //TODO: PErformance with aggregate?
+            return output.IndexOf(output.Max());
         }
 
         private static ImmutableArray<ImmutableArray<double>> normaliseDataset(ImmutableArray<ImmutableArray<double>> dataset, ImmutableArray<(double columnMin, double columnMax, int columnIndex)> minmax)
