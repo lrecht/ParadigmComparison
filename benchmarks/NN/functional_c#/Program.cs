@@ -56,11 +56,11 @@ namespace functional_c_
 
         private static ImmutableArray<Layer> backwardsPropagateError(ImmutableArray<Layer> network, ImmutableArray<double> expected)
         {
-            var outt = network.First();
-            var rest = network.TakeLast(network.Length - 1);
-            var errors = outt.Zip(expected, (neuron, exp) => exp - neuron.output).ToImmutableArray();
+            var firstLayer = network.First();
+            var remainingLayers = network.TakeLast(network.Length - 1);
+            var errors = firstLayer.Zip(expected, (neuron, exp) => exp - neuron.output).ToImmutableArray();
             
-            Func<double, double> derivative = (outty) => outty * (1.0 - outty);
+            Func<double, double> derivative = (neuronOutput) => neuronOutput * (1.0 - neuronOutput);
             Func<double, Neuron, Neuron> getError = (error, neuron) => new Neuron(neuron.weights, neuron.output, neuron.bias, error * derivative(neuron.output));
             Func<ImmutableArray<double>, Layer, Layer> delta = (errors, layer) => errors.Zip(layer, (error, neuron) => getError(error, neuron)).ToImmutableArray();
             Func<Layer, int, double> neuronError = (layer, i) => layer.Select(neuron => neuron.weights[i] * neuron.delta).Sum();
@@ -70,7 +70,7 @@ namespace functional_c_
                 return res.Add(newLayer);
             };
 
-            return rest.Aggregate(ImmutableArray<Layer>.Empty.Add(delta(errors, outt)), (acc, r) => backProp(acc, r).Reverse().ToImmutableArray());
+            return remainingLayers.Aggregate(ImmutableArray<Layer>.Empty.Add(delta(errors, firstLayer)), (acc, r) => backProp(acc, r).Reverse().ToImmutableArray());
         }
 
         private static (ImmutableArray<Layer>, ImmutableArray<double>) forwardPropagate(ImmutableArray<double> row, ImmutableArray<Layer> network)
@@ -126,9 +126,7 @@ namespace functional_c_
                     var (forwardNet, outputs) = forwardPropagate(row, acc.accNetwork);
                     var expected = outputRange.Select(i => 0.0).ToImmutableArray().SetItem((int)row[^1], 1.0);
                     var sumError = acc.Item2 + outputRange.Select(i => Math.Pow((expected[i] - outputs[i]), 2)).Sum();
-                    var something = backwardsPropagateError(forwardNet, expected);
-                    var somethingElse = updateWeights(something, row, learningRate);
-                    return(somethingElse, sumError);
+                    return (updateWeights(backwardsPropagateError(forwardNet, expected), row, learningRate), sumError);
                 });
                 return res.accNetwork;
             });
