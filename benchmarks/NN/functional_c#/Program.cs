@@ -70,7 +70,7 @@ namespace functional_c_
                 return res.Add(newLayer);
             };
 
-            return remainingLayers.Aggregate(ImmutableArray<Layer>.Empty.Add(delta(errors, firstLayer)), (acc, r) => backProp(acc, r).Reverse().ToImmutableArray());
+            return remainingLayers.Aggregate(ImmutableArray<Layer>.Empty.Add(delta(errors, firstLayer)), (acc, r) => backProp(acc, r)).Reverse().ToImmutableArray();
         }
 
         private static (ImmutableArray<Layer>, ImmutableArray<double>) forwardPropagate(ImmutableArray<double> row, ImmutableArray<Layer> network)
