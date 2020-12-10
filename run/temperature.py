@@ -1,4 +1,4 @@
-TEMP_REG_FILE = '/sys/class/thermal/thermal_zone10/temp'
+TEMP_REG_FILE = '/sys/class/thermal/thermal_zone2/temp'
 
 def get_temp_celsius() -> float:
     with open(TEMP_REG_FILE, 'r') as temperature:
