@@ -2,6 +2,18 @@
 
 let rand = Random(2)
 
+type Neuron = {
+    Weights: float[];
+    Delta: float;
+    Output: float;
+    Bias: float
+}
+let makeNeuron bias delta output weights =
+    { Neuron.Delta = delta;
+      Neuron.Output = output;
+      Neuron.Bias = bias;
+      Neuron.Weights = weights }
+
 let readFile file =
     System.IO.File.ReadAllLines(file)
     |> Array.map (fun line -> 
@@ -11,19 +23,19 @@ let readFile file =
 
 let initialiseNetwork nInput nHidden nOutput =
     let initMapsWithWeights maps weights =
-        Array.map ((fun _ -> Map.empty) >> (fun (dict:Map<string,float[]>) -> 
-            dict.Add("weights",[|for i in 1 .. weights do rand.NextDouble()|])
-                .Add("bias",[|rand.NextDouble()|]))) [|for i in 1 .. maps do i|]
+        Array.map 
+            (fun _ -> makeNeuron 0.0 0.0 0.0 [|for i in 1 .. weights do rand.NextDouble()|])
+            [|for i in 1 .. maps do i|]
     [(initMapsWithWeights nHidden nInput);
      (initMapsWithWeights nOutput nHidden)]
 
 let activate weights inputs bias = bias + (Array.map2 ( * ) weights inputs |> Array.sum)
 let transfer activation = 1.0 / (1.0 + Math.Exp (-activation))
 let forwardPropagate row network =
-    let propagateNeuron inputs (neuron:Map<string,float[]>) =
-        let out = activate neuron.["weights"] inputs neuron.["bias"].[0] |> transfer
-        neuron.Add("output",[|out|])
-    let getOutput layer = Array.map (fun (neuron:Map<string,float[]>) -> neuron.["output"].[0]) layer
+    let propagateNeuron inputs (neuron:Neuron) =
+        let out = activate neuron.Weights inputs neuron.Bias |> transfer
+        makeNeuron neuron.Bias neuron.Delta out neuron.Weights
+    let getOutput layer = Array.map (fun (neuron:Neuron) -> neuron.Output) layer
     let rec propagateLayer rest inputs res =
         match rest with
           | (layer::xs) -> let newLayer = Array.map (propagateNeuron inputs) layer
@@ -33,13 +45,13 @@ let forwardPropagate row network =
 
 let backwardPropagateError network expected =
     let derivative out = out * (1.0 - out)
-    let error err (neuron:Map<string,float[]>) = 
-        neuron.Add("delta",[|(err * (derivative neuron.["output"].[0]))|])
+    let error err (neuron:Neuron) = 
+        makeNeuron neuron.Bias (err * (derivative neuron.Output)) neuron.Output neuron.Weights
     let delta errors layer = Array.map2 error errors layer
 
     let neuronError previousLayer index _ = 
-        Array.sumBy (fun (n:Map<string,float[]>) -> 
-            n.["weights"].[index] * n.["delta"].[0]) previousLayer
+        Array.sumBy (fun (n:Neuron) -> 
+            n.Weights.[index] * n.Delta) previousLayer
 
     let backProp res layer =
         let prevLayer =  List.head res
@@ -48,18 +60,17 @@ let backwardPropagateError network expected =
         newLayer::res
 
     let (out::rest) = network
-    let errors = Array.map2 (fun (neuron:Map<string,float[]>) exp -> exp - neuron.["output"].[0]) 
+    let errors = Array.map2 (fun (neuron:Neuron) exp -> exp - neuron.Output) 
                          out expected
     List.fold backProp [(delta errors out)] rest
 
 let updateWeights network row lRate =
-    let outputs layer = Array.map (fun (neuron:Map<string,float[]>) -> 
-                                        neuron.["output"].[0]) layer
+    let outputs layer = Array.map (fun (neuron:Neuron) -> 
+                                        neuron.Output) layer
     let update layer inputs =
-        let updateNeuron (neuron:Map<string,float[]>) =
-            let newWeights = Array.map2 (fun i w -> w+i*lRate*neuron.["delta"].[0]) inputs neuron.["weights"]
-            neuron.Add("weights",newWeights)
-                  .Add("bias",[|lRate*neuron.["delta"].[0]+neuron.["bias"].[0]|])
+        let updateNeuron (neuron:Neuron) =
+            let newWeights = Array.map2 (fun i w -> w+i*lRate*neuron.Delta) inputs neuron.Weights
+            makeNeuron (lRate * neuron.Delta + neuron.Bias) neuron.Delta neuron.Output newWeights
         Array.map updateNeuron layer
     List.fold (fun res layer -> (update layer (outputs (List.head res)))::res)
               [(update (List.head network) row)] 
@@ -83,8 +94,8 @@ let train network trainData lRate epochs nOutputs =
 
 let predict network input =
     let computeLayer acc layer =
-        Array.map (fun (n:Map<string,float[]>) -> 
-            activate n.["weights"] acc n.["bias"].[0] |> transfer) layer
+        Array.map (fun (n:Neuron) -> 
+            activate n.Weights acc n.Bias|> transfer) layer
     List.fold computeLayer input network 
     |> Array.fold (fun (acc,i,index) n -> 
         if acc < n then (n,index,index+1) else (acc,i,index+1)) (0.0,0,0)
