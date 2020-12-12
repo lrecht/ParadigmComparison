@@ -104,7 +104,7 @@ namespace functional_c_
             => ((int) Math.Round((Math.Atan2(x, y)) * (5.0 / Math.PI)) + 5) % 5;
 
         private static int hyp(int x, int y)
-            => (int)Math.Sqrt(Math.Pow(x, 2) + Math.Pow(y, 2));
+            => (int)Math.Sqrt(x*x + y*y);
 
         private static ImmutableArray<(int x, int y, int colour)> BlurGreyscale(ImmutableArray<(int x, int y, int colour)> pic)
         {
@@ -142,7 +142,7 @@ namespace functional_c_
                         .Select(i => {
                             var offX = (i % length) - foff;
                             var offY = (i / length) - foff;
-                            return (offX, offY, calculatedEuler * Math.Exp(-(offY * offY + (offX * offX)) / (2.0 * Math.Pow(weight, 2))));
+                            return (offX, offY, calculatedEuler * Math.Exp(-(offY * offY + (offX * offX)) / (2.0 * weight*weight)));
                         });
 
             var sum = filter.Sum(t => t.Item3);
@@ -158,14 +158,6 @@ namespace functional_c_
 					return (p.x, p.y, (int)(pixel.R * 0.3 + pixel.G * 0.59 + pixel.B * 0.11));
 				})
 				.ToImmutableArray();
-        }
-
-        public static void saveComputedPic(ImmutableArray<(int x, int y, int colour)> pixels, string name){
-            var newPic = new Bitmap(pixels.Last().x + 1, pixels.Last().y + 1);
-            pixels.Select(p => (p.x, p.y, p.colour <= 255 ? (p.colour >= 0 ? p.colour : 0) : 255))
-                .ToList()
-                .ForEach(p => newPic.SetPixel(p.x, p.y, Color.FromArgb(p.Item3, p.Item3, p.Item3)));
-            newPic.Save(name + ".jpg");
         }
     }
 }
