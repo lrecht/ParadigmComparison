@@ -14,10 +14,10 @@ if __name__ == '__main__':
     latex.set_defaults(which='latex')
     latex.add_argument('-o', '--output', type=str, help='Selects where the latex output should be saved')
 
-    latex = subparsers.add_parser(name='edp')
-    latex.set_defaults(which='edp')
-    latex.add_argument('-w', '--weight', default=2, type=str, help='Sets the weight used to calculate the edp (1, 2 or 3)')
-    latex.add_argument('-o', '--output', type=str, help='Selects where the edp output should be saved')
+    edp = subparsers.add_parser(name='edp')
+    edp.set_defaults(which='edp')
+    edp.add_argument('-w', '--weight', default=2, type=str, help='Sets the weight used to calculate the edp (1, 2 or 3)')
+    edp.add_argument('-o', '--output', type=str, help='Selects where the edp output should be saved')
 
     plot = subparsers.add_parser(name='plot')
     plot.set_defaults(which='plot')
