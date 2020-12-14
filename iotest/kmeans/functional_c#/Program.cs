@@ -9,7 +9,7 @@ namespace functional_c_
     {
         static void Main(string[] args)
         {
-            var points = System.IO.File.ReadAllLines("iotest/kmeans_concurrent/points.txt")
+            var points = System.IO.File.ReadAllLines("iotest/kmeans/points.txt")
                 .Select(x => (Convert.ToDouble(x.Split(':')[0]), Convert.ToDouble(x.Split(':')[1])))
                 .ToImmutableList();
             System.Console.WriteLine(points.Count);
