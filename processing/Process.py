@@ -2,6 +2,7 @@ from Thermal import Thermals
 from BoxPlotter import BoxPlotter
 from LatexPrinter import LatexPrinter
 from CsvParser import CsvParser
+from EDPPlotter import EDPPrinter
 from typing import *
 import argparse
 
@@ -13,6 +14,11 @@ if __name__ == '__main__':
     latex = subparsers.add_parser(name='latex')
     latex.set_defaults(which='latex')
     latex.add_argument('-o', '--output', type=str, help='Selects where the latex output should be saved')
+
+    edp = subparsers.add_parser(name='edp')
+    edp.set_defaults(which='edp')
+    edp.add_argument('-w', '--weight', default=2, type=int, help='Sets the weight used to calculate the edp (1, 2 or 3)')
+    edp.add_argument('-o', '--output', type=str, help='Selects where the edp output should be saved')
 
     plot = subparsers.add_parser(name='plot')
     plot.set_defaults(which='plot')
@@ -44,3 +50,5 @@ if __name__ == '__main__':
             Thermals(results).plot(args)
         elif args.type == 'correlate':
             Thermals(results).correlate(args)
+    elif args.which == 'edp':
+        EDPPrinter(args.weight,args.output).output(results)
