@@ -8,7 +8,9 @@ rules = {
     'label': r'benchmarks/(.+?)/(.+?)_(f#|c#)/',
     'duration': r'.*',
     'pkg': r'.*',
-    'ram': r'.*'
+    'ram': r'.*',
+    'temp before': r'.*',
+    'temp after': r'.*'
 }
 
 
@@ -38,7 +40,7 @@ class CsvParser(FileParser):
     def get_lines(self, file: str) -> Sequence[str]:
         if os.path.exists(file):
             lines = open(file, 'r').readlines()
-            self.header = self.split(lines[0])
+            self.header = [ x.strip() for x in self.split(lines[0]) ]
             return lines[1:]
         else:
             raise FileNotFoundError(f'The file {file} was not found')

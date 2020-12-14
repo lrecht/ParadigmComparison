@@ -10,6 +10,7 @@ class MetricType(Enum):
     DURATION = 'duration'
     DRAM = 'dram'
     PACKAGE = 'pkg'
+    TEMP = 'temp'
 
 
 class Key(NamedTuple):
@@ -27,6 +28,8 @@ class Observation(NamedTuple):
     duration: str
     package: str
     dram: str
+    temp_before: str
+    temp_after: str
 
 
 class Metric(NamedTuple):
@@ -74,6 +77,7 @@ class Result():
         self.__add(obs, MetricType.DURATION, float(obs.duration))
         self.__add(obs, MetricType.PACKAGE, float(obs.package))
         self.__add(obs, MetricType.DRAM, float(obs.dram))
+        self.__add(obs, MetricType.TEMP, (float(obs.temp_before) + float(obs.temp_after)) / 2)
 
 
     def __get_ordering(self, obs1: List[float], obs2: List[float], p_value: float) -> Literal['<', '=', '>']:
@@ -104,4 +108,17 @@ class Result():
             met = Metric(key, self.observations[key])
             return Option(met)
         else:
-            return Option[Metric].empty()
+            return Option.empty()
+
+
+    def get_raws(self, key: Key, metrics: List[MetricType]) -> Option[Dict[MetricType, List[float]]]:
+        result_map: Dict[MetricType, List[float]] = {}
+        for metric in metrics:
+            new_key = Key(key.benchmark, key.paradigm, key.language, metric)
+            opt_res = self.get_result(new_key)
+            if opt_res.has_value:
+                result_map[metric] = opt_res.get().results
+        if len(result_map.keys()) == len(metrics):
+            return Option(result_map)
+        else:
+            return Option.empty()

@@ -12,9 +12,9 @@ class BoxPlotter():
         return condition if condition else otherwise
 
     def plot(self, conditions: Namespace) -> None:
-        benchmark = self.__select([conditions.benchmark], self.result.benchmarks)
-        language = self.__select([conditions.language], self.result.languages)
-        metric = [conditions.metric] if conditions.metric else [x for x in MetricType]
+        benchmark = self.__select(conditions.benchmark, self.result.benchmarks)
+        language = self.__select(conditions.language, self.result.languages)
+        metric = [ MetricType(x) for x in conditions.metric] if conditions.metric else [x for x in MetricType]
 
         for b in benchmark:
             for l in language:
