@@ -19,7 +19,8 @@ type Edge(startVertex, endVertex, cost) =
 let main argv =
     let mutable edges = List<Edge>()
 
-    for line in System.IO.File.ReadAllLines("benchmarks/dijkstra/graph.csv") do
+    for line in System.IO.File.ReadAllLines("iotest/dijkstra/graph.csv") do
         edges.Add(Edge.FromCSV(line))
-    printfn "‰i" edges.Count
+    let c = edges.Count
+    printfn "%i" c
     0 // return an integer exit code
