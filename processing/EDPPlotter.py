@@ -27,8 +27,6 @@ class EDPPrinter():
             sumCPU = sum(cpu)
             sumRAM = sum(ram)
 
-            # Summarise the results
-
             # Find avg's and convert to seconds and joule
             avgTime = sumTime / length * 0.000001
             avgCPU = sumCPU / length * 0.000001
