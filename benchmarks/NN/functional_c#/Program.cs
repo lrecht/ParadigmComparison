@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Immutable;
+using System.Globalization;
 
 
 namespace functional_c_
@@ -24,14 +25,16 @@ namespace functional_c_
     {
         static Random rand = new Random(2);
 
-        static readonly ImmutableArray<ImmutableArray<double>> rawData = System.IO.File.ReadAllLines("benchmarks/NN/wheat-seeds.csv").Select(l => l.Split(',').Select(n => double.Parse(n)).ToImmutableArray()).ToImmutableArray();
+        static readonly ImmutableArray<ImmutableArray<double>> rawData = System.IO.File.ReadAllLines("benchmarks/NN/wheat-seeds.csv").Select(l => l.Split(',').Select(n => double.Parse(n, CultureInfo.InvariantCulture)).ToImmutableArray()).ToImmutableArray();
+
         static readonly ImmutableArray<ImmutableArray<double>> wheatData = rawData.Select(row => row.SetItem(row.Length - 1, row[^1] - 1)).ToImmutableArray();
 
         static void Main(string[] args)
         {
             var nInput = wheatData[0].Length;
             var nHidden = 5;
-            var nOutput = wheatData.Select(row => row[row.Length - 1]).Distinct().Count();
+            var nOutput = wheatData.Select(row => row[^1]).Distinct().Count();
+
             var learningRate = 0.3;
             var epochs = 500;
 
@@ -72,16 +75,16 @@ namespace functional_c_
             return network.RemoveAt(0).Aggregate(ImmutableArray<Layer>.Empty.Add(delta(errors, firstLayer)), (acc, r) => backProp(acc, r)).Reverse().ToImmutableArray();
         }
 
+        static Func<ImmutableArray<double>, ImmutableArray<double>, double, double> activate = (weights, inputs, bias) => bias + Enumerable.Zip(weights, inputs, (w, i) => w * i).Sum();
+        static Func<double, double> transfer = (activation) => 1.0 / (1.0 + Math.Exp(-activation));
+        static Func<ImmutableArray<double>, Neuron, Neuron> activateNeuron = (inputs, neuron) => new Neuron(neuron.weights, transfer(activate(neuron.weights, inputs, neuron.bias)), neuron.bias, neuron.delta);
+        static Func<Layer, ImmutableArray<double>> getOutput = (layer) => layer.Select(neuron => neuron.output).ToImmutableArray();
         private static (ImmutableArray<Layer>, ImmutableArray<double>) forwardPropagate(ImmutableArray<double> row, ImmutableArray<Layer> network)
         {
-            Func<ImmutableArray<double>, ImmutableArray<double>, double, double> activate = (weights, inputs, bias) => bias + Enumerable.Zip(weights, inputs, (w, i) => w * i).Sum();
-            Func<double, double> transfer = (activation) => 1.0 / (1.0 + Math.Exp(-activation));
-            Func<ImmutableArray<double>, Neuron, Neuron> activateNeuron = (inputs, neuron) => new Neuron(neuron.weights, transfer(activate(neuron.weights, inputs, neuron.bias)), neuron.bias, neuron.delta);
-            Func<Layer, ImmutableArray<double>> getOutput = (layer) => layer.Select(neuron => neuron.output).ToImmutableArray();
-
             var propagatedLayersTemp = network.Aggregate((row, layers: ImmutableArray<Layer>.Empty), (acc, layer) => {
-                var newLayer = layer.Select(neuron => activateNeuron(acc.Item1, neuron)).ToImmutableArray();
+                var newLayer = layer.Select(neuron => activateNeuron(acc.row, neuron)).ToImmutableArray();
                 return (getOutput(newLayer), acc.layers.Add(newLayer));
+
             });
             var propagatedLayers = (propagatedLayersTemp.row, layers: propagatedLayersTemp.layers.Reverse().ToImmutableArray());
 
@@ -131,8 +134,9 @@ namespace functional_c_
             });
         }
 
-        private static int predict(ImmutableArray<Layer> network, ImmutableArray<double> row){
-            var (_, output) = forwardPropagate(row, network);
+        private static int predict(ImmutableArray<Layer> network, ImmutableArray<double> input) {
+            var output = network.Aggregate(input, (acc,layer) => getOutput(layer.Select(neuron => activateNeuron(acc, neuron))
+                   .ToImmutableArray()));
             return output.IndexOf(output.Max());
         }
 
