@@ -59,14 +59,14 @@ type Layer(nNeurons, nNeuronInputConnections, previous : Layer, activation : IAc
 
     member val Neurons : Neuron[] = neurons
     member __.ForwardPropagate inputs =
-        let newInputs = List<double>()
-        for neuron in this.Neurons do
-            newInputs.Add(neuron.Activate inputs)
-        newInputs.ToArray()
+        let newInputs = Array.zeroCreate (this.Neurons.Length)
+        for i in 0 .. this.Neurons.Length - 1 do
+            newInputs.[i] <- this.Neurons.[i].Activate inputs
+        newInputs
 
     member __.UpdateWeights (row : double[]) learningRate =
         let lastElement = row.GetLength(0)
-        let mutable inputs = row.[0 .. lastElement]
+        let mutable inputs = row.[0 .. lastElement - 1]
         if not (isNull previous)
         then
             let neuronsInPreviousLayer = previous.Neurons
