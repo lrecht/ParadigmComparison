@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Globalization;
 
 namespace oop_c_
 {
@@ -50,9 +51,9 @@ namespace oop_c_
                 for (int j = 0; j < values.Length; j++)
                 {
                     if (j == values.Length - 1)
-                        dataset[i, j] = double.Parse(values[j]) - 1;
+                        dataset[i, j] = double.Parse(values[j], CultureInfo.InvariantCulture) - 1;
                     else
-                        dataset[i, j] = double.Parse(values[j]);
+                        dataset[i, j] = double.Parse(values[j], CultureInfo.InvariantCulture);
                 }
             }
             return dataset;

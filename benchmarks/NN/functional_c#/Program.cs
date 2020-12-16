@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Immutable;
+using System.Globalization;
 
 
 namespace functional_c_
@@ -24,7 +25,7 @@ namespace functional_c_
     {
         static Random rand = new Random(2);
 
-        static readonly ImmutableArray<ImmutableArray<double>> rawData = System.IO.File.ReadAllLines("benchmarks/NN/wheat-seeds.csv").Select(l => l.Split(',').Select(n => double.Parse(n)).ToImmutableArray()).ToImmutableArray();
+        static readonly ImmutableArray<ImmutableArray<double>> rawData = System.IO.File.ReadAllLines("benchmarks/NN/wheat-seeds.csv").Select(l => l.Split(',').Select(n => double.Parse(n, CultureInfo.InvariantCulture)).ToImmutableArray()).ToImmutableArray();
 
         static readonly ImmutableArray<ImmutableArray<double>> wheatData = rawData.Select(row => row.SetItem(row.Length - 1, row[^1] - 1)).ToImmutableArray();
 

@@ -3,6 +3,7 @@
 open System
 open System.Collections.Generic
 open System.IO
+open System.Globalization
 
 
 type IActivationStrategy =
@@ -189,8 +190,8 @@ type Utils private() =
             let values = file.[i].Split(',')
             for j in 0 .. values.Length - 1 do
                 if j = values.Length - 1
-                then dataset.[i, j] <- Double.Parse(values.[j]) - 1.0
-                else dataset.[i, j] <- Double.Parse(values.[j])
+                then dataset.[i, j] <- Double.Parse(values.[j], CultureInfo.InvariantCulture) - 1.0
+                else dataset.[i, j] <- Double.Parse(values.[j], CultureInfo.InvariantCulture)
         dataset
 
     static member NormaliseColumns (dataset : double[,]) =
