@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-
+using benchmark;
 
 namespace procedural_c_
 {
@@ -9,7 +9,7 @@ namespace procedural_c_
     {
         static void Main(string[] args)
         {
-            Procedural p = new Procedural("257","5525",$"benchmarks/dijkstra/graph.csv");
+            Procedural p = new Procedural("257","5525",$"benchmarks/dijkstra/graph.csv", args);
         }
     }
 
@@ -28,9 +28,12 @@ namespace procedural_c_
         Heap heap;
         string position;
 
-        public Procedural(string start, string dest, string filepath)
+        public Procedural(string start, string dest, string filepath, string[] args)
         {
-            string[] file = File.ReadAllLines(filepath);
+            var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
+            var bm = new Benchmark(iterations);
+			
+			string[] file = File.ReadAllLines(filepath);
             int startSize = 2^10;
 
             heap.array = new (string, int)[startSize];
@@ -49,11 +52,14 @@ namespace procedural_c_
 
             }
 
-            dijkstra(start,dest);
-            var bt = doBacktrack();
-            foreach(string line in bt)
-                System.Console.Write(line+" ");
-            System.Console.WriteLine();
+			bm.Run(() => {
+				dijkstra(start,dest);
+            	return doBacktrack();
+			}, (res) => {
+				foreach(string line in res)
+					System.Console.Write(line+" ");
+				System.Console.WriteLine();
+			});
         }
 
         void dijkstra(string start, string dest)

@@ -2,6 +2,7 @@
 
 open System
 open System.Text
+open benchmark
 
 let runs: int = 100
 let height: int = 256
@@ -39,9 +40,11 @@ let updateBord() =
     board <- newBoard
 
 let initilizeBoard() =
+    let initState = Array2D.zeroCreate height width
     let state = System.IO.File.ReadAllText("benchmarks/game_of_life/state256.txt")
     for i in 0 .. state.Length-1 do
-        board.[(i/width), (i % width)] <- state.[i] = '1'
+        initState.[(i/width), (i % width)] <- state.[i] = '1'
+    initState
 
 let countAlive () =
     let mutable count = 0
@@ -53,11 +56,18 @@ let countAlive () =
 
 [<EntryPoint>]
 let main argv =
-    initilizeBoard()
-    for i in 0 .. runs-1 do
-        updateBord()
+    let iterations = if argv.Length > 0 then int (argv.[0]) else 1
+    let bm = Benchmark(iterations)
 
-    let count: int = countAlive()
-    printfn "Alive: %i" count
-
+    let initState = initilizeBoard()
+    
+    bm.Run((fun () ->
+        board <- initState
+        for i in 0 .. runs-1 do
+            updateBord()
+        countAlive()
+    ), (fun (res) -> 
+        printfn "Alive: %i" res
+    ))
+    
     0 // return an integer exit code

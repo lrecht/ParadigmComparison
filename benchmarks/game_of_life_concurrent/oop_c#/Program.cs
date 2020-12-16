@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using benchmark;
 
 namespace oop_c_
 {
@@ -8,10 +9,26 @@ namespace oop_c_
 	{
 		static void Main(string[] args)
 		{
-			Life gameOf = new Life(new GameRules(), 256);
-			for (int i = 0; i < 100; i++)
-				gameOf.NextGeneration();
-			System.Console.WriteLine(gameOf.GetLiveCount());
+			var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
+			var bm = new Benchmark(iterations);
+
+			var size = 256;
+			var initState = new bool[size, size];
+			var f = File.ReadAllText("benchmarks/game_of_life_concurrent/state256.txt").Select(c => c == '1').ToArray();
+			var len = f.Length;
+			for (int i = 0; i < len; i++)
+				initState[(i / size), (i % size)] = f[i];
+
+			bm.Run(() =>
+			{
+				Life gameOf = new Life(new GameRules(), size, initState);
+				for (int i = 0; i < 100; i++)
+					gameOf.NextGeneration();
+				return gameOf.GetLiveCount();
+			}, (res) =>
+			{
+				System.Console.WriteLine(res);
+			});
 		}
 	}
 
@@ -36,13 +53,10 @@ namespace oop_c_
 		{
 			Size = size;
 		}
-		public void Initialise()
+		public void Initialise(bool[,] initstate)
 		{
 			_board = new bool[Size, Size];
-			var f = File.ReadAllText("benchmarks/game_of_life_concurrent/state256.txt").Select(c => c == '1').ToArray();
-			var len = f.Length;
-			for (int i = 0; i < len; i++)
-				_board[(i / Size), (i % Size)] = f[i];
+			_board = initstate;
 		}
 
 		public bool GetCell(int x, int y) => _board[x, y];
@@ -55,10 +69,10 @@ namespace oop_c_
 	{
 		Board board;
 		IRules _gameRules;
-		public Life(IRules gameRules, int boardsize)
+		public Life(IRules gameRules, int boardsize, bool[,] initState)
 		{
 			board = new Board(boardsize);
-			board.Initialise();
+			board.Initialise(initState);
 			_gameRules = gameRules;
 		}
 

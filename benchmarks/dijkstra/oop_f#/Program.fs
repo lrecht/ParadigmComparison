@@ -2,6 +2,7 @@
 
 open System
 open System.Collections.Generic
+open benchmark
 
 [<AllowNullLiteral>]
 type Vertex(name) =
@@ -95,13 +96,20 @@ let END = "5525"
 
 [<EntryPoint>]
 let main argv =
+    let iterations = if argv.Length > 0 then int (argv.[0]) else 1
+    let bm = Benchmark(iterations)
+    
     let mutable edges = List<Edge>()
 
     for line in System.IO.File.ReadAllLines("benchmarks/dijkstra/graph.csv") do
         edges.Add(Edge.FromCSV(line))
 
-    let g = Graph(edges)
-    let res = g.Solve START END
-    for i in res do
-        printfn "%A" i
+    bm.Run((fun () -> 
+        let g = Graph(edges)
+        g.Solve START END
+    ), (fun res -> 
+        for i in res do
+            printf "%A " i
+    ))
+    
     0 // return an integer exit code

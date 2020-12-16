@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Collections.Immutable;
 using System.Collections.Generic;
+using benchmark;
 
 namespace functional_c_
 {
@@ -16,15 +17,19 @@ namespace functional_c_
                             .ToImmutableList();
         static void Main(string[] args)
         {
-            var initialStateRep = System.IO.File.ReadAllText("benchmarks/game_of_life_concurrent/state256.txt")
+            var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
+            var bm = new Benchmark(iterations);
+
+			var initialStateRep = System.IO.File.ReadAllText("benchmarks/game_of_life_concurrent/state256.txt")
                 .Select(x => x == '1')
                 .ToImmutableArray();
 
-            
-            var result = simulateSteps(initialStateRep, runs);
-            
-            var living = result.Where(x => x);
-            System.Console.WriteLine(living.Count());
+            bm.Run(() => {
+				var result = simulateSteps(initialStateRep, runs);
+				return result.Where(x => x).Count();
+			}, (res) => {
+            	System.Console.WriteLine(res);
+			});
         }
 
         private static ImmutableArray<bool> simulateSteps(ImmutableArray<bool> state, int runs)

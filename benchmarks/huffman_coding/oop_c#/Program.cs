@@ -2,18 +2,25 @@
 using System.Collections.Generic;
 using System;
 using System.IO;
+using benchmark;
 
 namespace oop_c_
 {
     class Program
     {
-        static string TEST_STRING = File.ReadAllText("benchmarks/huffman_coding/lines.txt");
-
         static void Main(string[] args)
         {
-            Huffman huffman = new Huffman(TEST_STRING);
-            string encodedString = huffman.Encode(TEST_STRING);
-            System.Console.WriteLine(encodedString.Length);
+            var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
+            var bm = new Benchmark(iterations);
+			var initState = File.ReadAllText("benchmarks/huffman_coding/lines.txt");
+
+			bm.Run(() => {
+				Huffman huffman = new Huffman(initState);
+				string encodedString = huffman.Encode(initState);
+				return encodedString.Length;
+			}, (res) => {
+            	System.Console.WriteLine(res);
+			});
         }
     }
 

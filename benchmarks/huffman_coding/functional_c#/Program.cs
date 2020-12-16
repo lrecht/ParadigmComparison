@@ -2,21 +2,28 @@
 using System.Collections.Immutable;
 using System.Collections.Generic;
 using System.Linq;
+using benchmark;
 
 namespace functional_c_
 {
     class Program
     {
-
-
         static void Main(string[] args)
         {
-            var TEST_STRING = File.ReadAllText("benchmarks/huffman_coding/lines.txt");
-            var frequencies = getFrequencies(TEST_STRING);
-            var mappings = createMappings(frequencies);
-            var encodedCharacters = TEST_STRING.Select(x => mappings[x]);
-            var encodedString = string.Join("", TEST_STRING.Select(x => mappings[x]));
-            System.Console.WriteLine(encodedString.Length);
+            var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
+            var bm = new Benchmark(iterations);
+			
+			var TEST_STRING = File.ReadAllText("benchmarks/huffman_coding/lines.txt");
+            
+			bm.Run(() => {
+				var frequencies = getFrequencies(TEST_STRING);
+				var mappings = createMappings(frequencies);
+				var encodedCharacters = TEST_STRING.Select(x => mappings[x]);
+				var encodedString = string.Join("", TEST_STRING.Select(x => mappings[x]));
+				return encodedString.Length;
+			}, (res) => {
+				System.Console.WriteLine(res);
+			});
         }
 
         private static ImmutableDictionary<char, string> createMappings(IEnumerable<(char, int)> frequencies)

@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Collections.Immutable;
+using benchmark;
 
 namespace functional_c_
 {
@@ -13,14 +14,19 @@ namespace functional_c_
                             .ToImmutableList();
         static void Main(string[] args)
         {
+			var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
+            var bm = new Benchmark(iterations);
+
             var initialStateRep = System.IO.File.ReadAllText("benchmarks/game_of_life/state256.txt")
                 .Select(x => x == '1')
                 .ToImmutableArray();
             
-            var result = simulateSteps(initialStateRep, runs);
-            
-            var living = result.Where(x => x);
-            System.Console.WriteLine(living.Count());
+			bm.Run(() => {
+				var result = simulateSteps(initialStateRep, runs);
+				return result.Where(x => x);
+			}, (res) => {
+				System.Console.WriteLine(res.Count());
+			});
         }
 
         private static ImmutableArray<bool> simulateSteps(ImmutableArray<bool> state, int runs)

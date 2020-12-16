@@ -1,4 +1,6 @@
-﻿let size = 256
+﻿open benchmark
+
+let size = 256
 let neighbours = List.except [(0,0)] [for x in [-1;0;1] do for y in [-1;0;1] do (x,y)]
 
 let wrap x =
@@ -29,8 +31,15 @@ let rec run arr number =
 
 [<EntryPoint>]
 let main argv =
+    let iterations = if argv.Length > 0 then int (argv.[0]) else 1
+    let bm = Benchmark(iterations)
+
     let arr = readFile "benchmarks/game_of_life_concurrent/state256.txt"
 
-    printfn "%i" (run arr 100)
+    bm.Run(( fun () ->
+        run arr 100
+    ),( fun(res) -> 
+        printfn "%i" res
+    ))
 
     0 // return an integer exit code
