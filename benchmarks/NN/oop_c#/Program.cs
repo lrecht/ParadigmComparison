@@ -20,13 +20,21 @@ namespace oop_c_
             (double[,] trainData, double[] trainActual) = (train.GetCols(0, train.GetLength(1) - 2), train.GetCol(train.GetLength(1) - 1));
 
             int nInputs = train.GetLength(1);
-            int nOutputs = trainActual.Distinct().Count();
+            int nOutputs = getDistinctCount(dataset.GetCol(dataset.GetLength(1)-1));
 
             NeuralNetwork network = new NeuralNetwork(new AccuracyPercentage()).InitialiseLayers(nInputs, N_HIDDEN, nOutputs);
             network.Train(train, trainActual, LEARNING_RATE, N_EPOCHS);
             (int[] predictions, double accuracy) = network.Predict(test, testActual);
 
             System.Console.WriteLine(accuracy);
+        }
+
+        static int getDistinctCount(double[] arr)
+        {
+            HashSet<double> distinct = new HashSet<double>();
+            foreach(double i in arr)
+                distinct.Add(i);
+            return distinct.Count;
         }
     }
 
@@ -56,13 +64,24 @@ namespace oop_c_
             for (int i = 0; i < numColumns; i++)
             {
                 double[] column = dataset.GetCol(i);
-                double min = column.Min();
-                double max = column.Max();
+                (double min, double max) = minMax(column);
                 double diff = max - min;
                 for (int j = 0; j < column.Length; j++)
                     dataset[j, i] = (dataset[j, i] - min) / diff;
             }
             return dataset;
+        }
+
+        public static (double, double) minMax (double[] arr){
+            var (min, max) = (arr[0], arr[0]);
+            for (int i = 1; i < arr.Length; i++)
+            {
+                if (arr[i] > max)
+                    max = arr[i];
+                if (arr[i] < min)
+                    min = arr[i];
+            }
+            return (min, max);
         }
 
         public static (double[,], double[,]) GetTestTrainSplit(double[,] dataset, double percent)
@@ -89,7 +108,7 @@ namespace oop_c_
         {
             T[,] shuffledArray = new T[array.GetLength(0), array.GetLength(1)];
             int numRows = array.GetLength(0);
-            Random rnd = new Random();
+            Random rnd = new Random(3);
             for (int i = 0; i < numRows; i++)
             {
                 int randIndex = rnd.Next(0, numRows);
@@ -193,8 +212,9 @@ namespace oop_c_
             for (int i = 0; i < nEpochs; i++)
             {
                 double sumError = 0;
+                int len = trainData.GetLength(0);
                 // For each row in the training data
-                for (int j = 0; j < trainData.GetLength(0); j++)
+                for (int j = 0; j < len; j++)
                 {
                     double[] features = trainData.GetRow(j);
                     double actual = trainActual[j];
@@ -247,10 +267,10 @@ namespace oop_c_
 
         public double[] ForwardPropagate(double[] inputs)
         {
-            List<double> newInputs = new List<double>();
-            foreach (Neuron neuron in Neurons)
-                newInputs.Add(neuron.Activate(inputs));
-            return newInputs.ToArray();
+            double[] newInputs = new double[inputs.Length];
+            for (int i = 0; i < Neurons.Length; i++)
+                newInputs[i] = Neurons[i].Activate(inputs);
+            return newInputs;
         }
 
         public void UpdateWeights(double[] row, double learningRate)
