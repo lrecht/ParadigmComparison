@@ -242,7 +242,7 @@ namespace procedural_c_
 			var height = dataset.GetLength(1);
 			for (int x = 0; x < width; x++)
 			{
-				var (min, max) = (float.MaxValue, 0.0f);
+				var (min, max) = (float.MaxValue, float.MinValue);
 				for (int y = 0; y < height - 1; y++)
 				{
 					if (dataset[x, y] < min)

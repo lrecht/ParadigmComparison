@@ -32,7 +32,8 @@ namespace functional_c_
         {
             var nInput = wheatData[0].Length;
             var nHidden = 5;
-            var nOutput = wheatData.Select(row => row[row.Length - 1]).Distinct().Count();
+            var nOutput = wheatData.Select(row => row[^1]).Distinct().Count();
+
             var learningRate = 0.3;
             var epochs = 500;
 
@@ -82,8 +83,9 @@ namespace functional_c_
             Func<Layer, ImmutableArray<double>> getOutput = (layer) => layer.Select(neuron => neuron.output).ToImmutableArray();
 
             var propagatedLayersTemp = network.Aggregate((row, layers: ImmutableArray<Layer>.Empty), (acc, layer) => {
-                var newLayer = layer.Select(neuron => activateNeuron(acc.Item1, neuron)).ToImmutableArray();
-                return (getOutput(newLayer), acc.Item2.Add(newLayer));
+                var newLayer = layer.Select(neuron => activateNeuron(acc.row, neuron)).ToImmutableArray();
+                return (getOutput(newLayer), acc.layers.Add(newLayer));
+
             });
             var propagatedLayers = (propagatedLayersTemp.row, propagatedLayersTemp.layers.Reverse().ToImmutableArray());
 

@@ -206,10 +206,10 @@ let evaluateAlgorithm (dataset: float[,]) (learningRate: float) (epocs: int) (nH
     shuffleDataset dataset
     let tenPercent = dataset.GetLength(0) / 10
     //Create the training data
-    let trainSet: float[,] = dataset.[tenPercent+1 .. dataset.GetLength(0) - 1, 0 .. dataset.GetLength(1) - 1]
+    let trainSet: float[,] = dataset.[tenPercent .. dataset.GetLength(0) - 1, 0 .. dataset.GetLength(1) - 1]
     
     //Create the testing data
-    let testSet: float[,] = dataset.[0 .. tenPercent, 0 .. dataset.GetLength(1)-1]
+    let testSet: float[,] = dataset.[0 .. tenPercent-1, 0 .. dataset.GetLength(1)-1]
     
     let prediction = backPropagation trainSet testSet learningRate epocs nHidden
     let actual = testSet.[0 .. testSet.GetLength(0)-1, testSet.GetLength(1)-1]
@@ -230,4 +230,3 @@ let main argv =
     
     printfn "Score: %f" score
     0 // return an integer exit code
-

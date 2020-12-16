@@ -86,7 +86,6 @@ namespace oop_c_
         }
 
         private static T[,] shuffle<T>(T[,] array)
-
         {
             T[,] shuffledArray = new T[array.GetLength(0), array.GetLength(1)];
             int numRows = array.GetLength(0);
@@ -158,7 +157,8 @@ namespace oop_c_
 
         public void BackPropagateError(double[] expected)
         {
-            int length = layers.Count() - 1;
+            int length = layers.Count - 1;
+
             // Iterating through layers, staring with the ouput layer
             // This ensures that the neurons in the output layer have ‘delta’ 
             // values calculated first that neurons in the hidden layer can use 
@@ -293,8 +293,7 @@ namespace oop_c_
             // Random weights for each input to the neuron
             for (int i = 0; i < nInputs; i++)
             {
-                double rand = rnd.NextDouble();
-                Weights[i] = rand;
+                Weights[i] = rnd.NextDouble();
             }
         }
         public double Activate(double[] inputs) 
