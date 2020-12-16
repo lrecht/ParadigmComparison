@@ -20,7 +20,7 @@ namespace functional_c_
         {
             var width = pic.Width;
             var height = pic.Height;
-            var diagonal = (int) Math.Ceiling(Math.Sqrt(Math.Pow(width, 2) + Math.Pow(height, 2)));
+            var diagonal = (int) Math.Ceiling(Math.Sqrt(width*width + height*height));
             var halfRhoAxisSize = rhoAxisSize / 2;
 
             var tables = cosSinRadianTables(thetaAxisSize);

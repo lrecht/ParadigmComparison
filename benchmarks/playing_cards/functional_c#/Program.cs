@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Immutable;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace functional_c_
@@ -9,6 +8,9 @@ namespace functional_c_
     {
     private enum Suit { Diamonds, Spades, Hearts, Clubs }
     private enum Value { Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King, Ace }
+    static ImmutableArray<Suit> suits = ImmutableArray<Suit>.Empty.AddRange((Suit[])Enum.GetValues(typeof(Suit)));
+    static ImmutableArray<Value> values = ImmutableArray<Value>.Empty.AddRange((Value[])Enum.GetValues(typeof(Value)));
+    static Random rng = new Random();
 
         static void Main(string[] args)
         {
@@ -23,35 +25,27 @@ namespace functional_c_
             return performPlayingCards(runs - 1, playingCardsOnDeck(getNewDeck(), count));
         }
 
-        private static int playingCardsOnDeck(ImmutableList<(Suit, Value)> deck, int count){
-            if(deck.Count < 1)
+        private static int playingCardsOnDeck(ImmutableArray<(Suit, Value)> deck, int count){
+            if(deck.Length < 1)
                 return count;
 
-            var deckStrSize = showDeck(deck).Count();
-            var shuffledDeck = shuffleDeck(deck, new Random());
-            var dealedDeck = shuffledDeck.Remove(shuffledDeck.Last());
+            var deckStrSize = showDeck(deck).Length;
+            var shuffledDeck = shuffleDeck(deck);
+            var dealedDeck = shuffledDeck.Take(deck.Length - 1).ToImmutableArray();
 
             return playingCardsOnDeck(dealedDeck, deckStrSize + count);
         }
 
 
-        private static string showDeck(ImmutableList<(Suit, Value)> deck)
-        {
-            return string.Join('\n', deck.Select(x => $"{x.Item2} of {x.Item1}"));
-        }
+        private static string showDeck(ImmutableArray<(Suit, Value)> deck)
+            => string.Join('\n', deck.Select(x => $"{x.Item2} of {x.Item1}"));
 
-        private static ImmutableList<(Suit, Value)> shuffleDeck(ImmutableList<(Suit, Value)> deck, Random rng)
-        {
-            return deck.OrderBy(x => rng.Next()).ToImmutableList();
-        }
+        private static ImmutableArray<(Suit, Value)> shuffleDeck(ImmutableArray<(Suit, Value)> deck)
+            => deck.OrderBy(x => rng.Next()).ToImmutableArray();
 
-        private static ImmutableList<(Suit, Value)> getNewDeck(){
-            var suits = ImmutableList<Suit>.Empty.AddRange((Suit[])Enum.GetValues(typeof(Suit)));
-            var values = ImmutableArray<Value>.Empty.AddRange((Value[])Enum.GetValues(typeof(Value)));
-
-            return suits
+        private static ImmutableArray<(Suit, Value)> getNewDeck()
+            => suits
                 .SelectMany(x => values.Select(y => (x, y)))
-                .ToImmutableList();                
-        }
+                .ToImmutableArray();                
     }
 }
