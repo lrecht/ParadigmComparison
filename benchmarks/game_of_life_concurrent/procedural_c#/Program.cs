@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using benchmark;
 
 namespace procedural_c_
 {
@@ -13,13 +14,23 @@ namespace procedural_c_
 
 		static void Main(string[] args)
 		{
-			initilizeBoard();
-			for (int i = 0; i < runs; i++)
+			var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
+			var bm = new Benchmark(iterations);
+
+			var initState = initilizeBoard();
+
+			bm.Run(() =>
 			{
-				updateBoard();
-			}
-			var count = countAlive();
-			Console.WriteLine("Alive: " + count);
+				board = initState;
+				for (int i = 0; i < runs; i++)
+				{
+					updateBoard();
+				}
+				return countAlive();
+			}, (res) =>
+			{
+				Console.WriteLine("Alive: " + res);
+			});
 		}
 
 		public static int countLiveNeighbors(int x, int y)
@@ -61,13 +72,15 @@ namespace procedural_c_
 			board = newBoard;
 		}
 
-		public static void initilizeBoard()
+		public static bool[,] initilizeBoard()
 		{
+			var initState = new bool[height, width];
 			var state = System.IO.File.ReadAllText("benchmarks/game_of_life_concurrent/state256.txt");
 			for (int i = 0; i < state.Length; i++)
 			{
-				board[(i / width), (i % width)] = state[i] == '1';
+				initState[(i / width), (i % width)] = state[i] == '1';
 			}
+			return initState;
 		}
 
 		public static int countAlive()

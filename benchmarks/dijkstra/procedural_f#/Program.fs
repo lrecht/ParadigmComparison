@@ -3,6 +3,7 @@
 open System
 open System.IO
 open System.Collections.Generic
+open benchmark
 
 type Heap = {
     mutable array: (string*int) array
@@ -162,8 +163,7 @@ let visitNeighbours (key:string) (cost:int) (edges: Dictionary<string,(string*in
         else if alternateDist < distances.[nKey] then
             replacePath nKey key alternateDist |> ignore
 
-let solveDijkstra (source:string) (destination:string) =
-    let mutable edges = initEdges
+let solveDijkstra (source:string) (destination:string) (edges: Dictionary<string, (string * int) array>) =
     while heap.size > 0 do 
         let (key, cost) = heapPop()
         if key = destination then
@@ -173,10 +173,19 @@ let solveDijkstra (source:string) (destination:string) =
 
 [<EntryPoint>]
 let main argv =
+    let iterations = if argv.Length > 0 then int (argv.[0]) else 1
+    let bm = Benchmark(iterations)
+
     let source: string = "257"
     let destination: string = "5525"
     heapInsert (source, 0)
-    solveDijkstra source destination |> ignore
-    let shortestPath = doBacktrack source destination
-    printPath shortestPath |> ignore
+    let mutable edges = initEdges
+
+    bm.Run((fun () -> 
+        solveDijkstra source destination edges |> ignore
+        doBacktrack source destination
+    ), (fun(res) -> 
+        printPath res |> ignore
+    ))
+    
     0 // return an integer exit code

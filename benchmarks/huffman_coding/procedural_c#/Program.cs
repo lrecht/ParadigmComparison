@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 using System.Collections.Generic;
-using System.Linq;
+using benchmark;
 
 namespace procedural_c_
 {
@@ -9,12 +9,23 @@ namespace procedural_c_
 	{
 		static void Main(string[] args)
 		{
+			var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
+			var bm = new Benchmark(iterations);
+
 			var text = System.IO.File.ReadAllText("benchmarks/huffman_coding/lines.txt");
-			var freq = CreateFrequencies(text);
-			var mappings = CreateMappings(freq);
-			var encodedString = Encode(mappings, text);
-			Console.WriteLine("Length: " + encodedString.Length);
+
+			bm.Run(() =>
+			{
+				var freq = CreateFrequencies(text);
+				var mappings = CreateMappings(freq);
+				var encodedString = Encode(mappings, text);
+				return encodedString.Length;
+			}, (res) =>
+			{
+				Console.WriteLine("Length: " + res);
+			});
 		}
+
 		static Dictionary<char, int> CreateFrequencies(string text)
 		{
 			var result = new Dictionary<char, int>();

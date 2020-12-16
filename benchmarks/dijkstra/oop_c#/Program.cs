@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Diagnostics;
+using benchmark;
 
 namespace oop_c_
 {
@@ -12,13 +13,20 @@ namespace oop_c_
         static readonly string END = "5525";
         static void Main(string[] args)
         {
-            string directory = System.IO.Directory.GetParent(Environment.CurrentDirectory).ToString();
+            var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
+            var bm = new Benchmark(iterations);
+			
+			string directory = System.IO.Directory.GetParent(Environment.CurrentDirectory).ToString();
             List<Edge> edges = File.ReadAllLines($"benchmarks/dijkstra/graph.csv")
                                            .Select(v => Edge.FromCsv(v))
                                            .ToList();
-            Graph graph = new Graph(edges);
-            var shortestPath = graph.dijkstra(START, END);
-            System.Console.WriteLine(String.Join(' ', shortestPath));
+            
+			bm.Run(() => {
+				Graph graph = new Graph(edges);
+            	return graph.dijkstra(START, END);
+			}, (res) => {
+            	System.Console.WriteLine(String.Join(' ', res));
+			});
         }
     }
 
