@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BenchmarkInterface\BenchmarkInterface.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="SpanningTree/*" />
+    <Compile Include="PlayingCards/*" />
+  </ItemGroup>
+</Project>
