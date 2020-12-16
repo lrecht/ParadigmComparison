@@ -1,7 +1,6 @@
 from argparse import Namespace
 import math
-import itertools
-from typing import List
+from typing import List, Tuple
 from matplotlib import pyplot as plt
 import numpy as np
 from Result import Key, MetricType, Result
@@ -27,26 +26,42 @@ class Thermals():
         return res
 
 
+    def __get_color(self, value: float) -> Tuple[int, int, int]:
+        default = { "red": 255, "green": 0, "blue": 0 }
+        new_range = value * 511
+        whole = math.ceil(new_range)
+        for _ in range(whole):
+            if default['green'] != 255:
+                default['green'] = default['green'] + 1
+            elif default['green'] == 255:
+                default['red'] = default['red'] - 1
+        return (default['red'], default['green'], default['blue'])
+
+
     def correlate(self, conditions: Namespace) -> None:
         benchmark = self.__select(conditions.benchmark, self.result.benchmarks)
         language = self.__select(conditions.language, self.result.languages)
-        metric = [ MetricType(x) for x in conditions.metric] if conditions.metric else [x for x in MetricType]
 
         for b in benchmark:
             for l in language:
-                for paradigm in self.result.paradigms[b]:
-                    if conditions.paradigm and paradigm in conditions.paradigm:
-                        continue
-                        
-                    for (m1, m2) in itertools.combinations(metric, 2):
-                        k1 = Key(b, paradigm, l, m1)
-                        k2 = Key(b, paradigm, l, m2)
-                        res1 = self.result.get_result(k1)
-                        res2 = self.result.get_result(k2)
-                        if res1.has_value and res2.has_value:
-                            co = np.corrcoef(res1.get().results, res2.get().results)
-                            print("[{0}, {1} - {2}]: {3} vs. {4}".format(b, l, paradigm, m1, m2))
-                            print("{0}\n\n".format(co))
+                line = b.replace("_", " ").capitalize()
+                for para in ['procedural', 'oop', 'functional']:
+                    for (m1, m2) in [(MetricType.TEMP, MetricType.DURATION), (MetricType.TEMP, MetricType.DRAM), (MetricType.TEMP, MetricType.PACKAGE)]:
+                        line = line + " & "                        
+                        if para in self.result.paradigms[b]:
+                            if conditions.paradigm and para in conditions.paradigm:
+                                continue
+
+                            k1 = Key(b, para, l, m1)
+                            k2 = Key(b, para, l, m2)
+                            res1 = self.result.get_result(k1)
+                            res2 = self.result.get_result(k2)
+                            if res1.has_value and res2.has_value:
+                                co = np.corrcoef(res1.get().results, res2.get().results)
+                                red, green, blue = self.__get_color(abs(co[1,0]))
+                                line = line + '\\cellcolor[RGB]{{{0}, {1}, {2}}}'.format(red, green, blue)
+                print(line + "\\\\ \hline")
+
 
 
     def plot(self, conditions: Namespace) -> None:
