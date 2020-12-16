@@ -3,6 +3,7 @@
 open System.Collections.Immutable
 open System.Collections.Generic
 open System.IO
+open benchmark
 
 let filePath = "benchmarks/dijkstra/graph.csv"
 let lines = seq {
@@ -55,8 +56,18 @@ let dijkstraPath edgeMap start dest =
 
 [<EntryPoint>]
 let main argv =
-    let edgeMap = Seq.fold (fun (acc:Map<string,(string*string*int) list>) (from,dest,cost) -> 
-        if acc.ContainsKey from then acc.Add(from,((from,dest,cost)::(acc.[from])))
-        else acc.Add(from,[from,dest,cost])) Map.empty graph in
-    let meh = List.map (fun a -> printfn "%O" a) (dijkstraPath edgeMap "257" "5525")
+    
+    let iterations = if argv.Length > 0 then int (argv.[0]) else 1
+    let bm = Benchmark(iterations)
+
+    let input = graph
+
+    bm.Run((fun () ->
+        let edgeMap = Seq.fold (fun (acc:Map<string,(string*string*int) list>) (from,dest,cost) -> 
+            if acc.ContainsKey from then acc.Add(from,((from,dest,cost)::(acc.[from])))
+            else acc.Add(from,[from,dest,cost])) Map.empty input
+        dijkstraPath edgeMap "257" "5525"
+    ), (fun res ->        
+        List.map (fun a -> printfn "%O" a) res |> ignore)
+    )
     0 // return an integer exit code

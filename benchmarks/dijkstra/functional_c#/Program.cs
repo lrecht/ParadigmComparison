@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Collections.Generic;
 using System.Linq;
+using benchmark;
 
 namespace functional_c_
 {
@@ -8,13 +9,20 @@ namespace functional_c_
     {
         static void Main(string[] args)
         {
+            var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
+            var bm = new Benchmark(iterations);
+            
             ImmutableList<(string, string, int)> EDGES = getEdgesFromCsv($"benchmarks/dijkstra/graph.csv");
-            string START = "257";
-            string END = "5525";
 
-            ImmutableDictionary<string, ImmutableList<(string, string, int)>> graph = getGraphFromEdges(EDGES);
-            var shortestPath = dijkstra(graph, START, END);
-            System.Console.WriteLine(string.Join(' ', shortestPath));
+            bm.Run(() => {
+                string START = "257";
+                string END = "5525";
+
+                ImmutableDictionary<string, ImmutableList<(string, string, int)>> graph = getGraphFromEdges(EDGES);
+                return dijkstra(graph, START, END);
+            }, (res) => {
+                System.Console.WriteLine(string.Join(' ', res));
+            });
         }
 
         private static ImmutableList<(string, string, int)> getEdgesFromCsv(string filePath)
