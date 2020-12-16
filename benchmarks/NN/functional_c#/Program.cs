@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Immutable;
-
+using benchmark;
 
 namespace functional_c_
 {
@@ -24,34 +24,41 @@ namespace functional_c_
     {
         static Random rand = new Random(2);
 
-        static readonly ImmutableArray<ImmutableArray<double>> rawData = System.IO.File.ReadAllLines("../wheat-seeds.csv").Select(l => l.Split(',').Select(n => double.Parse(n)).ToImmutableArray()).ToImmutableArray();
-        static readonly ImmutableArray<ImmutableArray<double>> wheatData = rawData.Select(row => row.SetItem(row.Length - 1, row[^1] - 1)).ToImmutableArray();
-
+        static readonly ImmutableArray<ImmutableArray<double>> rawData = System.IO.File.ReadAllLines("benchmarks/NN/wheat-seeds.csv").Select(l => l.Split(',').Select(n => double.Parse(n)).ToImmutableArray()).ToImmutableArray();
+        
         static void Main(string[] args)
         {
-            var nInput = wheatData[0].Length;
-            var nHidden = 5;
-            var nOutput = wheatData.Select(row => row[row.Length - 1]).Distinct().Count();
-            var learningRate = 0.3;
-            var epochs = 500;
+            var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
+            var bm = new Benchmark(iterations);
+			
+			var initState = rawData.Select(row => row.SetItem(row.Length - 1, row[^1] - 1)).ToImmutableArray();
 
-            var dataset = normaliseDataset(wheatData, datasetMinMax(wheatData))
-                        .OrderBy(_ => rand.Next())
-                        .ToImmutableArray();
-            
-            var splitIndex = dataset.Length / 10;
-            var testData = dataset.Take(splitIndex).ToImmutableArray();
-            var trainData = dataset.TakeLast(dataset.Length - splitIndex).ToImmutableArray();
+			bm.Run(() => {
+				var wheatData = initState;
+				var nInput = wheatData[0].Length;
+				var nHidden = 5;
+				var nOutput = wheatData.Select(row => row[row.Length - 1]).Distinct().Count();
+				var learningRate = 0.3;
+				var epochs = 500;
 
-            var init = initialiseNetwork(nInput, nHidden, nOutput);
+				var dataset = normaliseDataset(wheatData, datasetMinMax(wheatData))
+							.OrderBy(_ => rand.Next())
+							.ToImmutableArray();
+				
+				var splitIndex = dataset.Length / 10;
+				var testData = dataset.Take(splitIndex).ToImmutableArray();
+				var trainData = dataset.TakeLast(dataset.Length - splitIndex).ToImmutableArray();
 
-            var trainedNetwork = trainNetwork(init, trainData, learningRate, epochs, nOutput);
- 
-            var results = testData.Select(row => (prediction: predict(trainedNetwork, row), actual: (int)row[^1])).ToImmutableArray();
-            var correctPredictions = results.Where(res => res.prediction == res.actual).Count();
-            var accuracy = correctPredictions / (double)results.Length * 100.0;
-            
-            System.Console.WriteLine(accuracy);
+				var init = initialiseNetwork(nInput, nHidden, nOutput);
+
+				var trainedNetwork = trainNetwork(init, trainData, learningRate, epochs, nOutput);
+	
+				var results = testData.Select(row => (prediction: predict(trainedNetwork, row), actual: (int)row[^1])).ToImmutableArray();
+				var correctPredictions = results.Where(res => res.prediction == res.actual).Count();
+				return correctPredictions / (double)results.Length * 100.0;
+			}, (res) => {
+				System.Console.WriteLine(res);
+			});
         }
 
         private static ImmutableArray<Layer> backwardsPropagateError(ImmutableArray<Layer> network, ImmutableArray<double> expected)

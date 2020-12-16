@@ -2,7 +2,7 @@
 open System.Text
 open System.Drawing
 open System.Text.RegularExpressions
-
+open benchmark
 
 type Table() =
     let mutable charTable = Array2D.zeroCreate<Char> 5 5
@@ -81,14 +81,20 @@ type PlayFairCipher(key) =
             i <- i + 2
         cipher (sb.ToString()) true
 
-
-
 [<EntryPoint>]
 let main argv =
+    let iterations = if argv.Length > 0 then int (argv.[0]) else 1
+    let bm = Benchmark(iterations)
+
     let testString = System.IO.File.ReadAllText "benchmarks/playfair_cipher/lines.txt"
-    let p = PlayFairCipher("this is a great keyword")
-    let encrypt = p.Encrypt(testString)
-    let decrypt = p.Decrypt(encrypt)
-    printfn "%d" (String.length encrypt)
-    printfn "%d" (String.length decrypt)
+    
+    bm.Run((fun () ->
+        let p = PlayFairCipher("this is a great keyword")
+        let encrypt = p.Encrypt(testString)
+        let decrypt = p.Decrypt(encrypt)
+        (encrypt.Length, decrypt.Length)
+    ), (fun (en, de) ->
+        printfn "%d" en
+        printfn "%d" de
+    ))
     0

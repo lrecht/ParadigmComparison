@@ -1,4 +1,5 @@
 ﻿using System;
+using benchmark;
 
 namespace procedural_c_
 {
@@ -21,15 +22,25 @@ namespace procedural_c_
 
 		static void Main(string[] args)
 		{
-			var dataset = getDataset();
-			var nHidden = 5;
-			var learningRate = 0.3f;
-			var epochs = 500;
+			var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
+			var bm = new Benchmark(iterations);
 
-			normalizeDataset(dataset);
+			var initState = getDataset();
 
-			var score = evaluateAlgorithm(dataset, learningRate, epochs, nHidden);
-			Console.WriteLine("Score:" + score);
+			bm.Run(() =>
+			{
+				var dataset = initState;
+				var nHidden = 5;
+				var learningRate = 0.3f;
+				var epochs = 500;
+
+				normalizeDataset(dataset);
+
+				return evaluateAlgorithm(dataset, learningRate, epochs, nHidden);
+			}, (res) =>
+			{
+				Console.WriteLine("Score:" + res);
+			});
 		}
 
 		// ---- Initilizers

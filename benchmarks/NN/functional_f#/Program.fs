@@ -1,4 +1,5 @@
 ﻿open System
+open benchmark
 
 let rand = Random(2)
 
@@ -115,19 +116,28 @@ let accuracy (guess:int[]) (truth:int[]) =
 
 [<EntryPoint>]
 let main argv =
-    let hidden = 5
-    let iterations = 500
-    let learnRate = 0.3
+    let iterations = if argv.Length > 0 then int (argv.[0]) else 1
+    let bm = Benchmark(iterations)
+    
     let data = readFile "benchmarks/NN/wheat-seeds.csv"
-    let ndata = normaliseColumns data |> Array.sortBy (fun _ -> rand.Next()) 
-    let splitAt = (int)(ndata.Length / 10)
-    let trainData = ndata.[splitAt+1..ndata.Length-1]
-    let testData = ndata.[0..splitAt]
-    let nInput = Array.length data.[0] - 1
-    let nOutput = Array.distinct (Array.map (fun (a:float[]) -> a.[a.Length-1]) data) |> Array.length
-    let init = initialiseNetwork nInput hidden nOutput
-    let learnNet = train init trainData learnRate iterations nOutput
-    let dataNoRes = Array.map (fun (a:float[]) -> a.[0..a.Length-2]) testData
-    let res = Array.map (fun (a:float[]) -> (int)a.[a.Length-1]) testData
-    printfn "%f" (accuracy (Array.map (predict learnNet) dataNoRes) res)
+
+    bm.Run((fun () -> 
+        let hidden = 5
+        let iterations = 500
+        let learnRate = 0.3
+        let ndata = normaliseColumns data |> Array.sortBy (fun _ -> rand.Next()) 
+        let splitAt = (int)(ndata.Length / 10)
+        let trainData = ndata.[splitAt+1..ndata.Length-1]
+        let testData = ndata.[0..splitAt]
+        let nInput = Array.length data.[0] - 1
+        let nOutput = Array.distinct (Array.map (fun (a:float[]) -> a.[a.Length-1]) data) |> Array.length
+        let init = initialiseNetwork nInput hidden nOutput
+        let learnNet = train init trainData learnRate iterations nOutput
+        let dataNoRes = Array.map (fun (a:float[]) -> a.[0..a.Length-2]) testData
+        let res = Array.map (fun (a:float[]) -> (int)a.[a.Length-1]) testData
+        accuracy (Array.map (predict learnNet) dataNoRes) res
+    ), (fun(res) ->
+        printfn "%f" res
+    ))
+    
     0 // return an integer exit code

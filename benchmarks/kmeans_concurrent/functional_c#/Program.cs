@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Collections.Immutable;
 using System.Collections.Generic;
+using benchmark;
 
 namespace functional_c_
 {
@@ -25,12 +26,18 @@ namespace functional_c_
 
         static void Main(string[] args)
         {
-            var points = System.IO.File.ReadAllLines("benchmarks/kmeans_concurrent/points.txt")
+            var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
+            var bm = new Benchmark(iterations);
 
+			var points = System.IO.File.ReadAllLines("benchmarks/kmeans_concurrent/points.txt")
                 .Select(x => (Convert.ToDouble(x.Split(':')[0]), Convert.ToDouble(x.Split(':')[1])))
                 .ToImmutableList();
-            var clusters = runKMeans(10, points);
-            clusters.ForEach(c => System.Console.WriteLine(c));
+            
+			bm.Run(() => {
+				return runKMeans(10, points);
+			}, (res) => {
+				res.ForEach(c => System.Console.WriteLine(c));
+			});
         }
 
         private static ImmutableList<(double x, double y)> runKMeans(int clusterCount, ImmutableList<(double x, double y)> points)

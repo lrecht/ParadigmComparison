@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Immutable;
+using benchmark;
 
 namespace functional_c_
 {
@@ -11,14 +12,20 @@ namespace functional_c_
         static readonly char rare = 'X';
         static void Main(string[] args)
         {
+			var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
+            var bm = new Benchmark(iterations);
 
             var TEST_STRING = System.IO.File.ReadAllText("benchmarks/playfair_cipher/lines.txt");
-            var table = createTable(keyword);
-            var encoded = new string(encode(TEST_STRING, table).ToArray());
-            var decoded = new string(decode(encoded, table).ToArray());
-
-            System.Console.WriteLine(encoded.Length);
-            System.Console.WriteLine(decoded.Length);
+            
+			bm.Run(() => {
+				var table = createTable(keyword);
+				var encoded = new string(encode(TEST_STRING, table).ToArray());
+				var decoded = new string(decode(encoded, table).ToArray());
+				return (encoded.Length, decoded.Length);
+			}, (things) => {
+				System.Console.WriteLine(things.Item1);
+            	System.Console.WriteLine(things.Item2);
+			});
         }
 
         private static (ImmutableDictionary<char, (int, int)>, ImmutableDictionary<(int, int), char>) createTable(string keyword)

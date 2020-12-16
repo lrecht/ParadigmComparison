@@ -4,6 +4,7 @@ open System
 open System.IO
 open System.Linq
 open System.Threading.Tasks
+open benchmark
 
 type Point(x, y) = 
     member __.X = x
@@ -85,21 +86,26 @@ let NUM_CLUSTERS: int = 10
 
 [<EntryPoint>]
 let main argv =
+    let iterations = if argv.Length > 0 then int (argv.[0]) else 1
+    let bm = Benchmark(iterations)
+
     let lines = System.IO.File.ReadAllLines("benchmarks/kmeans_concurrent/points.txt");
     let points: Point array = Array.zeroCreate lines.Length
     for i in 0 .. lines.Length-1 do
         let split = lines.[i].Split(':')
         points.[i] <- Point(Double.Parse(split.[0]), (Double.Parse(split.[1])))
 
-    let clusters: Cluster array = Array.zeroCreate NUM_CLUSTERS
-    for i in 0 .. NUM_CLUSTERS-1 do
-        clusters.[i] <- Cluster(points.[i])
+    bm.Run((fun () ->
+        let clusters: Cluster array = Array.zeroCreate NUM_CLUSTERS
+        for i in 0 .. NUM_CLUSTERS-1 do
+            clusters.[i] <- Cluster(points.[i])
 
-    let kMeans = KMeans(points, clusters)
-    let res = kMeans.Compute()
-
-    for cluster in res do
-        printfn "(%s)" (cluster.Centroid.ToString())
-
+        let kMeans = KMeans(points, clusters)
+        kMeans.Compute()
+    ), (fun (res) ->
+        for cluster in res do
+            printfn "(%s)" (cluster.Centroid.ToString())
+    ))
+    
     0 // return an integer exit code
 

@@ -3,6 +3,7 @@
 open System
 open System.Text
 open System.Text.RegularExpressions
+open benchmark
 
 let alphabet: string = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 let dimension1: int = 5
@@ -80,15 +81,22 @@ let decrypt (text: string) =
 
 [<EntryPoint>]
 let main argv =
+    let iterations = if argv.Length > 0 then int (argv.[0]) else 1
+    let bm = Benchmark(iterations)
+    
     let text = System.IO.File.ReadAllText("benchmarks/playfair_cipher/lines.txt")
-    let keyword = "This is a great keyword"
-
-    populateTable (preprocessText (keyword + alphabet))
-    let processedText = preprocessText text
     
-    let encryption: string = encrypt processedText
-    let decryption: string = decrypt encryption
+    bm.Run((fun () ->
+        let keyword = "This is a great keyword"
+        populateTable (preprocessText (keyword + alphabet))
+        let processedText = preprocessText text
+        
+        let encryption: string = encrypt processedText
+        let decryption: string = decrypt encryption
+        (encryption.Length, decryption.Length)
+    ), (fun (en, de) ->
+        printfn "%i" en
+        printfn "%i" de
+    ))
     
-    printfn "%i" encryption.Length
-    printfn "%i" decryption.Length
     0 // return an integer exit code

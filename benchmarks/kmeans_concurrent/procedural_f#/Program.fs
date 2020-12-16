@@ -2,6 +2,7 @@
 
 open System
 open System.Threading.Tasks
+open benchmark
 
 let numKlusters = 10
 let rand = Random(2)
@@ -16,14 +17,16 @@ let mutable allData: Point array = Array.create numValues ({ Point.Kluster = 0; 
 let klusters: (float * float) array = Array.create numKlusters (0.0, 0.0)
 
 let generateData() =
+    let initState = Array.create numValues ({ Point.Kluster = 0; Point.Data = (0.0, 0.0) })
     let lines = System.IO.File.ReadAllLines("benchmarks/kmeans_concurrent/points.txt")
     let mutable i = 0
     for line in lines do
         let split = line.Split(':')
         let num1 = split.[0]
         let num2 = split.[1]
-        allData.[i] <- { Point.Kluster = 1; Point.Data = ((float)num1, (float)num2) }
+        initState.[i] <- { Point.Kluster = 1; Point.Data = ((float)num1, (float)num2) }
         i <- i+1
+    initState
 
 let printKlusters() = 
     for i in 0..numKlusters-1 do
@@ -74,14 +77,22 @@ let setCenter() =
 
 [<EntryPoint>]
 let main argv =
-    generateData()
-    setKlusters()
-    let mutable hasMoved = true
+    let iterations = if argv.Length > 0 then int (argv.[0]) else 1
+    let bm = Benchmark(iterations)
+
+    let initState = generateData()
     
-    while hasMoved do
-        assignPointsToKluster()
-        hasMoved <- setCenter()
-
-    printKlusters()
-
+    bm.Run((fun () -> 
+        allData <- initState
+        setKlusters()
+        let mutable hasMoved = true
+        
+        while hasMoved do
+            assignPointsToKluster()
+            hasMoved <- setCenter()
+        true
+    ), (fun (res) ->
+        printKlusters()
+    ))
+    
     0 // return an integer exit code
