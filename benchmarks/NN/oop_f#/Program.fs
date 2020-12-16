@@ -207,19 +207,8 @@ type Utils private() =
         let dataset : double[,] = shuffle dataset
         let (rows : int, columns : int) = dataset.GetLength(0), dataset.GetLength(1)
         let numTest = int(double(rows) * percent)
-        let numTrain = rows - numTest
-        let test = Array2D.zeroCreate numTest columns
-        let train = Array2D.zeroCreate numTrain columns
-        let mutable testindex = 0
-        let mutable trainindex = 0
-        for i in 0 .. rows - 1 do
-            if i < numTest
-            then 
-                test.[testindex, *] <- dataset.[i, *]
-                testindex <- testindex + 1
-            else
-                train.[trainindex, *] <- dataset.[i, *]
-                trainindex <- trainindex + 1
+        let test = dataset.[0..numTest,*]
+        let train = dataset.[numTest+1..,*]
         (test, train)
 
     static member CountDistinct array =
