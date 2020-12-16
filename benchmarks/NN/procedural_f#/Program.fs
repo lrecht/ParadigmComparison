@@ -132,9 +132,9 @@ let predict (network: Layer[]) (data: float[]) =
 
 // ---- Dataset stuff
 let getNumOutpus (dataset: float[,]) = 
-    let outputValues: int[] = Array.zeroCreate 10
     let rows = dataset.GetLength(0)-1
     let cols = dataset.GetLength(1)-1
+    let outputValues: int[] = Array.zeroCreate rows
     for x in 0 .. rows do
         outputValues.[(int) (dataset.[x, cols])] <- 1
     let mutable numOut: int = 0
@@ -157,17 +157,17 @@ let getDataset =
     dataset
 
 let normalizeDataset (dataset: float[,]) = 
-    let width = dataset.GetLength(0)
-    let height = dataset.GetLength(1)
-    for x in 0 .. width-1 do //Dont normalize the output
+    let rows = dataset.GetLength(0)
+    let cols = dataset.GetLength(1)
+    for y in 0 .. cols-2 do //Dont normalize the output
         let mutable (min, max) = (Double.MaxValue, 0.0)
-        for y in 0 .. height-2 do
+        for x in 0 .. rows-1 do
             if (dataset.[x, y] < min) then
                 min <- dataset.[x, y]
             if (dataset.[x, y] > max) then
                 max <- dataset.[x, y]
         
-        for y in 0 .. height-2 do
+        for x in 0 .. rows-1 do
             dataset.[x, y] <- (dataset.[x, y] - min) / (max - min)
 
 let shuffleDataset (dataset: float[,]) = 
