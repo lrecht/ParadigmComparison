@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Collections.Immutable;
 using benchmark;
+using System.Globalization;
 
 namespace functional_c_
 {
@@ -63,8 +64,7 @@ namespace functional_c_
 
         private static ImmutableArray<Layer> backwardsPropagateError(ImmutableArray<Layer> network, ImmutableArray<double> expected)
         {
-            var firstLayer = network.First();
-            var remainingLayers = network.TakeLast(network.Length - 1);
+            var firstLayer = network[0];
             var errors = firstLayer.Zip(expected, (neuron, exp) => exp - neuron.output).ToImmutableArray();
             
             Func<double, double> derivative = (neuronOutput) => neuronOutput * (1.0 - neuronOutput);
@@ -77,23 +77,23 @@ namespace functional_c_
                 return res.Add(newLayer);
             };
 
-            return remainingLayers.Aggregate(ImmutableArray<Layer>.Empty.Add(delta(errors, firstLayer)), (acc, r) => backProp(acc, r)).Reverse().ToImmutableArray();
+            return network.RemoveAt(0).Aggregate(ImmutableArray<Layer>.Empty.Add(delta(errors, firstLayer)), (acc, r) => backProp(acc, r)).Reverse().ToImmutableArray();
         }
 
+        static Func<ImmutableArray<double>, ImmutableArray<double>, double, double> activate = (weights, inputs, bias) => bias + Enumerable.Zip(weights, inputs, (w, i) => w * i).Sum();
+        static Func<double, double> transfer = (activation) => 1.0 / (1.0 + Math.Exp(-activation));
+        static Func<ImmutableArray<double>, Neuron, Neuron> activateNeuron = (inputs, neuron) => new Neuron(neuron.weights, transfer(activate(neuron.weights, inputs, neuron.bias)), neuron.bias, neuron.delta);
+        static Func<Layer, ImmutableArray<double>> getOutput = (layer) => layer.Select(neuron => neuron.output).ToImmutableArray();
         private static (ImmutableArray<Layer>, ImmutableArray<double>) forwardPropagate(ImmutableArray<double> row, ImmutableArray<Layer> network)
         {
-            Func<ImmutableArray<double>, ImmutableArray<double>, double, double> activate = (weights, inputs, bias) => bias + Enumerable.Zip(weights, inputs, (w, i) => w * i).Sum();
-            Func<double, double> transfer = (activation) => 1.0 / (1.0 + Math.Exp(-activation));
-            Func<ImmutableArray<double>, Neuron, Neuron> activateNeuron = (inputs, neuron) => new Neuron(neuron.weights, transfer(activate(neuron.weights, inputs, neuron.bias)), neuron.bias, neuron.delta);
-            Func<Layer, ImmutableArray<double>> getOutput = (layer) => layer.Select(neuron => neuron.output).ToImmutableArray();
-
             var propagatedLayersTemp = network.Aggregate((row, layers: ImmutableArray<Layer>.Empty), (acc, layer) => {
-                var newLayer = layer.Select(neuron => activateNeuron(acc.Item1, neuron)).ToImmutableArray();
-                return (getOutput(newLayer), acc.Item2.Add(newLayer));
-            });
-            var propagatedLayers = (propagatedLayersTemp.row, propagatedLayersTemp.layers.Reverse().ToImmutableArray());
+                var newLayer = layer.Select(neuron => activateNeuron(acc.row, neuron)).ToImmutableArray();
+                return (getOutput(newLayer), acc.layers.Add(newLayer));
 
-            return (propagatedLayers.Item2, getOutput(propagatedLayers.Item2[0]));
+            });
+            var propagatedLayers = (propagatedLayersTemp.row, layers: propagatedLayersTemp.layers.Reverse().ToImmutableArray());
+
+            return (propagatedLayers.layers, getOutput(propagatedLayers.layers[0]));
         }
 
         private static ImmutableArray<Layer> initialiseNetwork(int nInput, int nHidden, int nOutput){
@@ -129,31 +129,33 @@ namespace functional_c_
             var epochRange = Enumerable.Range(0, nEpoch);
             var outputRange = Enumerable.Range(0, nOutput);
             return epochRange.Aggregate(network, (accNetwork, epoch) => {
-                var res = train.Aggregate((accNetwork, 0.0), (acc, row) => {
+                var res = train.Aggregate((accNetwork, error: 0.0), (acc, row) => {
                     var (forwardNet, outputs) = forwardPropagate(row, acc.accNetwork);
                     var expected = outputRange.Select(i => 0.0).ToImmutableArray().SetItem((int)row[^1], 1.0);
-                    var sumError = acc.Item2 + outputRange.Select(i => Math.Pow((expected[i] - outputs[i]), 2)).Sum();
+                    var sumError = acc.error + outputRange.Select(i => Math.Pow((expected[i] - outputs[i]), 2)).Sum();
                     return (updateWeights(backwardsPropagateError(forwardNet, expected), row, learningRate), sumError);
                 });
                 return res.accNetwork;
             });
         }
 
-        private static int predict(ImmutableArray<Layer> network, ImmutableArray<double> row){
-            var (_, output) = forwardPropagate(row, network);
+        private static int predict(ImmutableArray<Layer> network, ImmutableArray<double> input) {
+            var output = network.Aggregate(input, (acc,layer) => getOutput(layer.Select(neuron => activateNeuron(acc, neuron))
+                   .ToImmutableArray()));
             return output.IndexOf(output.Max());
         }
 
-        private static ImmutableArray<ImmutableArray<double>> normaliseDataset(ImmutableArray<ImmutableArray<double>> dataset, ImmutableArray<(double columnMin, double columnMax, int columnIndex)> minmax)
-            => dataset.Select(row => row.Select((num, i) => i < dataset[0].Length - 1 ? ((num - minmax[i].columnMin) / (minmax[i].columnMax - minmax[i].columnMin)) : num)
+        private static ImmutableArray<ImmutableArray<double>> normaliseDataset(ImmutableArray<ImmutableArray<double>> dataset, ImmutableArray<(double columnMin, double columnMax)> minmax){
+            var lastColumnIndex = dataset[0].Length - 1;
+            return dataset.Select(row => row.Select((num, i) => i < lastColumnIndex ? ((num - minmax[i].columnMin) / (minmax[i].columnMax - minmax[i].columnMin)) : num)
                                         .ToImmutableArray())
                         .ToImmutableArray();
+        }
 
-        private static ImmutableArray<(double columnMin, double columnMax, int columnIndex)> datasetMinMax(ImmutableArray<ImmutableArray<double>> dataset)
+        private static ImmutableArray<(double columnMin, double columnMax)> datasetMinMax(ImmutableArray<ImmutableArray<double>> dataset)
             => dataset.SelectMany(row => row.Select((elem, i) => (elem, i)))
                 .GroupBy(t => t.i)
-                .Select(g => (g.Min(t => t.elem), g.Max(t => t.elem), g.First().i))
-                .OrderBy(t => t.i)
+                .Select(g => (g.Min(t => t.elem), g.Max(t => t.elem)))
                 .ToImmutableArray(); 
     }
 }

@@ -4,6 +4,8 @@ open System
 open System.Collections.Generic
 open System.IO
 open benchmark
+open System.Globalization
+
 
 type IActivationStrategy =
     abstract member Activate : double[] -> double[] -> double
@@ -59,14 +61,14 @@ type Layer(nNeurons, nNeuronInputConnections, previous : Layer, activation : IAc
 
     member val Neurons : Neuron[] = neurons
     member __.ForwardPropagate inputs =
-        let newInputs = List<double>()
-        for neuron in this.Neurons do
-            newInputs.Add(neuron.Activate inputs)
-        newInputs.ToArray()
+        let newInputs = Array.zeroCreate (this.Neurons.Length)
+        for i in 0 .. this.Neurons.Length - 1 do
+            newInputs.[i] <- this.Neurons.[i].Activate inputs
+        newInputs
 
     member __.UpdateWeights (row : double[]) learningRate =
         let lastElement = row.GetLength(0)
-        let mutable inputs = row.[0 .. lastElement-1]
+        let mutable inputs = row.[0 .. lastElement - 1]
         if not (isNull previous)
         then
             let neuronsInPreviousLayer = previous.Neurons
@@ -189,8 +191,8 @@ type Utils private() =
             let values = file.[i].Split(',')
             for j in 0 .. values.Length - 1 do
                 if j = values.Length - 1
-                then dataset.[i, j] <- Double.Parse(values.[j]) - 1.0
-                else dataset.[i, j] <- Double.Parse(values.[j])
+                then dataset.[i, j] <- Double.Parse(values.[j], CultureInfo.InvariantCulture) - 1.0
+                else dataset.[i, j] <- Double.Parse(values.[j], CultureInfo.InvariantCulture)
         dataset
 
     static member NormaliseColumns (dataset : double[,]) =
@@ -207,19 +209,8 @@ type Utils private() =
         let dataset : double[,] = shuffle dataset
         let (rows : int, columns : int) = dataset.GetLength(0), dataset.GetLength(1)
         let numTest = int(double(rows) * percent)
-        let numTrain = rows - numTest
-        let test = Array2D.zeroCreate numTest columns
-        let train = Array2D.zeroCreate numTrain columns
-        let mutable testindex = 0
-        let mutable trainindex = 0
-        for i in 0 .. rows - 1 do
-            if i < numTest
-            then 
-                test.[testindex, *] <- dataset.[i, *]
-                testindex <- testindex + 1
-            else
-                train.[trainindex, *] <- dataset.[i, *]
-                trainindex <- trainindex + 1
+        let test = dataset.[0..numTest,*]
+        let train = dataset.[numTest+1..,*]
         (test, train)
 
     static member CountDistinct array =

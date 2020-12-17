@@ -1,6 +1,7 @@
 import argparse
 import os
 from run.benchmark_program import all_benchmarks
+import run.csv_benchmark_parser as csv_benchmark_parser
 from datetime import datetime
 import run.email_service as es
 import run.sestoft as sestoft
@@ -55,28 +56,28 @@ def get_benchmark_programs(benchmarks, paradigms, languages):
 
 if __name__ == '__main__':
     parser.add_argument("-n", "--nobuild", action='store_true', help="Skips build step for benchmarks")
-    parser.add_argument("-b", "--benchmarks", action=readable_dir, nargs='+', help="Run only specified benchmarks")
     parser.add_argument("-p", "--paradigm", choices=all_paradigms, help="Run only benchmarks for paradigm")
     parser.add_argument("-l", "--language", choices=all_languages, help="Run only benchmarks for language")
     parser.add_argument("-o", "--output", default="results.csv", help="Output csv file for results. Default is results.csv")
     parser.add_argument("-i", "--iterations", default=10, type=int, help="Number of iterations for each benchmark")
     parser.add_argument("-t", "--time-limit", type=int, help="Number of seconds to continousely run each benchmark")
-    parser.add_argument("-e", "--send-results-email", type=str, help="Send email containing statistical results")
     parser.add_argument("-s", "--skip-runs", type=int, default=0, help="Skip first n runs of each benchmark to stabilise results")
     parser.add_argument("--sestoft-approach", action='store_true', help="Old approach to run specified number of runs or of a specified amount of time")
+    
+    mx_group = parser.add_mutually_exclusive_group()
+    mx_group.add_argument("-b", "--benchmarks", action=readable_dir, nargs='+', help="Run only specified benchmarks")
+    mx_group.add_argument("-c", "--csv", type=argparse.FileType('r'), help="CSV configuration file")
 
+    email_group = parser.add_mutually_exclusive_group()
+    email_group.add_argument("-e", "--send-results-email", type=str, help="Send email containing statistical results")
+    email_group.add_argument("-e+", "--send-full-results-emails", type=str, help="Send email containing statistical results and seperate email containing raw results")
+    
     args = parser.parse_args()
 
-    benchmarks = []
+    benchmark_programs = []
     paradigms = []
     languages = []
 
-    #If no benchmarks are given, all benchmarks are to be run
-    if args.benchmarks:
-        benchmarks = args.benchmarks
-    else:
-        benchmarks = [f.path for f in os.scandir(benchmarks_path) if f.is_dir()]
-    
     #If no paradigm is given, then all paradigms are to be run
     if args.paradigm:
         paradigms = [args.paradigm]
@@ -94,10 +95,18 @@ if __name__ == '__main__':
     output_file     = "[{0}]{1}".format(datetime.now().isoformat(),args.output)
     iterations      = args.iterations
     time_limit      = args.time_limit
-    email           = args.send_results_email
+    email           = args.send_results_email if args.send_results_email else args.send_full_results_emails
     skip_runs       = args.skip_runs
 
-    benchmark_programs = get_benchmark_programs(benchmarks, paradigms, languages)
+
+    if not args.csv:
+        #If no benchmarks are given, all benchmarks are to be run
+        benchmarks = args.benchmarks if args.benchmarks else [f.path for f in os.scandir(benchmarks_path) if f.is_dir()]
+        benchmark_programs = get_benchmark_programs(benchmarks, paradigms, languages)
+    
+    else:
+        benchmark_programs = csv_benchmark_parser.parse_open_csv(args.csv)
+        args.csv.close()
 
     if args.sestoft_approach:
         sestoft.perform_benchmarks(benchmark_programs, iterations, time_limit, output_file, skip_build, skip_runs)
@@ -106,3 +115,6 @@ if __name__ == '__main__':
 
     if(email is not None):
         es.send_results(email, output_file)
+
+        if(args.send_full_results_emails):
+            es.send_raw_results(email, output_file)

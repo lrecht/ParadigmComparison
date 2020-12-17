@@ -25,7 +25,7 @@ let readFile file =
 let initialiseNetwork nInput nHidden nOutput =
     let initMapsWithWeights maps weights =
         Array.map 
-            (fun _ -> makeNeuron 0.0 0.0 0.0 [|for i in 1 .. weights do rand.NextDouble()|])
+            (fun _ -> makeNeuron (rand.NextDouble()) 0.0 0.0 [|for i in 1 .. weights do rand.NextDouble()|])
             [|for i in 1 .. maps do i|]
     [(initMapsWithWeights nHidden nInput);
      (initMapsWithWeights nOutput nHidden)]
