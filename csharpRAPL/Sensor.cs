@@ -15,6 +15,7 @@ namespace csharpRAPL
         public string Name { get; }
         private DeviceAPI _api;
         private CollectionApproach _approach;
+        public List<double> Delta { get; private set; }
         private List<double> startValue;
         private List<double> endValue;
 
@@ -33,18 +34,24 @@ namespace csharpRAPL
         public void End()
         {
             endValue = _api.Energy();
+            updateDelta();
         }
 
-        public bool IsValid() => startValue.All(val => val != -1.0) && endValue.All(val => val != -1.0);
+        public bool IsValid() 
+            => startValue.All(val => val != -1.0) 
+                && endValue.All(val => val != -1.0) 
+                && Delta.Any(val => val >= 0);
 
-        public List<double> Delta()
+        private void updateDelta()
         {
             switch (_approach)
             {
                 case CollectionApproach.DIFFERENCE:
-                    return Enumerable.Range(0, endValue.Count).Select(i => endValue[i] - startValue[i]).ToList();
+                    this.Delta = Enumerable.Range(0, endValue.Count).Select(i => endValue[i] - startValue[i]).ToList(); 
+                    break;
                 case CollectionApproach.AVERAGE:
-                    return Enumerable.Range(0, endValue.Count).Select(i => (endValue[i] + startValue[i]) / 2).ToList();
+                    this.Delta = Enumerable.Range(0, endValue.Count).Select(i => (endValue[i] + startValue[i]) / 2).ToList(); 
+                    break;
                 default:
                     throw new Exception("Collection approach is not available");
             }

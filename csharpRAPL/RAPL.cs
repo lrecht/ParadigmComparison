@@ -35,7 +35,7 @@ namespace csharpRAPL
         //Not general. Only returns one result as our pcs have one socket
         public (TimeSpan, List<(string deviceName, double energyUsed)>) GetResult()
         {
-            var results = apis.Select(api => (api.Name, api.Delta()[0])).ToList();
+            var results = apis.Select(api => (api.Name, api.Delta[0])).ToList();
             return (elapsedTime, results);
         }
     }
