@@ -17,14 +17,14 @@ def perform_benchmarks(benchmarks, experiment_iterations, time_limit, output_fil
 
         #The measuring equipment
         current = 0
-        (max_iter, get_next_iter) = get_iter_options(time_limit, experiment_iterations)
+        max_iter, get_next_iter = get_iter_options(time_limit, experiment_iterations)
         while(current < max_iter):
-            res = bc.run(b)
+            res, temp_res = bc.run(b)
             if all([res.pkg, res.dram]):
                 if (skipped != skip_runs): 
                     skipped += 1
                 else:
-                    bc.handle_results(res, csv_output, statistics)
+                    bc.handle_results(res, temp_res, csv_output, statistics)
                     current = get_next_iter(res, current)
             else:
                 bc.error_print("Failure in uptaining results from run: " + str(res))

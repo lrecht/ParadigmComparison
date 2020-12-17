@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Immutable;
+using System.Collections.Generic;
 
 namespace functional_c_
 {
@@ -13,23 +14,23 @@ namespace functional_c_
                             .Select(l => l.Split(','))
                             .Select((val, i) => (i, Convert.ToInt32(val[0]), Convert.ToInt32(val[1]), Convert.ToInt32(val[2])));
 
-            var edges = edgesRep.OrderBy(e => e.Item4).ToImmutableList();
+            var edges = edgesRep.OrderBy(e => e.Item4).ToImmutableArray();
             var edgesDict = edgesRep.ToImmutableDictionary(e => e.i);
 
             var spanningTreeEdges = getMinimumSpanningTree(edges);
-            var resultEdges = spanningTreeEdges.Select(i => edgesDict[i]);
+            var resultEdges = spanningTreeEdges.Select(i => edgesDict[i]).ToImmutableArray();
 
             var totalweight = resultEdges.Sum(e => e.Item4);
-            var totalEdges = resultEdges.Count();
+            var totalEdges = resultEdges.Length;
             
             System.Console.WriteLine(totalEdges);
             System.Console.WriteLine(totalweight);
         }
 
-        static ImmutableList<int> getMinimumSpanningTree(ImmutableList<(int, int, int, int)> edges)
+        static ImmutableList<int> getMinimumSpanningTree(ImmutableArray<(int, int, int, int)> edges)
             => getMinimumSpanningTreeHelper(edges, 0, ImmutableList<int>.Empty, ImmutableDictionary<int, int>.Empty);
 
-        static ImmutableList<int> getMinimumSpanningTreeHelper(ImmutableList<(int i, int v1, int v2, int)> edges, int i, ImmutableList<int> spanningTree, ImmutableDictionary<int, int> rootDict){
+        static ImmutableList<int> getMinimumSpanningTreeHelper(ImmutableArray<(int i, int v1, int v2, int)> edges, int i, ImmutableList<int> spanningTree, ImmutableDictionary<int, int> rootDict){
             if(spanningTree.Count >= magicVertexCount - 1) //-1 as one less edge than vertex is required to complete graph
                 return spanningTree;
 
@@ -46,8 +47,11 @@ namespace functional_c_
         {
             var group1Root = find(v1, rootDict);
             var group2Root = find(v2, rootDict);
+            
+            var update1 = new KeyValuePair<int, int>(v1, group1Root);
+            var update2 = new KeyValuePair<int, int>(v2, group2Root);
 
-            var updatedDict = rootDict.SetItem(v1, group1Root).SetItem(v2, group2Root);
+            var updatedDict = rootDict.SetItems(new[] {update1, update2});
 
             if(group1Root == group2Root)
                 return (false, updatedDict);

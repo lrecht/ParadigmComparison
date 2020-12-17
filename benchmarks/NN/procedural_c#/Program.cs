@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 
 namespace procedural_c_
 {
@@ -7,9 +8,9 @@ namespace procedural_c_
 		//global field stuff
 		public struct Neuron
 		{
-			public float[] Weights;
-			public float Delta;
-			public float Output;
+			public double[] Weights;
+			public double Delta;
+			public double Output;
 		}
 
 		public struct NetLayer
@@ -33,10 +34,10 @@ namespace procedural_c_
 		}
 
 		// ---- Initilizers
-		public static float[] randomInitArray(float[] array)
+		public static double[] randomInitArray(double[] array)
 		{
 			for (int weightIndex = 0; weightIndex < array.Length; weightIndex++)
-				array[weightIndex] = (float)rand.NextDouble();
+				array[weightIndex] = (double)rand.NextDouble();
 			return array;
 		}
 
@@ -50,7 +51,7 @@ namespace procedural_c_
 				network[i] = new NetLayer { Layer = new Neuron[layers[i]] };
 				for (int j = 0; j < layers[i]; j++)
 				{
-					network[i].Layer[j] = new Neuron { Delta = 0.0f, Output = 0.0f, Weights = (randomInitArray(new float[num + 1])) };
+					network[i].Layer[j] = new Neuron { Delta = 0.0f, Output = 0.0f, Weights = (randomInitArray(new double[num + 1])) };
 				}
 				num = layers[i];
 			}
@@ -59,7 +60,7 @@ namespace procedural_c_
 		}
 
 		// ---- Forward propagation
-		public static float activate(Neuron neuron, float[] inputs)
+		public static double activate(Neuron neuron, double[] inputs)
 		{
 			var activation = neuron.Weights[(neuron.Weights.Length - 1)];
 			for (int i = 0; i < neuron.Weights.Length - 1; i++)
@@ -70,13 +71,13 @@ namespace procedural_c_
 		}
 
 		//Uses the sigmoid activation function
-		public static float transfer(float activation)
+		public static double transfer(double activation)
 		{
-			return (float)(1.0 / (1.0 + Math.Exp(-activation)));
+			return (double)(1.0 / (1.0 + Math.Exp(-activation)));
 		}
 
 		// Forward propagate input to a network output
-		public static float[] forwardPropagate(NetLayer[] network, float[] data)
+		public static double[] forwardPropagate(NetLayer[] network, double[] data)
 		{
 			var inputs = data;
 
@@ -84,7 +85,7 @@ namespace procedural_c_
 			{
 				var lay = network[layer].Layer;
 				var input = lay.Length;
-				var newInputs = new float[input];
+				var newInputs = new double[input];
 				for (int neuron = 0; neuron < input; neuron++)
 				{
 					var activation = activate(lay[neuron], inputs);
@@ -98,26 +99,26 @@ namespace procedural_c_
 
 		// ---- Back propagation
 		//Sigmoid trasfer function
-		public static float transferDerivative(float output)
+		public static double transferDerivative(double output)
 		{
 			return output * (1.0f - output);
 		}
 
-		public static void backwardPropagateError(NetLayer[] network, float[] expected)
+		public static void backwardPropagateError(NetLayer[] network, double[] expected)
 		{
 			for (int num = 0; num < network.Length; num++)
 			{
 				var i = network.Length - 1 - num;
 				var layer = network[i].Layer;
 				var inputNeurons = layer.Length;
-				var errors = new float[inputNeurons];
+				var errors = new double[inputNeurons];
 
 				for (int j = 0; j < inputNeurons; j++)
 				{
 					if (i != network.Length - 1)
 					{
 						//Hidden layers
-						var error = 0.0f;
+						var error = 0.0;
 						foreach (var neuron in network[(i + 1)].Layer)
 						{
 							error += (neuron.Weights[j] * neuron.Delta);
@@ -133,7 +134,7 @@ namespace procedural_c_
 		}
 
 		// ---- Training
-		public static void updateWeights(NetLayer[] network, float[] inputs, float learningRate)
+		public static void updateWeights(NetLayer[] network, double[] inputs, double learningRate)
 		{
 			for (int i = 0; i < network.Length; i++)
 			{
@@ -144,7 +145,7 @@ namespace procedural_c_
 				if (i != 0)
 				{
 					var previousLayer = network[i - 1].Layer;
-					input = new float[previousLayer.Length];
+					input = new double[previousLayer.Length];
 					for (int n = 0; n < previousLayer.Length; n++)
 						input[n] = previousLayer[n].Output;
 				}
@@ -157,7 +158,7 @@ namespace procedural_c_
 			}
 		}
 
-		public static void trainNetwork(NetLayer[] network, float[,] data, float learningRate, int epochs, int numOutPuts)
+		public static void trainNetwork(NetLayer[] network, double[,] data, double learningRate, int epochs, int numOutPuts)
 		{
 			var rows = data.GetLength(0);
 			var cols = data.GetLength(1);
@@ -168,7 +169,7 @@ namespace procedural_c_
 				{
 					var row = (data.GetRow(rowIndex))[0..cols];
 					var outputs = forwardPropagate(network, row);
-					var expected = new float[numOutPuts];
+					var expected = new double[numOutPuts];
 					var index = (int)row[row.Length - 1];
 					expected[index] = 1.0f;
 					for (int i = 0; i < numOutPuts; i++)
@@ -182,7 +183,7 @@ namespace procedural_c_
 			}
 		}
 
-		public static int predict(NetLayer[] network, float[] data)
+		public static int predict(NetLayer[] network, double[] data)
 		{
 			var output = forwardPropagate(network, data);
 			var index = 0;
@@ -198,10 +199,10 @@ namespace procedural_c_
 			return index;
 		}
 
-		public static int getNumOutpus(float[,] dataset)
+		public static int getNumOutpus(double[,] dataset)
 		{
-			var outputValues = new int[10];
 			var rows = dataset.GetLength(0);
+			var outputValues = new int[rows];
 			var cols = dataset.GetLength(1);
 			for (int x = 0; x < rows; x++)
 			{
@@ -217,48 +218,44 @@ namespace procedural_c_
 			return numOut;
 		}
 
-		public static float[,] getDataset()
+		public static double[,] getDataset()
 		{
 			//Create a dataset from the file
-			var dataStrings = System.IO.File.ReadAllLines("benchmarks/NN/wheat-seeds.csv");
-			var dataset = new float[dataStrings.Length, (dataStrings[0].Split(',').Length)];
+			string[] dataStrings = System.IO.File.ReadAllLines("benchmarks/NN/wheat-seeds.csv");
+			double[,] dataset = new double[dataStrings.Length, (dataStrings[0].Split(',').Length)];
 			for (int line = 0; line < dataStrings.Length; line++)
 			{
-				var elms = dataStrings[line].Split(',');
+				string[] elms = dataStrings[line].Split(',');
 				//Insert all values except for the last
-				for (int elm = 0; elm < elms.Length - 2; elm++)
-				{
-					dataset[line, elm] = float.Parse(elms[elm]);
-				}
+				for (int elm = 0; elm < elms.Length - 1; elm++)
+					dataset[line, elm] = double.Parse(elms[elm], CultureInfo.InvariantCulture);
+				
 				//The last value (the result)
-				dataset[line, (elms.Length - 1)] = float.Parse(elms[elms.Length - 1]) - 1.0f;
+				dataset[line, (elms.Length - 1)] = double.Parse(elms[elms.Length - 1]) - 1.0;
 			}
 			return dataset;
 		}
 
-		public static void normalizeDataset(float[,] dataset)
+		public static void normalizeDataset(double[,] dataset)
 		{
-			var width = dataset.GetLength(0);
-			var height = dataset.GetLength(1);
-			for (int x = 0; x < width; x++)
+			var rows = dataset.GetLength(0);
+			var cols = dataset.GetLength(1) - 1;
+			for (int y = 0; y < cols; y++)
 			{
-				var (min, max) = (float.MaxValue, 0.0f);
-				for (int y = 0; y < height - 1; y++)
+				var (min, max) = (dataset[0, y], dataset[0, y]);
+				for (int x = 1; x < rows; x++)
 				{
 					if (dataset[x, y] < min)
 						min = dataset[x, y];
 					if (dataset[x, y] > max)
 						max = dataset[x, y];
 				}
-
-				for (int y = 0; y < height - 1; y++)
-				{
+				for (int x = 0; x < rows; x++)
 					dataset[x, y] = (dataset[x, y] - min) / (max - min);
-				}
 			}
 		}
 
-		public static void shuffleDataset(float[,] dataset)
+		public static void shuffleDataset(double[,] dataset)
 		{
 			var l1 = dataset.GetLength(0) - 1;
 			var l2 = dataset.GetLength(1) - 1;
@@ -272,7 +269,7 @@ namespace procedural_c_
 		}
 
 		// ---- Evaluation
-		public static float accuracyMetric(float[] actual, float[] predicted)
+		public static double accuracyMetric(double[] actual, double[] predicted)
 		{
 			var correct = 0;
 			for (int a = 0; a < actual.Length; a++)
@@ -280,10 +277,10 @@ namespace procedural_c_
 				if (actual[a] == predicted[a])
 					correct++;
 			}
-			return (float)correct / ((float)actual.Length) * 100.0f;
+			return (double)correct / ((double)actual.Length) * 100.0;
 		}
 
-		public static float[] backPropagation(float[,] train, float[,] test, float learningRate, int epocs, int nHidden)
+		public static double[] backPropagation(double[,] train, double[,] test, double learningRate, int epocs, int nHidden)
 		{
 			var nInputs = train.GetLength(1);
 			var nOutputs = getNumOutpus(train);
@@ -293,7 +290,7 @@ namespace procedural_c_
 			trainNetwork(network, train, learningRate, epocs, nOutputs);
 			var testRows = test.GetLength(0);
 			var testCols = test.GetLength(1);
-			var predictions = new float[testRows];
+			var predictions = new double[testRows];
 			for (int x = 0; x < testRows; x++)
 			{
 				var prediction = predict(network, test.GetRow(x));
@@ -302,18 +299,18 @@ namespace procedural_c_
 			return predictions;
 		}
 
-		public static float evaluateAlgorithm(float[,] dataset, float learningRate, int epocs, int nHidden)
+		public static double evaluateAlgorithm(double[,] dataset, double learningRate, int epocs, int nHidden)
 		{
 			shuffleDataset(dataset);
 			var tenPercent = dataset.GetLength(0) / 10;
 
 			//Create the training data
-			float[,] trainSet = dataset.GetRows((tenPercent + 1), (dataset.GetLength(0) - 1));
+			double[,] trainSet = dataset.GetRows((tenPercent + 1), (dataset.GetLength(0) - 1));
 
 			//Create the testing data
-			float[,] testSet = dataset.GetRows(0, tenPercent);
+			double[,] testSet = dataset.GetRows(0, tenPercent);
 			var prediction = backPropagation(trainSet, testSet, learningRate, epocs, nHidden);
-			float[] actual = testSet.GetCol(testSet.GetLength(1) - 1);
+			double[] actual = testSet.GetCol(testSet.GetLength(1) - 1);
 
 			return accuracyMetric(actual, prediction);
 		}

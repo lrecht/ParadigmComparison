@@ -26,16 +26,16 @@ namespace functional_c_
 			});
         }
 
-        private static ImmutableDictionary<char, string> createMappings(IEnumerable<(char, int)> frequencies)
+        private static ImmutableDictionary<char, string> createMappings(ImmutableArray<(char, int)> frequencies)
         {
-            var tree = frequencies.Select(x => (x.Item2, ImmutableList<(char, string)>.Empty.Add((x.Item1, ""))))
-                .ToImmutableSortedSet(Comparer<(int, ImmutableList<(char, string)>)>
+            var tree = frequencies.Select(x => (x.Item2, ImmutableArray<(char, string)>.Empty.Add((x.Item1, ""))))
+                .ToImmutableSortedSet(Comparer<(int, ImmutableArray<(char, string)>)>
                     .Create((x, y) => x.Item1 > y.Item1 ? 1 : x.Item1 < y.Item1 ? -1 : x.Item2.First().Item1.CompareTo(y.Item2.First().Item1)));
 
             return createMappingHelper(tree).First().Item2.ToImmutableDictionary(x => x.Item1, elementSelector: y => y.Item2);
         }
 
-        private static ImmutableSortedSet<(int, ImmutableList<(char, string)>)> createMappingHelper(ImmutableSortedSet<(int, ImmutableList<(char, string)>)> tree)
+        private static ImmutableSortedSet<(int, ImmutableArray<(char, string)>)> createMappingHelper(ImmutableSortedSet<(int, ImmutableArray<(char, string)>)> tree)
         {
             if(tree.Count <= 1)
                 return tree;
@@ -51,17 +51,18 @@ namespace functional_c_
             var updatedEncodings1 = elem1List.Select(x => (x.Item1, "0" + x.Item2));
             var updatedEncodings2 = elem2List.Select(x => (x.Item1, "1" + x.Item2));
 
-            var newList = updatedEncodings1.Union(updatedEncodings2).ToImmutableList();
+            var newList = updatedEncodings1.Union(updatedEncodings2).ToImmutableArray();
             var newTup = (elem1.Item1 + elem2.Item1, newList);
 
             return createMappingHelper(tree.Except(elems).Add(newTup));
         }
 
-        private static IEnumerable<(char, int)> getFrequencies(string str)
+        private static ImmutableArray<(char, int)> getFrequencies(string str)
         {
             return str
                 .GroupBy(x => x)
-                .Select(x => (x.First(), x.Count()));
+                .Select(x => (x.First(), x.Count()))
+                .ToImmutableArray();
         }
     }
 }

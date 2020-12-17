@@ -7,6 +7,7 @@ namespace functional_c_
 {
     class Program
     {
+        static Comparer<(string, int, string)> vertexComparer = Comparer<(string, int, string)>.Create((x, y) => x.Item2 > y.Item2 ? 1 : x.Item2 < y.Item2 ? -1 : string.Compare(x.Item1, y.Item1));
         static void Main(string[] args)
         {
             var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
@@ -25,7 +26,7 @@ namespace functional_c_
             });
         }
 
-        private static ImmutableList<(string, string, int)> getEdgesFromCsv(string filePath)
+        private static ImmutableArray<(string from, string to, int cost)> getEdgesFromCsv(string filePath)
         {
             return System.IO.File.ReadAllLines(filePath)
                 .Select(line =>
@@ -36,18 +37,18 @@ namespace functional_c_
                     var cost = System.Convert.ToInt32(values[2]);
                     return (from, to, cost);
                 })
-                .ToImmutableList();
+                .ToImmutableArray();
         }
 
-        private static ImmutableDictionary<string, ImmutableList<(string, string, int)>> getGraphFromEdges(ImmutableList<(string, string, int)> edges)
+        private static ImmutableDictionary<string, ImmutableArray<(string from, string to, int cost)>> getGraphFromEdges(ImmutableArray<(string from, string to, int cost)> edges)
         {
             return edges
-                .GroupBy(edge => edge.Item1)
-                .Select(grouping => grouping.ToImmutableList())
-                .ToImmutableDictionary(x => x.First().Item1);
+                .GroupBy(edge => edge.from)
+                .Select(grouping => grouping.ToImmutableArray())
+                .ToImmutableDictionary(x => x.First().from);
         }
 
-        private static ImmutableList<string> backtrack(ImmutableDictionary<string, (string, int, string)> visited, string source, (string, int, string) vertex, ImmutableList<string> path)
+        private static ImmutableArray<string> backtrack(ImmutableDictionary<string, (string, int, string)> visited, string source, (string, int, string) vertex, ImmutableArray<string> path)
         {
             if (vertex.Item3 == source)
                 return path.Add(vertex.Item1).Add(source);
@@ -60,28 +61,25 @@ namespace functional_c_
             );
         }
 
-        private static ImmutableList<string> dijkstra(ImmutableDictionary<string, ImmutableList<(string, string, int)>> graph, string source, string destination)
+        private static ImmutableArray<string> dijkstra(ImmutableDictionary<string, ImmutableArray<(string from, string to, int cost)>> graph, string source, string destination)
         {
             if (source == destination)
-                return ImmutableList.Create<string>(source);
+                return ImmutableArray.Create<string>(source);
             else
             {
+                //(vertex, total_cost_to_get_to_vertex, previous_vertex)
                 var vertices = graph
                             .SelectMany(x => x.Value
-                            .Select(y => y.Item2))
-                            .Union(graph.Select(x => x.Key));
-
-                //(vertex, total_cost_to_get_to_vertex, previous_vertex)
-                var vertexQueue = vertices
+                            .Select(y => y.to))
+                            .Union(graph.Select(x => x.Key))
                             .Where(x => x != source)
                             .Select(x => (x, int.MaxValue, ""))
-                            .Append((source, 0, ""))
-                            .ToImmutableSortedSet(Comparer<(string, int, string)>.Create((x, y) => x.Item2 > y.Item2 ? 1 : x.Item2 < y.Item2 ? -1 : string.Compare(x.Item1, y.Item1)));
+                            .Append((source, 0, ""));
+
+                var vertexQueue = vertices
+                            .ToImmutableSortedSet(vertexComparer);
 
                 var vertexCosts = vertices
-                            .Where(x => x != source)
-                            .Select(x => (x, int.MaxValue, ""))
-                            .Append((source, 0, ""))
                             .ToImmutableDictionary(x => x.Item1);
 
                 var visited = ImmutableDictionary<string, (string, int, string)>.Empty;
@@ -90,17 +88,26 @@ namespace functional_c_
             }
         }
 
-        private static ImmutableList<string> dijkstraHelper(ImmutableDictionary<string, ImmutableList<(string, string, int)>> graph, string source, string destination, ImmutableSortedSet<(string, int, string)> vertexQueue, ImmutableDictionary<string, (string, int, string)> visited, ImmutableDictionary<string, (string, int, string)> vertexCosts)
+        private static ImmutableArray<string> dijkstraHelper(
+            ImmutableDictionary<string, ImmutableArray<(string from, string to, int cost)>> graph, 
+            string source, 
+            string destination, 
+            ImmutableSortedSet<(string name, int costToReach, string previous)> vertexQueue, 
+            ImmutableDictionary<string, (string, int, string)> visited, 
+            ImmutableDictionary<string, (string, int, string)> vertexCosts
+            )
         {
             var vertex = vertexQueue.Min;
-            if(visited.ContainsKey(vertex.Item1))
+            if(visited.ContainsKey(vertex.name))
                 return dijkstraHelper(graph, source, destination, vertexQueue.Remove(vertex), visited, vertexCosts);
 
-            var newVisited = visited.Add(vertex.Item1, vertex);
+            var newVisited = visited.Add(vertex.name, vertex);
 
-            if (vertex.Item1 == destination)
+            if (vertex.name == destination)
             {
-                return backtrack(newVisited, source, newVisited[destination], ImmutableList<string>.Empty).Reverse();
+                return backtrack(newVisited, source, newVisited[destination], ImmutableArray<string>.Empty)
+                        .Reverse()
+                        .ToImmutableArray();
             }
             else
             {
@@ -114,24 +121,30 @@ namespace functional_c_
             }
         }
 
-        private static (ImmutableSortedSet<(string, int, string)>, ImmutableDictionary<string, (string, int, string)>) updateCosts(ImmutableDictionary<string, ImmutableList<(string, string, int)>> graph, (string, int, string) currentVertex, ImmutableSortedSet<(string, int, string)> vertexQueue, ImmutableDictionary<string, (string, int, string)> visited, ImmutableDictionary<string, (string, int, string)> vertexCosts)
+        private static (ImmutableSortedSet<(string, int, string)>, ImmutableDictionary<string, (string, int, string)>) updateCosts(
+            ImmutableDictionary<string, ImmutableArray<(string source, string dest, int cost)>> graph, 
+            (string name, int costToReach, string previous) currentVertex, 
+            ImmutableSortedSet<(string, int, string)> vertexQueue, 
+            ImmutableDictionary<string, (string, int, string)> visited, 
+            ImmutableDictionary<string, (string name, int costToReach, string previous)> vertexCosts
+            )
         {
-            if (!graph.ContainsKey(currentVertex.Item1))
+            if (!graph.ContainsKey(currentVertex.name))
                 return (vertexQueue, vertexCosts);
 
-            var cheaperVertices = graph[currentVertex.Item1]
-                .Where(edge => !visited.ContainsKey(edge.Item2))
+            var cheaperVertices = graph[currentVertex.name]
+                .Where(edge => !visited.ContainsKey(edge.dest))
                 .Where(edge =>
                 {
-                    var vertex = vertexCosts[edge.Item2];
+                    var vertex = vertexCosts[edge.dest];
 
-                    var alternateCost = currentVertex.Item2 + edge.Item3;
-                    return alternateCost < vertex.Item2;
+                    var alternateCost = currentVertex.costToReach + edge.cost;
+                    return alternateCost < vertex.costToReach;
                 })
                 .Select(edge => {
-                    var vertex = vertexCosts[edge.Item2];
-                    var alternateCost = currentVertex.Item2 + edge.Item3;
-                    return (vertex.Item1, alternateCost, currentVertex.Item1);
+                    var vertex = vertexCosts[edge.dest];
+                    var alternateCost = currentVertex.costToReach + edge.cost;
+                    return (vertex.name, alternateCost, currentVertex.name);
                 });
 
             var newCosts = vertexCosts
@@ -139,7 +152,7 @@ namespace functional_c_
 
             var newQueue = vertexQueue
                 .Union(cheaperVertices)
-                .ToImmutableSortedSet(vertexQueue.KeyComparer);
+                .ToImmutableSortedSet(vertexComparer);
 
             return (newQueue, newCosts);
         }

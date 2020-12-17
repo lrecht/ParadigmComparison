@@ -44,7 +44,7 @@ def run_benchmark(benchmark, stats, iterations, csv_output, time_limit_secs=None
     time = 0
     for i in range(iterations):
         print("\r" + str(i + 1) + " of " + str(iterations), end="", flush=True)
-        results = bm_utils.run(benchmark)
+        results, temp_res = bm_utils.run(benchmark)
 
         # Break on time limit
         if time_limit_secs and time >= time_limit_secs:
@@ -53,7 +53,7 @@ def run_benchmark(benchmark, stats, iterations, csv_output, time_limit_secs=None
 
         # Verify that RAPL values exist
         if all([results.pkg, results.dram]):
-            bm_utils.handle_results(results, csv_output, stats)
+            bm_utils.handle_results(results, temp_res, csv_output, stats)
             time += (results.duration / 1_000_000)
         else:
             bm_utils.error_print(
