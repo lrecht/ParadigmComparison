@@ -5,7 +5,7 @@ import subprocess
 SAMPLE_ITERATIONS = 100
 
 # Executes the list of benchmarks and saves results to ouput csv file
-def perform_benchmarks(benchmark_programs, output_file, time_limit_secs):
+def perform_benchmarks(benchmark_programs, output_file, is_dependant, time_limit):
     stats, csv_output = bm_utils.setup(output_file)
     benchmark_count = len(benchmark_programs)
 
@@ -19,14 +19,14 @@ def perform_benchmarks(benchmark_programs, output_file, time_limit_secs):
         stats.clear()
 
         # Run random sample
-        run_benchmark(current_benchmark, stats, SAMPLE_ITERATIONS, csv_output)
+        run_benchmark(current_benchmark, SAMPLE_ITERATIONS, is_dependant, stats, csv_output)
         num_runs = math.ceil(compute_sample_size(stats))
 
         # Maybe conduct additional runs
         if not is_enough_runs(num_runs, stats, SAMPLE_ITERATIONS):
             print("Performing ", num_runs - SAMPLE_ITERATIONS,
                   " addtitional runs to achive the desired statistical error", flush=True)
-            run_benchmark(current_benchmark, stats, num_runs - SAMPLE_ITERATIONS, csv_output, time_limit_secs)
+            run_benchmark(current_benchmark, num_runs - SAMPLE_ITERATIONS, is_dependant, stats, csv_output, time_limit)
         bm_utils.save(stats, csv_output, current_benchmark.path)
 
 
@@ -40,26 +40,25 @@ def is_enough_runs(num_runs, stats, iterations):
         return all(val <= 0.005 for val in [execute, memory, package])
 
 
-def run_benchmark(benchmark, stats, iterations, csv_output, time_limit_secs=None):
-    time = 0
-    for i in range(iterations):
-        print("\r" + str(i + 1) + " of " + str(iterations), end="", flush=True)
-        results, temp_res = bm_utils.run(benchmark)
+def run_benchmark(benchmark, iterations, is_depentant, stats, csv_output, time_limit = None):
+    if not is_depentant:
+        time = 0
+        for i in range(iterations):
+            print("\r" + str(i + 1) + " of " + str(iterations), end="", flush=True)
+            bm_utils.run(benchmark)
+            results = bm_utils.collect_results(bm_utils.RESULT_FILE_PATH)
+            res = bm_utils.handle_results(results, benchmark.path, csv_output, stats)
+            time += sum([ x.duration for x in res ]) / 1_000
 
-        # Break on time limit
-        if time_limit_secs and time >= time_limit_secs:
-            print("\nEnding benchmark due to time constraints")
-            break
+            if time_limit and time >= time_limit:
+                print("\nEnding benchmark due to time constraints")
+                break
 
-        # Verify that RAPL values exist
-        if all([results.pkg, results.dram]):
-            bm_utils.handle_results(results, temp_res, csv_output, stats)
-            time += (results.duration / 1_000_000)
-        else:
-            bm_utils.error_print(
-                "Failure in obtaining results from run: " + str(results) + "\n")
-
-    print("", flush=True)
+        print("", flush=True)
+    else:
+        bm_utils.run(benchmark, [str(iterations)])
+        results = bm_utils.collect_results(bm_utils.RESULT_FILE_PATH)
+        bm_utils.handle_results(results, benchmark.path, csv_output, stats)
 
 
 # This is the Cochran formula

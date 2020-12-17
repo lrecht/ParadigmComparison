@@ -95,7 +95,6 @@ namespace csharpRAPL
                 raplId += 1;
             }
 
-            //System.Console.WriteLine($"result: {resultList.Count}, socket: {this._socketIds.Count}");
             if(resultList.Count != this._socketIds.Count)
                 throw new Exception("PyRAPLCantInitDeviceAPI"); //TODO: Proper exceptions
 
@@ -108,7 +107,9 @@ namespace csharpRAPL
             for(int i = 0; i < _sysFiles.Count; i++){
                 var deviceFile = this._sysFiles[i];
                 //TODO: Test om der er mærkbar forskel ved at holde filen åben og læse linjen på ny
-                result[this._socketIds[i]] = double.Parse(File.ReadAllText(deviceFile));
+                double energyVal = 0.0;
+                bool canConvert = Double.TryParse(File.ReadAllText(deviceFile), out energyVal);
+                result[this._socketIds[i]] = canConvert ? energyVal : -1.0;
             }
             return result;
         }

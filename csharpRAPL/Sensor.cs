@@ -35,6 +35,8 @@ namespace csharpRAPL
             endValue = _api.Energy();
         }
 
+        public bool IsValid() => startValue.All(val => val != -1.0) && endValue.All(val => val != -1.0);
+
         public List<double> Delta()
         {
             switch (_approach)

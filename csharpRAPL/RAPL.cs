@@ -30,8 +30,10 @@ namespace csharpRAPL
             elapsedTime = sw.Elapsed;
         }
 
+        public bool IsValid() => apis.All(api => api.IsValid());
+
         //Not general. Only returns one result as our pcs have one socket
-        public (TimeSpan, List<(string deviceName, double energyUsed)>) getResult()
+        public (TimeSpan, List<(string deviceName, double energyUsed)>) GetResult()
         {
             var results = apis.Select(api => (api.Name, api.Delta()[0])).ToList();
             return (elapsedTime, results);

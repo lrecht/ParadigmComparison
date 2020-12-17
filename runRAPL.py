@@ -4,7 +4,7 @@ from run.benchmark_program import all_benchmarks
 import run.csv_benchmark_parser as csv_benchmark_parser
 from datetime import datetime
 import run.email_service as es
-import run.sestoft as sestoft
+
 import run.cochran as cochran
 
 parser = argparse.ArgumentParser()
@@ -60,9 +60,8 @@ if __name__ == '__main__':
     parser.add_argument("-l", "--language", choices=all_languages, help="Run only benchmarks for language")
     parser.add_argument("-o", "--output", default="results.csv", help="Output csv file for results. Default is results.csv")
     parser.add_argument("-i", "--iterations", default=10, type=int, help="Number of iterations for each benchmark")
+    parser.add_argument("-d", "--dependant", action='store_true', help="Run all iterations within benchmark program")
     parser.add_argument("-t", "--time-limit", type=int, help="Number of seconds to continousely run each benchmark")
-    parser.add_argument("-s", "--skip-runs", type=int, default=0, help="Skip first n runs of each benchmark to stabilise results")
-    parser.add_argument("--sestoft-approach", action='store_true', help="Old approach to run specified number of runs or of a specified amount of time")
     
     mx_group = parser.add_mutually_exclusive_group()
     mx_group.add_argument("-b", "--benchmarks", action=readable_dir, nargs='+', help="Run only specified benchmarks")
@@ -96,7 +95,6 @@ if __name__ == '__main__':
     iterations      = args.iterations
     time_limit      = args.time_limit
     email           = args.send_results_email if args.send_results_email else args.send_full_results_emails
-    skip_runs       = args.skip_runs
 
 
     if not args.csv:
@@ -108,10 +106,7 @@ if __name__ == '__main__':
         benchmark_programs = csv_benchmark_parser.parse_open_csv(args.csv)
         args.csv.close()
 
-    if args.sestoft_approach:
-        sestoft.perform_benchmarks(benchmark_programs, iterations, time_limit, output_file, skip_build, skip_runs)
-    else:
-        cochran.perform_benchmarks(benchmark_programs, output_file, time_limit)
+    cochran.perform_benchmarks(benchmark_programs, output_file, args.dependant, time_limit)
 
     if(email is not None):
         es.send_results(email, output_file)

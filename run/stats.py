@@ -1,4 +1,5 @@
 import math
+from .result import Result
 
 class Stats():
     """A class to simplify the statistical computations"""
@@ -59,7 +60,7 @@ class Stats():
 
 class Aggregator():
     def __init__(self, output_file):
-        self.execution_time = Stats(output_file, "run_time", "µs")
+        self.execution_time = Stats(output_file, "run_time", "ms")
         self.package = Stats(output_file, "pkg_power", "µj")
         self.ram = Stats(output_file, "ram_power", "µj")
 
@@ -68,10 +69,10 @@ class Aggregator():
         self.package.Clear()
         self.ram.Clear()
 
-    def add(self, result):
+    def add(self, result: Result):
         self.execution_time.add_measurement(result.duration)
-        self.package.add_measurement(result.pkg[0])
-        self.ram.add_measurement(result.dram[0])
+        self.package.add_measurement(result.pkg)
+        self.ram.add_measurement(result.dram)
 
     def compute(self):
         self.execution_time.compute_results()
