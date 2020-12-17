@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.Linq;
+using benchmark;
 
 namespace functional_c_
 {
@@ -14,8 +15,14 @@ namespace functional_c_
 
         static void Main(string[] args)
         {
-            var result = performPlayingCards(1000, 0);
-            System.Console.WriteLine(result);
+            var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
+			var bm = new Benchmark(iterations);
+			
+			bm.Run(() => {
+				return performPlayingCards(1000, 0);
+			}, (res) => {
+           		System.Console.WriteLine(res);
+			});
         }
 
         private static int performPlayingCards(int runs, int count){

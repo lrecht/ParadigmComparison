@@ -4,6 +4,7 @@ open System
 open System.Collections.Generic
 open System.Drawing
 open System.Linq
+open benchmark
 
 // Define a function to construct a message to print
 let from whom =
@@ -115,8 +116,8 @@ type Gaussian private() =
         kernel
 
 
-type Canny(filename : String) =
-    let originalImage = new Bitmap(filename);
+type Canny(file : Bitmap) =
+    let originalImage = file;
     let HIGH_THRESHOLD_VOODOO = 0.09
     let LOW_THRESHOLD_VOODOO = 0.5
     let GAUSSIAN_LENGTH = 5
@@ -186,6 +187,15 @@ type Canny(filename : String) =
 
 [<EntryPoint>]
 let main argv =
-    let (detectedEdges, whiteCount) = Canny("benchmarks/canny_edge_detector/download.jpg").CannyEdges()
-    printfn "%d" whiteCount
+    let iterations = if argv.Length > 0 then int (argv.[0]) else 1
+    let bm = Benchmark(iterations)
+
+    let file = Bitmap("benchmarks/canny_edge_detector/download.jpg")
+
+    bm.Run((fun () -> 
+        Canny(file).CannyEdges()
+    ), (fun (detectedEdges, whiteCount) -> 
+        printfn "%d" whiteCount
+    ))
+    
     0 // return an integer exit code

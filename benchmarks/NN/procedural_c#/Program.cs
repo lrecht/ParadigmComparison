@@ -25,11 +25,11 @@ namespace procedural_c_
 		{
 			var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
 			var bm = new Benchmark(iterations);
-
-			var initState = getDataset();
+			var file = System.IO.File.ReadAllLines("benchmarks/NN/wheat-seeds.csv");
 
 			bm.Run(() =>
 			{
+				var initState = getDataset(file);
 				var dataset = initState;
 				var nHidden = 5;
 				var learningRate = 0.3f;
@@ -229,10 +229,10 @@ namespace procedural_c_
 			return numOut;
 		}
 
-		public static double[,] getDataset()
+		public static double[,] getDataset(string[] file)
 		{
 			//Create a dataset from the file
-			string[] dataStrings = System.IO.File.ReadAllLines("benchmarks/NN/wheat-seeds.csv");
+			string[] dataStrings = file;
 			double[,] dataset = new double[dataStrings.Length, (dataStrings[0].Split(',').Length)];
 			for (int line = 0; line < dataStrings.Length; line++)
 			{

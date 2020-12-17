@@ -1,6 +1,7 @@
 ﻿// Learn more about F# at http://fsharp.org
 
 open System
+open benchmark
 
 type Edge = 
     {
@@ -44,8 +45,8 @@ let rec QuickSort (arr: Edge []) (left:int) (right:int) =
         if (pivot + 1 < right) then
             QuickSort arr (pivot + 1) right
 
-let readFileToArr() =
-    let lines = System.IO.File.ReadAllLines("benchmarks/spanning_tree/graph.csv");
+let readFileToArr (file: string[]) =
+    let lines = file
     let c = lines.Length
     let mutable arr : Edge array = Array.zeroCreate c
     for i in 0 .. (c-1) do
@@ -91,10 +92,16 @@ let computeMinSpanTree (arr: Edge array) =
 
 [<EntryPoint>]
 let main argv =
-    let arr = readFileToArr()
-    QuickSort arr 0 (arr.Length - 1)
-    let (totalWeight, totalEdges) = computeMinSpanTree arr
+    let iterations = if argv.Length > 0 then int (argv.[0]) else 1
+    let bm = Benchmark(iterations)
+    let file = System.IO.File.ReadAllLines("benchmarks/spanning_tree/graph.csv");
 
-    printfn "Total weight: %i" totalWeight
-    printfn "Total Edges: %i" totalEdges
+    bm.Run((fun () ->
+        let arr = readFileToArr(file)
+        QuickSort arr 0 (arr.Length - 1)
+        computeMinSpanTree arr
+    ), (fun (totalWeight, totalEdges) ->
+        printfn "Total weight: %i" totalWeight
+        printfn "Total Edges: %i" totalEdges
+    ))
     0 // return an integer exit code

@@ -2,7 +2,7 @@
 
 open System
 open System.Drawing
-
+open benchmark
 
 type Maths =
     static member Hypotenuse width height = Math.Sqrt(float(width*width + height*height))
@@ -16,16 +16,16 @@ type Maths =
         (sinTable, cosTable)
 
 
-type PictureData(filename:String) =
-    let original = new Bitmap(filename)
+type PictureData(file:Bitmap) =
+    let original = file
     member __.Width = original.Width
     member __.Height = original.Height
     member __.GetPixelColor x y = original.GetPixel(x, y)
 
 
-type HoughTransform(filename, rhoAxisSize, thetaAxisSize) =
+type HoughTransform(file, rhoAxisSize, thetaAxisSize) =
     let mutable transformed : int[,] = Array2D.zeroCreate thetaAxisSize rhoAxisSize
-    let mutable pictureData = PictureData(filename)
+    let mutable pictureData = PictureData(file)
     member __.ComputeTransformation() =
         let width = pictureData.Width
         let height = pictureData.Height
@@ -46,10 +46,19 @@ type HoughTransform(filename, rhoAxisSize, thetaAxisSize) =
 
 [<EntryPoint>]
 let main argv =
-    let hough = HoughTransform("benchmarks/hough_transform/Pentagon.png", 480, 640)
-    let output = hough.ComputeTransformation()
-    let mutable sum = 0
-    for cell in Seq.cast<int> output do
-        sum <- sum + cell
-    printfn "%A" sum
+    let iterations = if argv.Length > 0 then int (argv.[0]) else 1
+    let bm = Benchmark(iterations)
+
+    let init = Bitmap("benchmarks/hough_transform/Pentagon.png")
+
+    bm.Run((fun () ->
+        let hough = HoughTransform(init , 480, 640)
+        let output = hough.ComputeTransformation()
+        let mutable sum = 0
+        for cell in Seq.cast<int> output do
+            sum <- sum + cell
+        sum
+    ), (fun (res) -> 
+        printfn "%A" res
+    ))
     0 // return an integer exit code

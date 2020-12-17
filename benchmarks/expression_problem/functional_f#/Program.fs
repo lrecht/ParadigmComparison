@@ -1,4 +1,6 @@
-﻿type Expr = Add of Expr * Expr
+﻿open benchmark
+
+type Expr = Add of Expr * Expr
           | Var of int
           | Neg of Expr
           | Mul of Expr * Expr
@@ -41,5 +43,12 @@ let run digit =
 
 [<EntryPoint>]
 let main argv =
-    printfn "%O" (run 1000)
+    let iterations = if argv.Length > 0 then int (argv.[0]) else 1
+    let bm = Benchmark(iterations)
+
+    bm.Run((fun () ->
+        run 1000
+    ), (fun (res) ->
+        printfn "%O" res
+    ))    
     0 // return an integer exit code

@@ -1,9 +1,10 @@
 ﻿open System
 open System.Drawing
+open benchmark
 
-let bm = new Bitmap("benchmarks/hough_transform/Pentagon.png")
-let width = bm.Width
-let height = bm.Height
+let mutable bm: Bitmap = null
+let mutable width = 0
+let mutable height = 0
 let diagonal = Math.Sqrt (float ((width*width)+(height*height))) |> int
 let thetaSize = 640
 let rhoSize = 480
@@ -27,6 +28,20 @@ let hough (image:Bitmap) =
 
 [<EntryPoint>]
 let main argv =
-    let h = hough bm
-    printfn "%i" (Array.fold (fun acc (k,v) -> acc+v) 0 h)
+    let iterations = if argv.Length > 0 then int (argv.[0]) else 1
+    let bench = Benchmark(iterations)
+
+    bm <- new Bitmap("benchmarks/hough_transform/Pentagon.png")
+    width <- bm.Width
+    height <- bm.Height
+
+    bench.Run((fun () ->
+        let h = hough bm
+        Array.fold (fun acc (k,v) -> acc+v) 0 h
+    ), (fun (res) ->
+        printfn "%i" res
+    ))
+    
+    
+
     0 // return an integer exit code

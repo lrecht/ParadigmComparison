@@ -15,8 +15,8 @@ let makeNeuron bias delta output weights =
       Neuron.Bias = bias;
       Neuron.Weights = weights }
 
-let readFile file =
-    System.IO.File.ReadAllLines(file)
+let readFile (file: string[]) =
+    file
     |> Array.map (fun line -> 
                 let elms = line.Split(',')
                 let len = elms.Length
@@ -118,10 +118,10 @@ let accuracy (guess:int[]) (truth:int[]) =
 let main argv =
     let iterations = if argv.Length > 0 then int (argv.[0]) else 1
     let bm = Benchmark(iterations)
+    let file = System.IO.File.ReadAllLines("benchmarks/NN/wheat-seeds.csv")
     
-    let data = readFile "benchmarks/NN/wheat-seeds.csv"
-
     bm.Run((fun () -> 
+        let data = readFile file
         let hidden = 5
         let iterations = 500
         let learnRate = 0.3

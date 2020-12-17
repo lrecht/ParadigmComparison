@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Linq;
 using System.Collections.Immutable;
+using benchmark;
 
 namespace functional_c_
 {
@@ -11,9 +12,18 @@ namespace functional_c_
         static readonly int rhoAxisSize = 480;
         static void Main(string[] args)
         {
-            var pic = new Bitmap("benchmarks/hough_transform/Pentagon.png");
-            var res = computeHoughTransformation(pic);
-            System.Console.WriteLine(res.Select(x => x.Item3).Sum());
+            var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
+			var bm = new Benchmark(iterations);
+
+			var pic = new Bitmap("benchmarks/hough_transform/Pentagon.png");
+            
+			bm.Run(() => {
+				var res = computeHoughTransformation(pic);
+				return res.Select(x => x.Item3).Sum();
+			}, (res) => {
+            	System.Console.WriteLine(res);
+			});
+			
         }
 
         private static ImmutableArray<(int,int,int)> computeHoughTransformation(Bitmap pic)
