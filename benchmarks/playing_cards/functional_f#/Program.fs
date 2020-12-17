@@ -26,8 +26,8 @@ let run runs =
 
 [<EntryPoint>]
 let main argv =
-    var iterations = args.Length > 0 ? int.Parse(args[0]) : 1
-    var bm = new Benchmark(iterations);
+    let iterations = if argv.Length > 0 then int (argv.[0]) else 1
+    let bm = Benchmark(iterations)
     
     bm.Run((fun () ->
         run 1000
