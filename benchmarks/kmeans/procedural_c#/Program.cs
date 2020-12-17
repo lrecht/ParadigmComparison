@@ -1,4 +1,5 @@
 ﻿using System;
+using benchmark;
 
 namespace procedural_c_
 {
@@ -18,20 +19,32 @@ namespace procedural_c_
 
 		static void Main(string[] args)
 		{
-			generateData();
-			setKlusters();
-			var hasMoved = true;
+			var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
+			var bm = new Benchmark(iterations);
 
-			while (hasMoved)
+			var initData = generateData();
+
+			bm.Run(() =>
 			{
-				assignPointsToKluster();
-				hasMoved = setCenter();
-			}
-			printKlusters();
+				allData = initData;
+				setKlusters();
+				var hasMoved = true;
+
+				while (hasMoved)
+				{
+					assignPointsToKluster();
+					hasMoved = setCenter();
+				}
+				return true;
+			}, (res) =>
+			{
+				printKlusters();
+			});
 		}
 
-		public static void generateData()
+		public static point[] generateData()
 		{
+			var initData = new point[numValues];
 			var lines = System.IO.File.ReadAllLines("benchmarks/kmeans/points.txt");
 			var i = 0;
 			foreach (var line in lines)
@@ -39,9 +52,10 @@ namespace procedural_c_
 				var split = line.Split(':');
 				var num1 = double.Parse(split[0]);
 				var num2 = double.Parse(split[1]);
-				allData[i] = new point { Kluster = 1, Data = (num1, num2) };
+				initData[i] = new point { Kluster = 1, Data = (num1, num2) };
 				i++;
 			}
+			return initData;
 		}
 
 		public static void setKlusters()

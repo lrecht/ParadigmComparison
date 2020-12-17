@@ -3,6 +3,7 @@
 open System
 open System.Collections.Generic
 open System.IO
+open benchmark
 open System.Globalization
 
 
@@ -232,19 +233,28 @@ let N_HIDDEN = 5
 
 [<EntryPoint>]
 let main argv =
-    let mutable dataset = Utils.LoadCSV("benchmarks/NN/wheat-seeds.csv")
-    dataset <- Utils.NormaliseColumns(dataset)
-    let (test : double[,], train : double[,]) = Utils.GetTestTrainSplit dataset TRAIN_TEST_SPLIT
+    let iterations = if argv.Length > 0 then int (argv.[0]) else 1
+    let bm = Benchmark(iterations)
 
-    let column = test.GetLength(1) - 1
-    let (testData, testActual) = test.[*, 0 .. column], test.[*, column]
-    let (trainData, trainActual) = train.[*, 0 .. column], train.[*, column]
+    let mutable initState = Utils.LoadCSV("benchmarks/NN/wheat-seeds.csv")
+    
+    bm.Run((fun () ->
+        let dataset = Utils.NormaliseColumns(initState)
+        let (test : double[,], train : double[,]) = Utils.GetTestTrainSplit dataset TRAIN_TEST_SPLIT
 
-    let nInputs = train.GetLength(1)
-    let nOutputs = Utils.CountDistinct(trainActual)
+        let column = test.GetLength(1) - 1
+        let (testData, testActual) = test.[*, 0 .. column], test.[*, column]
+        let (trainData, trainActual) = train.[*, 0 .. column], train.[*, column]
 
-    let network = NeuralNetwork(AccuracyPercentage()).InitialiseLayers nInputs N_HIDDEN nOutputs
-    network.Train train trainActual LEARNING_RATE N_EPOCHS
-    let (predictions, accuracy) = network.Predict test testActual
-    printfn "%f" accuracy
+        let nInputs = train.GetLength(1)
+        let nOutputs = Utils.CountDistinct(trainActual)
+
+        let network = NeuralNetwork(AccuracyPercentage()).InitialiseLayers nInputs N_HIDDEN nOutputs
+        network.Train train trainActual LEARNING_RATE N_EPOCHS
+        let (predictions, accuracy) = network.Predict test testActual
+        accuracy
+    ), (fun (res) ->
+        printfn "%f" res
+    ))
+    
     0 // return an integer exit code

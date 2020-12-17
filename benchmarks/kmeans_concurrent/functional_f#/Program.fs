@@ -1,4 +1,5 @@
 ﻿open System.Linq
+open benchmark
 
 let dist (x1,y1) (x2,y2) =
     System.Math.Sqrt ((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2))
@@ -19,8 +20,17 @@ let rec converge clusterMeans points =
 
 [<EntryPoint>]
 let main argv =
+    let iterations = if argv.Length > 0 then int (argv.[0]) else 1
+    let bm = Benchmark(iterations)
+
     let points = System.IO.File.ReadAllLines "benchmarks/kmeans_concurrent/points.txt" 
                  |> Array.map (fun s -> let arr = s.Split(":") in (float arr.[0],float arr.[1]))
-    let clusters = 10
-    printfn "%A" (converge (Array.take clusters points) points)
+    
+    bm.Run((fun () ->
+        let clusters = 10
+        converge (Array.take clusters points) points
+    ), (fun (res) ->
+        printfn "%A" res
+    ))
+    
     0 // return an integer exit code

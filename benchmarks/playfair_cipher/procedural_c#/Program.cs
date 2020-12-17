@@ -2,6 +2,7 @@
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Text;
+using benchmark;
 
 namespace procedural_c_
 {
@@ -15,19 +16,27 @@ namespace procedural_c_
 
 		static void Main(string[] args)
 		{
-			positions = new (int, int)[26];
+			var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
+			var bm = new Benchmark(iterations);
 
-			table = new char[dimension1, dimension2];
 			var text = System.IO.File.ReadAllText("benchmarks/playfair_cipher/lines.txt");
-			var keyword = "This is a great keyword";
 
-			populateTable(preprocessText(keyword + alphabet));
-			text = preprocessText(text);
-			string encryption = encrypt(text);
-			string decryption = decrypt(encryption);
+			bm.Run(() =>
+			{
+				positions = new (int, int)[26];
+				table = new char[dimension1, dimension2];
+				var keyword = "This is a great keyword";
 
-			Console.WriteLine(encryption.Length);
-			Console.WriteLine(decryption.Length);
+				populateTable(preprocessText(keyword + alphabet));
+				text = preprocessText(text);
+				string encryption = encrypt(text);
+				string decryption = decrypt(encryption);
+				return (encryption.Length, decryption.Length);
+			}, (res) =>
+			{
+				Console.WriteLine(res.Item1);
+				Console.WriteLine(res.Item2);
+			});
 		}
 
 		static string preprocessText(string text)

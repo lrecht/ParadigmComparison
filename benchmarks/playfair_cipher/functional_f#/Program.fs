@@ -1,5 +1,6 @@
 ﻿open System
 open System.IO
+open benchmark
 
 let filePath = "benchmarks/playfair_cipher/lines.txt"
 let input = File.ReadAllText filePath
@@ -97,9 +98,18 @@ let decode input table =
 
 [<EntryPoint>]
 let main argv =
-    let table = createTable keyword
-    let encoded = encode input table
-    let decoded = decode encoded table
-    printfn "%i" (String.length encoded)
-    printfn "%i" (String.length decoded)
+    let iterations = if argv.Length > 0 then int (argv.[0]) else 1
+    let bm = Benchmark(iterations)
+    let initState = input
+
+    bm.Run((fun () ->
+        let table = createTable keyword
+        let encoded = encode initState table
+        let decoded = decode encoded table
+        (encoded.Length, decoded.Length)
+    ), (fun (en, de) -> 
+        printfn "%i" en
+        printfn "%i" de
+    ))
+    
     0 // return an integer exit code

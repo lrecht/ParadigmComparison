@@ -13,13 +13,13 @@ namespace functional_c_
             var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
             var bm = new Benchmark(iterations);
             
-            ImmutableList<(string, string, int)> EDGES = getEdgesFromCsv($"benchmarks/dijkstra/graph.csv");
+            ImmutableArray<(string, string, int)> EDGES = getEdgesFromCsv($"benchmarks/dijkstra/graph.csv");
 
             bm.Run(() => {
                 string START = "257";
                 string END = "5525";
 
-                ImmutableDictionary<string, ImmutableList<(string, string, int)>> graph = getGraphFromEdges(EDGES);
+                ImmutableDictionary<string, ImmutableArray<(string, string, int)>> graph = getGraphFromEdges(EDGES);
                 return dijkstra(graph, START, END);
             }, (res) => {
                 System.Console.WriteLine(string.Join(' ', res));

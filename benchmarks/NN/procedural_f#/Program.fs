@@ -1,6 +1,8 @@
 ﻿// Learn more about F# at http://fsharp.org
 
 open System
+open benchmark
+
 let rand = Random(2)
 
 //global field stuff
@@ -219,14 +221,22 @@ let evaluateAlgorithm (dataset: float[,]) (learningRate: float) (epocs: int) (nH
 // ---- Main (great comment this is)
 [<EntryPoint>]
 let main argv =
-    let dataset = getDataset
-    let nHidden = 5
-    let learningRate = 0.3
-    let epochs = 500
+    let iterations = if argv.Length > 0 then int (argv.[0]) else 1
+    let bm = Benchmark(iterations)
+
+    let initState = getDataset
     
-    normalizeDataset dataset
+    bm.Run((fun () ->
+        let dataset = initState
+        let nHidden = 5
+        let learningRate = 0.3
+        let epochs = 500
+        
+        normalizeDataset dataset
+        
+        evaluateAlgorithm dataset learningRate epochs nHidden
+    ), (fun (res) ->
+        printfn "Score: %f" res
+    ))
     
-    let score = evaluateAlgorithm dataset learningRate epochs nHidden
-    
-    printfn "Score: %f" score
     0 // return an integer exit code

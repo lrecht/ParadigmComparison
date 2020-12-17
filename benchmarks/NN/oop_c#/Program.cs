@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using benchmark;
 using System.Globalization;
 
 namespace oop_c_
@@ -14,20 +15,27 @@ namespace oop_c_
         static int N_HIDDEN = 5;
         static void Main(string[] args)
         {
-            var dataset = Utils.LoadCSV("benchmarks/NN/wheat-seeds.csv");
-            dataset = Utils.NormaliseColumns(dataset);
-            (double[,] test, double[,] train) = Utils.GetTestTrainSplit(dataset, TRAIN_TEST_SPLIT);
-            (double[,] testData, double[] testActual) = (test.GetCols(0, test.GetLength(1) - 2), test.GetCol(test.GetLength(1) - 1));
-            (double[,] trainData, double[] trainActual) = (train.GetCols(0, train.GetLength(1) - 2), train.GetCol(train.GetLength(1) - 1));
+            var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
+            var bm = new Benchmark(iterations);
 
-            int nInputs = train.GetLength(1);
-            int nOutputs = getDistinctCount(dataset.GetCol(dataset.GetLength(1)-1));
+			var initState = Utils.LoadCSV("benchmarks/NN/wheat-seeds.csv");
+            
+			bm.Run(() => {
+				var dataset = Utils.NormaliseColumns(initState);
+				(double[,] test, double[,] train) = Utils.GetTestTrainSplit(dataset, TRAIN_TEST_SPLIT);
+				(double[,] testData, double[] testActual) = (test.GetCols(0, test.GetLength(1) - 2), test.GetCol(test.GetLength(1) - 1));
+				(double[,] trainData, double[] trainActual) = (train.GetCols(0, train.GetLength(1) - 2), train.GetCol(train.GetLength(1) - 1));
 
-            NeuralNetwork network = new NeuralNetwork(new AccuracyPercentage()).InitialiseLayers(nInputs, N_HIDDEN, nOutputs);
-            network.Train(train, trainActual, LEARNING_RATE, N_EPOCHS);
-            (int[] predictions, double accuracy) = network.Predict(test, testActual);
+				int nInputs = train.GetLength(1);
+				int nOutputs = trainActual.Distinct().Count();
 
-            System.Console.WriteLine(accuracy);
+				NeuralNetwork network = new NeuralNetwork(new AccuracyPercentage()).InitialiseLayers(nInputs, N_HIDDEN, nOutputs);
+				network.Train(train, trainActual, LEARNING_RATE, N_EPOCHS);
+				(int[] predictions, double accuracy) = network.Predict(test, testActual);
+				return accuracy;
+			}, (res) => {
+            	System.Console.WriteLine(res);
+			});
         }
 
         static int getDistinctCount(double[] arr)

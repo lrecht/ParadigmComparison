@@ -1,4 +1,5 @@
 ﻿using System;
+using benchmark;
 using System.Globalization;
 
 namespace procedural_c_
@@ -22,15 +23,25 @@ namespace procedural_c_
 
 		static void Main(string[] args)
 		{
-			var dataset = getDataset();
-			var nHidden = 5;
-			var learningRate = 0.3f;
-			var epochs = 500;
+			var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
+			var bm = new Benchmark(iterations);
 
-			normalizeDataset(dataset);
+			var initState = getDataset();
 
-			var score = evaluateAlgorithm(dataset, learningRate, epochs, nHidden);
-			Console.WriteLine("Score:" + score);
+			bm.Run(() =>
+			{
+				var dataset = initState;
+				var nHidden = 5;
+				var learningRate = 0.3f;
+				var epochs = 500;
+
+				normalizeDataset(dataset);
+
+				return evaluateAlgorithm(dataset, learningRate, epochs, nHidden);
+			}, (res) =>
+			{
+				Console.WriteLine("Score:" + res);
+			});
 		}
 
 		// ---- Initilizers
@@ -229,7 +240,7 @@ namespace procedural_c_
 				//Insert all values except for the last
 				for (int elm = 0; elm < elms.Length - 1; elm++)
 					dataset[line, elm] = double.Parse(elms[elm], CultureInfo.InvariantCulture);
-				
+
 				//The last value (the result)
 				dataset[line, (elms.Length - 1)] = double.Parse(elms[elms.Length - 1]) - 1.0;
 			}
