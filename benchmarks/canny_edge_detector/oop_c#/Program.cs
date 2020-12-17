@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using benchmark;
 
 namespace oop_c_
 {
@@ -9,8 +10,16 @@ namespace oop_c_
     {
         static void Main(string[] args)
         {
-            (Bitmap detectedEdges, int whiteCount) = new Canny("benchmarks/canny_edge_detector/download.jpg").CannyEdges();
-            System.Console.WriteLine(whiteCount);
+            var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
+			var bm = new Benchmark(iterations);
+			var initState = new Bitmap("benchmarks/canny_edge_detector/download.jpg");
+
+			bm.Run(() => {
+				(Bitmap detectedEdges, int whiteCount) = new Canny(initState).CannyEdges();
+				return whiteCount;
+			}, (res) => {
+            	System.Console.WriteLine(res);
+			});
         }
     }
     public enum Direction
@@ -38,9 +47,9 @@ namespace oop_c_
         private static double GAUSSIAN_INTENSITY = 1;
 
         Bitmap originalImage;
-        public Canny(string filename)
+        public Canny(Bitmap initState)
         {
-            originalImage = new Bitmap(filename);
+            originalImage = initState;
         }
 
         public (Bitmap, int) CannyEdges()

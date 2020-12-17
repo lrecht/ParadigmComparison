@@ -5,6 +5,7 @@
 
 open System
 open System.Drawing
+open benchmark
 
 let createCosSinTables (thetaAxisSize: int) = 
     let sinTable = Array.create thetaAxisSize 0.0
@@ -33,20 +34,26 @@ let makeHoughSpaceData (cosTable: float[]) (sinTable: float[]) (image: Bitmap) (
 
 [<EntryPoint>]
 let main argv =
+    let iterations = if argv.Length > 0 then int (argv.[0]) else 1
+    let bm = Benchmark(iterations)
+
     let image: Bitmap = new Bitmap("benchmarks/hough_transform/Pentagon.png")
     
-    let thetaAxisSize = 640
-    let rhoAxisSize = 480
-    
-    let (sinTable, cosTable) = createCosSinTables thetaAxisSize
-    
-    let outputData = makeHoughSpaceData cosTable sinTable image thetaAxisSize rhoAxisSize
+    bm.Run((fun () ->
+        let thetaAxisSize = 640
+        let rhoAxisSize = 480
+        
+        let (sinTable, cosTable) = createCosSinTables thetaAxisSize
+        
+        let outputData = makeHoughSpaceData cosTable sinTable image thetaAxisSize rhoAxisSize
 
-    let mutable sum = 0
-    for x in 0 .. outputData.GetLength(0)-1 do 
-        for y in 0 .. outputData.GetLength(1)-1 do
-            sum <- sum + outputData.[x, y]
-
-    printfn "Sum: %i" sum
+        let mutable sum = 0
+        for x in 0 .. outputData.GetLength(0)-1 do 
+            for y in 0 .. outputData.GetLength(1)-1 do
+                sum <- sum + outputData.[x, y]
+        sum
+    ), (fun (res) ->
+        printfn "Sum: %i" res
+    ))
 
     0 // return an integer exit code

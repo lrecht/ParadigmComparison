@@ -145,9 +145,9 @@ let getNumOutpus (dataset: float[,]) =
             numOut <- numOut + 1
     numOut
 
-let getDataset =
+let getDataset (file: string[])=
     //Create a dataset from the file
-    let dataStrings = System.IO.File.ReadAllLines("benchmarks/NN/wheat-seeds.csv")
+    let dataStrings = file
     let dataset = Array2D.zeroCreate dataStrings.Length (dataStrings.[0].Split(',').Length)
     for line in 0 .. dataStrings.Length-1 do
         let elms = dataStrings.[line].Split(',')
@@ -223,11 +223,10 @@ let evaluateAlgorithm (dataset: float[,]) (learningRate: float) (epocs: int) (nH
 let main argv =
     let iterations = if argv.Length > 0 then int (argv.[0]) else 1
     let bm = Benchmark(iterations)
-
-    let initState = getDataset
+    let file = System.IO.File.ReadAllLines("benchmarks/NN/wheat-seeds.csv")
     
     bm.Run((fun () ->
-        let dataset = initState
+        let dataset = getDataset file
         let nHidden = 5
         let learningRate = 0.3
         let epochs = 500

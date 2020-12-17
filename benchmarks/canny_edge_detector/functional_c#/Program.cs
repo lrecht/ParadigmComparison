@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Linq;
 using System.Collections.Immutable;
+using benchmark;
 
 namespace functional_c_
 {
@@ -15,9 +16,16 @@ namespace functional_c_
         
         static void Main(string[] args)
         {
-            var pic = new Bitmap("benchmarks/canny_edge_detector/download.jpg");
-            var res = cannyEdge(pic);
-            System.Console.WriteLine(res.Count(p => p.w > 0));
+            var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
+			var bm = new Benchmark(iterations);
+			var pic = new Bitmap("benchmarks/canny_edge_detector/download.jpg");
+            
+			bm.Run(() => {
+				var res = cannyEdge(pic);
+				return res.Count(p => p.w > 0);
+			}, (res) => {
+				System.Console.WriteLine(res);
+			});
         }
 
         private static ImmutableArray<(int x, int y, int w)> cannyEdge(Bitmap pic)

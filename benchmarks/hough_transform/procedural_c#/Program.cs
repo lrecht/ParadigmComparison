@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using benchmark;
 
 namespace procedural_c_
 {
@@ -7,25 +8,34 @@ namespace procedural_c_
 	{
 		static void Main(string[] args)
 		{
+			var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
+			var bm = new Benchmark(iterations);
+
 			var image = new Bitmap("benchmarks/hough_transform/Pentagon.png");
 
-			var thetaAxisSize = 640;
-			var rhoAxisSize = 480;
-
-			var (sinTable, cosTable) = createCosSinTables(thetaAxisSize);
-
-			var outputData = makeHoughSpaceData(cosTable, sinTable, image, thetaAxisSize, rhoAxisSize);
-
-			var sum = 0;
-			(int width, int height) = (outputData.GetLength(0), outputData.GetLength(1));
-			for (int x = 0; x < width; x++)
+			bm.Run(() =>
 			{
-				for (int y = 0; y < height; y++)
+				var thetaAxisSize = 640;
+				var rhoAxisSize = 480;
+
+				var (sinTable, cosTable) = createCosSinTables(thetaAxisSize);
+
+				var outputData = makeHoughSpaceData(cosTable, sinTable, image, thetaAxisSize, rhoAxisSize);
+
+				var sum = 0;
+				(int width, int height) = (outputData.GetLength(0), outputData.GetLength(1));
+				for (int x = 0; x < width; x++)
 				{
-					sum += outputData[x, y];
+					for (int y = 0; y < height; y++)
+					{
+						sum += outputData[x, y];
+					}
 				}
-			}
-			Console.WriteLine("Sum: " + sum);
+				return sum;
+			}, (res) =>
+			{
+				Console.WriteLine("Sum: " + res);
+			});
 		}
 
 		static int[,] makeHoughSpaceData(double[] cosTable, double[] sinTable, Bitmap image, int thetaAxisSize, int rhoAxisSize)

@@ -1,4 +1,5 @@
 ﻿using System;
+using benchmark;
 
 namespace functional_c_
 {
@@ -8,8 +9,14 @@ namespace functional_c_
         static Random rand = new Random(2);
         static void Main(string[] args)
         {
-            var res = run(1000);
-            System.Console.WriteLine(res);
+            var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
+			var bm = new Benchmark(iterations);
+
+			bm.Run(() => {
+				return run(1000);
+			}, (res) => {
+            	System.Console.WriteLine(res);
+			});
         }
 
         private static (int, int) run(int runs)

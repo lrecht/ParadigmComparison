@@ -1,4 +1,5 @@
 ﻿open System
+open benchmark
 
 let Value = [ "Two";"Three";"Four";"Five";"Six";"Seven";"Eight";"Nine";"Ten";"Jack";"Queen";"King";"Ace" ]
 let Suit = [ "Diamonds";"Spades";"Hearts";"Clubs" ]
@@ -25,5 +26,12 @@ let run runs =
 
 [<EntryPoint>]
 let main argv =
-    printfn "%O" (run 1000)
+    var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
+    var bm = new Benchmark(iterations);
+    
+    bm.Run((fun () ->
+        run 1000
+    ), (fun (res) ->
+        printfn "%O" res
+    ))
     0 // return an integer exit code

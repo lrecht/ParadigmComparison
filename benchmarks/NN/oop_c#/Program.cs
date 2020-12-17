@@ -18,10 +18,10 @@ namespace oop_c_
             var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
             var bm = new Benchmark(iterations);
 
-			var initState = Utils.LoadCSV("benchmarks/NN/wheat-seeds.csv");
+			var file = File.ReadAllLines("benchmarks/NN/wheat-seeds.csv");
             
 			bm.Run(() => {
-				var dataset = Utils.NormaliseColumns(initState);
+				var dataset = Utils.NormaliseColumns(Utils.LoadCSV(file));
 				(double[,] test, double[,] train) = Utils.GetTestTrainSplit(dataset, TRAIN_TEST_SPLIT);
 				(double[,] testData, double[] testActual) = (test.GetCols(0, test.GetLength(1) - 2), test.GetCol(test.GetLength(1) - 1));
 				(double[,] trainData, double[] trainActual) = (train.GetCols(0, train.GetLength(1) - 2), train.GetCol(train.GetLength(1) - 1));
@@ -49,9 +49,9 @@ namespace oop_c_
 
     public static class Utils
     {
-        public static double[,] LoadCSV(string filepath)
+        public static double[,] LoadCSV(string[] file)
         {
-            var file = File.ReadAllLines(filepath);
+            var file = file;
             double[,] dataset = new double[file.Length, file[0].Split(',').Length];
             for (int i = 0; i < file.Length; i++)
             {

@@ -184,8 +184,8 @@ type Utils private() =
         shuffledArray
 
 
-    static member LoadCSV filepath =
-        let file = File.ReadAllLines(filepath)
+    static member LoadCSV (file: string[]) =
+        let file = file
         let mutable dataset: double[,] = Array2D.zeroCreate file.Length (file.[0].Split(',').Length)
         for i in 0 .. file.Length - 1 do
             let values = file.[i].Split(',')
@@ -235,11 +235,10 @@ let N_HIDDEN = 5
 let main argv =
     let iterations = if argv.Length > 0 then int (argv.[0]) else 1
     let bm = Benchmark(iterations)
-
-    let mutable initState = Utils.LoadCSV("benchmarks/NN/wheat-seeds.csv")
+    let file = File.ReadAllLines("benchmarks/NN/wheat-seeds.csv")
     
     bm.Run((fun () ->
-        let dataset = Utils.NormaliseColumns(initState)
+        let dataset = Utils.NormaliseColumns(Utils.LoadCSV(file))
         let (test : double[,], train : double[,]) = Utils.GetTestTrainSplit dataset TRAIN_TEST_SPLIT
 
         let column = test.GetLength(1) - 1

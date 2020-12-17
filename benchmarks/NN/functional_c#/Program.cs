@@ -25,17 +25,17 @@ namespace functional_c_
     {
         static Random rand = new Random(2);
 
-        static readonly ImmutableArray<ImmutableArray<double>> rawData = System.IO.File.ReadAllLines("benchmarks/NN/wheat-seeds.csv").Select(l => l.Split(',').Select(n => double.Parse(n)).ToImmutableArray()).ToImmutableArray();
-        
         static void Main(string[] args)
         {
             var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
             var bm = new Benchmark(iterations);
 			
-			var initState = rawData.Select(row => row.SetItem(row.Length - 1, row[^1] - 1)).ToImmutableArray();
+			var file = System.IO.File.ReadAllLines("benchmarks/NN/wheat-seeds.csv");
 
 			bm.Run(() => {
-				var wheatData = initState;
+				var wheatData = file.Select(l => l.Split(',')
+					.Select(n => double.Parse(n)).ToImmutableArray()).ToImmutableArray()
+					.Select(row => row.SetItem(row.Length - 1, row[^1] - 1)).ToImmutableArray();;
 				var nInput = wheatData[0].Length;
 				var nHidden = 5;
 				var nOutput = wheatData.Select(row => row[row.Length - 1]).Distinct().Count();

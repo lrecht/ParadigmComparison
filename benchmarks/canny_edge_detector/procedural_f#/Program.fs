@@ -2,6 +2,7 @@
 
 open System
 open System.Drawing
+open benchmark
 
 let weak = 100
 let black = 0
@@ -191,19 +192,26 @@ let hysteresis (img: int[,]) =
 
 [<EntryPoint>]
 let main argv =
+    let iterations = if argv.Length > 0 then int (argv.[0]) else 1
+    let bm = Benchmark(iterations)
+
     let image: Bitmap = new Bitmap("benchmarks/canny_edge_detector/download.jpg")
     
-    let imageArrGray = toGrayScale image
+    bm.Run((fun () ->
+        let imageArrGray = toGrayScale image
     
-    let gauFilt = GaussianFilter 5 1.0
-    let gau = Convolve imageArrGray gauFilt
-    
-    let (intensity, theta) = computeIntensity gau
-    
-    let nonMax = nonMaxSuppresion intensity theta
-    
-    let doubleThreshold = doubleThreshold nonMax
-    let (imageFinal, numWhite) = hysteresis doubleThreshold
-    printfn "White: %i" numWhite
+        let gauFilt = GaussianFilter 5 1.0
+        let gau = Convolve imageArrGray gauFilt
+        
+        let (intensity, theta) = computeIntensity gau
+        
+        let nonMax = nonMaxSuppresion intensity theta
+        
+        let doubleThreshold = doubleThreshold nonMax
+        let (imageFinal, numWhite) = hysteresis doubleThreshold
+        numWhite
+    ), (fun (white) ->
+        printfn "White: %i" white
+    ))
 
     0 // return an integer exit code

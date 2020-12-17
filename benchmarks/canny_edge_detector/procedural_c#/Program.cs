@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using benchmark;
 
 namespace procedural_c_
 {
@@ -7,21 +8,29 @@ namespace procedural_c_
 	{
 		static void Main(string[] args)
 		{
+			var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
+			var bm = new Benchmark(iterations);
+
 			var image = new Bitmap("benchmarks/canny_edge_detector/download.jpg");
 
-			var imageArrGray = toGrayScale(image);
+			bm.Run(() =>
+			{
+				var imageArrGray = toGrayScale(image);
 
-			var gauFilt = GaussianFilter(5, 1.0);
-			var gau = Convolve(imageArrGray, gauFilt);
+				var gauFilt = GaussianFilter(5, 1.0);
+				var gau = Convolve(imageArrGray, gauFilt);
 
-			var (intensity, theta) = computeIntensity(gau);
+				var (intensity, theta) = computeIntensity(gau);
 
-			var nonMax = nonMaxSuppresion(intensity, theta);
+				var nonMax = nonMaxSuppresion(intensity, theta);
 
-			var doubleTh = doubleThreshold(nonMax);
-			var (imageFinal, numWhite) = hysteresis(doubleTh);
-
-			Console.WriteLine("White: " + numWhite);
+				var doubleTh = doubleThreshold(nonMax);
+				var (imageFinal, numWhite) = hysteresis(doubleTh);
+				return numWhite;
+			}, (white) =>
+			{
+				Console.WriteLine("White: " + white);
+			});
 		}
 
 		public static int weak = 100;
@@ -241,7 +250,7 @@ namespace procedural_c_
 					var posY = y + j;
 					// not edges or itself
 					if (!((i == 1 && j == 1) || posX <= 0 || posX >= width - 1 || posY <= 0 || posY >= height - 1) && image[posX, posY] == strong)
-					        return true;
+						return true;
 				}
 			}
 			return false;

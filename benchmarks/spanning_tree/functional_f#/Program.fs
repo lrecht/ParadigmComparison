@@ -1,4 +1,5 @@
 ﻿open System.Collections.Immutable
+open benchmark
 
 let compare (from,dest,w) (from1,dest1,w1) =
     if w < w1 then -1
@@ -29,9 +30,16 @@ let spanningTree (edges:(int32*int32*int32) list) =
 
 [<EntryPoint>]
 let main argv =
+    let iterations = if argv.Length > 0 then int (argv.[0]) else 1
+    let bm = Benchmark(iterations)
+
     let res = System.IO.File.ReadAllLines("benchmarks/spanning_tree/graph.csv")
-    let full = Array.map (fun (s:string) -> 
+    
+    bm.Run((fun () ->
+        let full = Array.map (fun (s:string) -> 
         let sarr = s.Split ',' in ((int32 sarr.[0]), (int32 sarr.[1]), (int32 sarr.[2]))) res
-    let weight,edge = spanningTree (List.ofArray (Array.sortWith compare full))
-    printfn "(%i,%i)" weight edge
+        spanningTree (List.ofArray (Array.sortWith compare full))
+    ), (fun (weight, edge) ->
+        printfn "(%i,%i)" weight edge
+    ))
     0 // return an integer exit code
