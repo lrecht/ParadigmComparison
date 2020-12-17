@@ -51,7 +51,6 @@ namespace oop_c_
     {
         public static double[,] LoadCSV(string[] file)
         {
-            var file = file;
             double[,] dataset = new double[file.Length, file[0].Split(',').Length];
             for (int i = 0; i < file.Length; i++)
             {
