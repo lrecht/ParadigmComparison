@@ -37,7 +37,6 @@ namespace benchmark
 
             this.iterations = iterations;
             this._rapl = new RAPL();
-
         }
 
 
@@ -78,10 +77,8 @@ namespace benchmark
                 
                 //Actually performing benchmark and resulting IO
                 start();
-
                 R res = benchmark();
                 end();
-
                 benchmarkOutput(res);
                 
                 if (elapsedTime >= maxExecutionTime){
