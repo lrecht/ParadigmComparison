@@ -16,12 +16,12 @@ namespace oop_c_
             var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
             var bm = new Benchmark(iterations);
 			
-			string directory = System.IO.Directory.GetParent(Environment.CurrentDirectory).ToString();
-            List<Edge> edges = File.ReadAllLines($"benchmarks/dijkstra/graph.csv")
-                                           .Select(v => Edge.FromCsv(v))
-                                           .ToList();
-            
+			var lines = File.ReadAllLines($"benchmarks/dijkstra/graph.csv");
+			
 			bm.Run(() => {
+				string directory = System.IO.Directory.GetParent(Environment.CurrentDirectory).ToString();
+				List<Edge> edges = lines.Select(v => Edge.FromCsv(v)).ToList();
+				
 				Graph graph = new Graph(edges);
             	return graph.dijkstra(START, END);
 			}, (res) => {

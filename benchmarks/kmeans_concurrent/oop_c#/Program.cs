@@ -18,11 +18,11 @@ namespace oop_c_
             var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
             var bm = new Benchmark(iterations);
 
-			points = File.ReadAllLines($"benchmarks/kmeans_concurrent/points.txt")
-                                .Select(l => new Point(Convert.ToDouble(l.Split(':')[0]), Convert.ToDouble(l.Split(':')[1])))
-                                .ToArray();
-            
+			var file = File.ReadAllLines($"benchmarks/kmeans_concurrent/points.txt");
+			
 			bm.Run(() => {
+				points = file.Select(l => new Point(Convert.ToDouble(l.Split(':')[0]), Convert.ToDouble(l.Split(':')[1])))
+                             .ToArray();
 				clusters = new Cluster[NUM_CLUSTERS];
 				for (int i = 0; i < NUM_CLUSTERS; i++)
 					clusters[i] = new Cluster(points[i]);

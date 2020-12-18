@@ -63,10 +63,10 @@ let main argv =
     let size = 256
     let initState = Array2D.zeroCreate size size
     let stateMap = File.ReadAllText("benchmarks/game_of_life/state256.txt")
-    for index in 0 .. (stateMap.Length - 1) do
-        initState.[index / size, index % size] <- stateMap.[index] = '1'
     
     bm.Run((fun () ->
+        for index in 0 .. (stateMap.Length - 1) do
+            initState.[index / size, index % size] <- stateMap.[index] = '1'
         let gameOf = Life(GameRules(), size, initState)
         for i in 0 .. 99 do
             gameOf.NextGeneration

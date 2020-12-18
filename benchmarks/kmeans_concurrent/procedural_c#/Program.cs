@@ -23,10 +23,10 @@ namespace procedural_c_
 			var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
 			var bm = new Benchmark(iterations);
 
-			var initState = generateData();
-
+			var lines = System.IO.File.ReadAllLines("benchmarks/kmeans_concurrent/points.txt");
 			bm.Run(() =>
 			{
+				var initState = generateData(lines);
 				allData = initState;
 				setKlusters();
 				var hasMoved = true;
@@ -43,10 +43,9 @@ namespace procedural_c_
 			});
 		}
 
-		public static point[] generateData()
+		public static point[] generateData(string[] lines)
 		{
 			var initState = new point[numValues];
-			var lines = System.IO.File.ReadAllLines("benchmarks/kmeans_concurrent/points.txt");
 			var i = 0;
 			foreach (var line in lines)
 			{

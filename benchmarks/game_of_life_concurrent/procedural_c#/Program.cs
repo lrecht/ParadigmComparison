@@ -16,11 +16,11 @@ namespace procedural_c_
 		{
 			var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
 			var bm = new Benchmark(iterations);
-
-			var initState = initilizeBoard();
+			var file = System.IO.File.ReadAllText("benchmarks/game_of_life_concurrent/state256.txt");
 
 			bm.Run(() =>
 			{
+				var initState = initilizeBoard(file);
 				board = initState;
 				for (int i = 0; i < runs; i++)
 				{
@@ -72,10 +72,9 @@ namespace procedural_c_
 			board = newBoard;
 		}
 
-		public static bool[,] initilizeBoard()
+		public static bool[,] initilizeBoard(string state)
 		{
 			var initState = new bool[height, width];
-			var state = System.IO.File.ReadAllText("benchmarks/game_of_life_concurrent/state256.txt");
 			for (int i = 0; i < state.Length; i++)
 			{
 				initState[(i / width), (i % width)] = state[i] == '1';

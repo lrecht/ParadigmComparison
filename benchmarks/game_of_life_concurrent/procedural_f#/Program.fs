@@ -46,9 +46,8 @@ let updateBord() =
 
     board <- newBoard
 
-let initilizeBoard() =
+let initilizeBoard (state: string) =
     let initState = Array2D.zeroCreate height width
-    let state = System.IO.File.ReadAllText("benchmarks/game_of_life_concurrent/state256.txt")
     for i in 0 .. state.Length-1 do
         initState.[(i/width), (i % width)] <- state.[i] = '1'
     initState
@@ -66,9 +65,9 @@ let main argv =
     let iterations = if argv.Length > 0 then int (argv.[0]) else 1
     let bm = Benchmark(iterations)
 
-    let initState = initilizeBoard()
-    
+    let file = System.IO.File.ReadAllText("benchmarks/game_of_life_concurrent/state256.txt");
     bm.Run((fun () -> 
+        let initState = initilizeBoard file
         board <- initState
         for i in 0 .. runs-1 do
             updateBord()

@@ -22,7 +22,7 @@ let updateCells arr =
     Array.Parallel.mapi (fun index cell -> (rules cell (count index arr))) arr
 
 let readFile file =
-    (Seq.map (fun c -> c = '1') (System.IO.File.ReadAllText file) |> Seq.toArray)
+    (Seq.map (fun c -> c = '1') (file) |> Seq.toArray)
     
 let rec run arr number =
     if number > 0 
@@ -34,9 +34,9 @@ let main argv =
     let iterations = if argv.Length > 0 then int (argv.[0]) else 1
     let bm = Benchmark(iterations)
 
-    let arr = readFile "benchmarks/game_of_life_concurrent/state256.txt"
-
+    let file = System.IO.File.ReadAllText "benchmarks/game_of_life_concurrent/state256.txt";
     bm.Run(( fun () ->
+        let arr = readFile file
         run arr 100
     ),( fun(res) -> 
         printfn "%i" res

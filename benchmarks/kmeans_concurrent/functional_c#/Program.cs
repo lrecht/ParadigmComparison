@@ -29,11 +29,11 @@ namespace functional_c_
             var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
             var bm = new Benchmark(iterations);
 
-			var points = System.IO.File.ReadAllLines("benchmarks/kmeans_concurrent/points.txt")
-                .Select(x => (Convert.ToDouble(x.Split(':')[0]), Convert.ToDouble(x.Split(':')[1])))
-                .ToImmutableArray();
+			var file = System.IO.File.ReadAllLines("benchmarks/kmeans_concurrent/points.txt");
             
 			bm.Run(() => {
+				var points = file.Select(x => (Convert.ToDouble(x.Split(':')[0]), Convert.ToDouble(x.Split(':')[1])))
+                	.ToImmutableArray();
 				return runKMeans(10, points);
 			}, (res) => {
 				res.ToImmutableList().ForEach(c => System.Console.WriteLine(c));

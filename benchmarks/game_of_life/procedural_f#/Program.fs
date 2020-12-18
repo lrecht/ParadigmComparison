@@ -39,9 +39,9 @@ let updateBord() =
             newBoard.[x, y] <- c && (n = 2 || n = 3) || not c && n = 3
     board <- newBoard
 
-let initilizeBoard() =
+let initilizeBoard (file: string) =
     let initState = Array2D.zeroCreate height width
-    let state = System.IO.File.ReadAllText("benchmarks/game_of_life/state256.txt")
+    let state = file
     for i in 0 .. state.Length-1 do
         initState.[(i/width), (i % width)] <- state.[i] = '1'
     initState
@@ -58,10 +58,10 @@ let countAlive () =
 let main argv =
     let iterations = if argv.Length > 0 then int (argv.[0]) else 1
     let bm = Benchmark(iterations)
-
-    let initState = initilizeBoard()
     
+    let file = System.IO.File.ReadAllText("benchmarks/game_of_life/state256.txt");
     bm.Run((fun () ->
+        let initState = initilizeBoard(file)
         board <- initState
         for i in 0 .. runs-1 do
             updateBord()

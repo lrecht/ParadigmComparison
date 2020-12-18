@@ -101,10 +101,12 @@ let main argv =
     
     let mutable edges = List<Edge>()
 
-    for line in System.IO.File.ReadAllLines("benchmarks/dijkstra/graph.csv") do
-        edges.Add(Edge.FromCSV(line))
-
+    let lines = System.IO.File.ReadAllLines("benchmarks/dijkstra/graph.csv")
+    
     bm.Run((fun () -> 
+        for line in lines do
+            edges.Add(Edge.FromCSV(line))
+
         let g = Graph(edges)
         g.Solve START END
     ), (fun res -> 
