@@ -18,8 +18,7 @@ namespace procedural_c_
 
 			bm.Run(() =>
 			{
-				var initState = initilizeBoard(file);
-				board = initState;
+				board = initilizeBoard(file);
 				for (int i = 0; i < runs; i++)
 				{
 					updateBoard();

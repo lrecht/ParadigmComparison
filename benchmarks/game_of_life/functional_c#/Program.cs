@@ -8,7 +8,7 @@ namespace functional_c_
 	{
 		static readonly int dimensions = 256;
 		static readonly int runs = 100;
-		static ImmutableArray<(int x, int y)> relativePostions = Enumerable.Range(-1, 3)
+		static readonly ImmutableArray<(int x, int y)> relativePostions = Enumerable.Range(-1, 3)
 							.SelectMany(x => Enumerable.Range(-1, 3).Select(y => (x, y)))
 							.Except(ImmutableList.Create<(int, int)>((0, 0)))
 							.ToImmutableArray();

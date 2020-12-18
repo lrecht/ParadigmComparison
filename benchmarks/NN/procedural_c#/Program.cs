@@ -29,6 +29,7 @@ namespace procedural_c_
 
 			bm.Run(() =>
 			{
+				rand = new Random(2);
 				var initState = getDataset(file);
 				var dataset = initState;
 				var nHidden = 5;

@@ -8,8 +8,8 @@ open benchmark
 let alphabet: string = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 let dimension1: int = 5
 let dimension2: int = 5
-let table: char[,] = Array2D.zeroCreate dimension1 dimension2
-let positions: (int*int)[] = Array.create 26 (0, 0)
+let mutable table: char[,] = Array2D.zeroCreate dimension1 dimension2
+let mutable positions: (int*int)[] = Array.create 26 (0, 0)
 
 let charValue (value: char) =
     ((int value) - (int 'A'))
@@ -87,6 +87,8 @@ let main argv =
     let text = System.IO.File.ReadAllText("benchmarks/playfair_cipher/lines.txt")
     
     bm.Run((fun () ->
+        table <- Array2D.zeroCreate dimension1 dimension2
+        positions <- Array.create 26 (0, 0)
         let keyword = "This is a great keyword"
         populateTable (preprocessText (keyword + alphabet))
         let processedText = preprocessText text

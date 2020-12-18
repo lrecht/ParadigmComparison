@@ -22,7 +22,7 @@ let rec eval e =
       | Mul(expr1,expr2) -> (eval expr1) * (eval expr2)
       | Min(expr1,expr2) -> (eval expr1) - (eval expr2)
 
-let rand = System.Random(2)
+let mutable rand = System.Random(2)
 let rec generateRandomExpression count = 
     if count <= 0 then Var (rand.Next(0, 100))
     else 
@@ -47,6 +47,7 @@ let main argv =
     let bm = Benchmark(iterations)
 
     bm.Run((fun () ->
+        rand <- System.Random(2)
         run 1000
     ), (fun (res) ->
         printfn "%O" res

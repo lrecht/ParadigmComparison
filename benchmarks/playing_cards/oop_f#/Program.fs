@@ -19,7 +19,7 @@ type Card(suit, value) =
 // The type of a whole deck
 type Deck() =
     let _cards = new List<Card>()
-    let _rand = Random()
+    let _rand = Random(2)
     do
         for _suit in Suit do
             for _value in Value do

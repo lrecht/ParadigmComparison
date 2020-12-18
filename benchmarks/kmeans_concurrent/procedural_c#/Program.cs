@@ -7,7 +7,6 @@ namespace procedural_c_
 	class Program
 	{
 		static int numKlusters = 10;
-		static Random rand = new Random(2);
 		static int numValues = 200000;
 		static point[] allData = new point[numValues];
 
@@ -26,6 +25,7 @@ namespace procedural_c_
 			var lines = System.IO.File.ReadAllLines("benchmarks/kmeans_concurrent/points.txt");
 			bm.Run(() =>
 			{
+				klusters = new (double, double)[numKlusters];
 				var initState = generateData(lines);
 				allData = initState;
 				setKlusters();

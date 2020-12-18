@@ -63,10 +63,10 @@ let main argv =
     let iterations = if argv.Length > 0 then int (argv.[0]) else 1
     let bm = Benchmark(iterations)
     
-    let size = 256
-    let initState = Array2D.zeroCreate size size
     let stateMap = File.ReadAllText("benchmarks/game_of_life_concurrent/state256.txt")
     bm.Run(( fun () ->
+        let size = 256
+        let initState = Array2D.zeroCreate size size
         for index in 0 .. (stateMap.Length - 1) do
             initState.[index / size, index % size] <- stateMap.[index] = '1'
 

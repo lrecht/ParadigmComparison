@@ -37,7 +37,7 @@ type AccuracyPercentage() =
 
 type Neuron(nInputs, activation : IActivationStrategy) as this =
     let weights : double[] = Array.zeroCreate nInputs
-    let rnd = Random()
+    let rnd = Random(2)
     do
         for i in 0 .. nInputs - 1 do
             weights.[i] <- rnd.NextDouble()
@@ -175,7 +175,7 @@ type Utils private() =
     static let shuffle (array : double[,]) = 
         let mutable shuffledArray = Array2D.zeroCreate (array.GetLength(0)) (array.GetLength(1))
         let numRows = array.GetLength(0)
-        let rnd = Random()
+        let rnd = Random(2)
         for i in 0 .. numRows - 1 do
             let randIndex = rnd.Next(0, numRows)
             let tempCol = array.[i, *]

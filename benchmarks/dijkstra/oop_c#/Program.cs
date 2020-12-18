@@ -19,7 +19,6 @@ namespace oop_c_
 			var lines = File.ReadAllLines($"benchmarks/dijkstra/graph.csv");
 			
 			bm.Run(() => {
-				string directory = System.IO.Directory.GetParent(Environment.CurrentDirectory).ToString();
 				List<Edge> edges = lines.Select(v => Edge.FromCsv(v)).ToList();
 				
 				Graph graph = new Graph(edges);

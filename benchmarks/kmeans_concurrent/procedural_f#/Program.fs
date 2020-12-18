@@ -5,7 +5,6 @@ open System.Threading.Tasks
 open benchmark
 
 let numKlusters = 10
-let rand = Random(2)
 let numValues = 200000
 
 type Point = {
@@ -14,7 +13,7 @@ type Point = {
 }
 
 let mutable allData: Point array = Array.create numValues ({ Point.Kluster = 0; Point.Data = (0.0, 0.0) })
-let klusters: (float * float) array = Array.create numKlusters (0.0, 0.0)
+let mutable klusters: (float * float) array = Array.create numKlusters (0.0, 0.0)
 
 let generateData (lines: string[]) =
     let initState = Array.create numValues ({ Point.Kluster = 0; Point.Data = (0.0, 0.0) })
@@ -81,6 +80,7 @@ let main argv =
 
     let lines = System.IO.File.ReadAllLines("benchmarks/kmeans_concurrent/points.txt")
     bm.Run((fun () -> 
+        klusters <- Array.create numKlusters (0.0, 0.0)
         let initState = generateData(lines)
         allData <- initState
         setKlusters()

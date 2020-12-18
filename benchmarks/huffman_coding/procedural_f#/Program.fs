@@ -13,7 +13,7 @@ type Heap = {
     mutable size: int
 }
 
-let heap: Heap = { Heap.array = (Array.zeroCreate 1024); Heap.maxSize = 1024; Heap.size = 0 }
+let mutable heap: Heap = { Heap.array = (Array.zeroCreate 1024); Heap.maxSize = 1024; Heap.size = 0 }
 
 
 let swap (index1: int) (index2: int) =
@@ -116,6 +116,7 @@ let main argv =
     let text = System.IO.File.ReadAllText "benchmarks/huffman_coding/lines.txt"
     
     bm.Run((fun () -> 
+        heap <- { Heap.array = (Array.zeroCreate 1024); Heap.maxSize = 1024; Heap.size = 0 }
         let frequencies: Dictionary<char, int> = new Dictionary<char, int>()
         for c in text do
             if frequencies.ContainsKey(c) then

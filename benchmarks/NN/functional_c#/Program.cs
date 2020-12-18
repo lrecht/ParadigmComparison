@@ -33,6 +33,7 @@ namespace functional_c_
 			var file = System.IO.File.ReadAllLines("benchmarks/NN/wheat-seeds.csv");
 
 			bm.Run(() => {
+				rand = new Random(2);
 				var wheatData = file.Select(l => l.Split(',')
 					.Select(n => double.Parse(n)).ToImmutableArray()).ToImmutableArray()
 					.Select(row => row.SetItem(row.Length - 1, row[^1] - 1)).ToImmutableArray();;

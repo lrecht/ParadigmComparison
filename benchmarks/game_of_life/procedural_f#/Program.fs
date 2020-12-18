@@ -61,8 +61,7 @@ let main argv =
     
     let file = System.IO.File.ReadAllText("benchmarks/game_of_life/state256.txt");
     bm.Run((fun () ->
-        let initState = initilizeBoard(file)
-        board <- initState
+        board <- initilizeBoard(file)
         for i in 0 .. runs-1 do
             updateBord()
         countAlive()

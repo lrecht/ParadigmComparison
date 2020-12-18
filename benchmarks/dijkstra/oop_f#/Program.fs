@@ -98,12 +98,11 @@ let END = "5525"
 let main argv =
     let iterations = if argv.Length > 0 then int (argv.[0]) else 1
     let bm = Benchmark(iterations)
-    
-    let mutable edges = List<Edge>()
 
     let lines = System.IO.File.ReadAllLines("benchmarks/dijkstra/graph.csv")
     
     bm.Run((fun () -> 
+        let edges = List<Edge>()
         for line in lines do
             edges.Add(Edge.FromCSV(line))
 

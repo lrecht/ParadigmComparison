@@ -7,7 +7,7 @@ let Suit = [ "Diamonds";"Spades";"Hearts";"Clubs" ]
 let newDeck () = [for x in Value do
                     for y in Suit -> x,y] 
 
-let rand = Random()
+let mutable rand = Random(2)
 let shuffle xs = List.sortBy (fun x -> rand.Next()) xs
 
 let showDeck deck = 
@@ -30,6 +30,7 @@ let main argv =
     let bm = Benchmark(iterations)
     
     bm.Run((fun () ->
+        rand <- Random(2)
         run 1000
     ), (fun (res) ->
         printfn "%O" res
