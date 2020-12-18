@@ -108,8 +108,7 @@ namespace csharpRAPL
             for(int i = 0; i < _sysFiles.Count; i++){
                 var deviceFile = this._sysFiles[i];
                 //TODO: Test om der er mærkbar forskel ved at holde filen åben og læse linjen på ny
-                double energyVal = 0.0;
-                if(Double.TryParse(File.ReadAllText(deviceFile), out energyVal))
+                if(Double.TryParse(File.ReadAllText(deviceFile), out double energyVal))
                     result[this._socketIds[i]] = energyVal;
             }
             return result;
