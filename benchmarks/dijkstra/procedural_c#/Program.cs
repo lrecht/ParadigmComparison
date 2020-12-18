@@ -21,10 +21,10 @@ namespace procedural_c_
 
     class Procedural
     {
-        Dictionary<string,int> positions = new Dictionary<string, int>();
-        Dictionary<string,List<(string,int)>> edgeMap = new Dictionary<string, List<(string, int)>>();
-        Dictionary<string,string> backtrack = new Dictionary<string, string>();
-        Dictionary<string,int> distances = new Dictionary<string, int>();
+        Dictionary<string,int> positions;
+        Dictionary<string,List<(string,int)>> edgeMap;
+        Dictionary<string,string> backtrack;
+        Dictionary<string,int> distances;
         Heap heap;
         string position;
 
@@ -34,25 +34,30 @@ namespace procedural_c_
             var bm = new Benchmark(iterations);
 			
 			string[] file = File.ReadAllLines(filepath);
-            int startSize = 2^10;
+			
+            bm.Run(() => {
+                positions = new Dictionary<string, int>();
+                edgeMap = new Dictionary<string, List<(string, int)>>();
+                backtrack = new Dictionary<string, string>();
+                distances = new Dictionary<string, int>();
+                int startSize = 2^10;
 
-            heap.array = new (string, int)[startSize];
-            heap.maxSize = startSize;
-            heap.size = 0;
+                heap.array = new (string, int)[startSize];
+                heap.maxSize = startSize;
+                heap.size = 0;
 
-            foreach (string edge in file)
-            {
-                string[] line = edge.Split(",");
-                string from = line[0], to = line[1];
-                int weight = Convert.ToInt32(line[2]);
-                if (edgeMap.ContainsKey(from))
-                    edgeMap[from].Add((to,weight));
-                else
-                    edgeMap.Add(from, new List<(string,int)>{(to,weight)});
+                foreach (string edge in file)
+                {
+                    string[] line = edge.Split(",");
+                    string from = line[0], to = line[1];
+                    int weight = Convert.ToInt32(line[2]);
+                    if (edgeMap.ContainsKey(from))
+                        edgeMap[from].Add((to,weight));
+                    else
+                        edgeMap.Add(from, new List<(string,int)>{(to,weight)});
 
-            }
+                }
 
-			bm.Run(() => {
 				dijkstra(start,dest);
             	return doBacktrack();
 			}, (res) => {

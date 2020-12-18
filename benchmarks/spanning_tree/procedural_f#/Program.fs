@@ -54,7 +54,7 @@ let readFileToArr (file: string[]) =
         arr.[i] <- { Edge.Start = Int32.Parse(elms.[0]); Edge.End = Int32.Parse(elms.[1]); Edge.Weight = Int32.Parse(elms.[2]) }
     arr
 
-let vertexGroup : int array = Array.create (6005 + 1) -1
+let mutable vertexGroup : int array = Array.create (6005 + 1) -1
 let rec unionFind (node: int) =
     if vertexGroup .[node] < 0 then
         node
@@ -97,6 +97,7 @@ let main argv =
     let file = System.IO.File.ReadAllLines("benchmarks/spanning_tree/graph.csv");
 
     bm.Run((fun () ->
+        vertexGroup <- Array.create (6005 + 1) -1
         let arr = readFileToArr(file)
         QuickSort arr 0 (arr.Length - 1)
         computeMinSpanTree arr

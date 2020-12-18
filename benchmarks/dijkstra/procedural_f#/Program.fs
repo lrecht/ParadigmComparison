@@ -12,8 +12,8 @@ type Heap = {
 }
 
 // Global variables
-let heap: Heap = { Heap.array = (Array.zeroCreate 1024); Heap.maxSize = 1024; Heap.size = 0 }
-let positions: Dictionary<string,int> = new Dictionary<string, int>()
+let mutable heap: Heap = { Heap.array = (Array.zeroCreate 1024); Heap.maxSize = 1024; Heap.size = 0 }
+let mutable positions: Dictionary<string,int> = null
 
 let swap (index1: int) (index2: int) =
     // Maintains dictionary to find items later
@@ -97,7 +97,7 @@ let heapReplace (pos: string) (newDist: int) =
         heapInsert (pos,newDist)
         (pos,newDist)
 
-let distances: Dictionary<string,int> = new Dictionary<string, int>()
+let mutable distances: Dictionary<string,int> = new Dictionary<string, int>()
 let mutable backtrack = new Dictionary<string, string>()
 
 let initVertices (edges: Dictionary<string, (string*int) array>) =
@@ -108,14 +108,7 @@ let initVertices (edges: Dictionary<string, (string*int) array>) =
 
 let toDictionary (map : Map<_, _>) : Dictionary<_, _> = Dictionary(map)
 
-let initEdges =
-    let filePath = "benchmarks/dijkstra/graph.csv"
-    let lines = seq {
-        use sr = new StreamReader (filePath)
-        while not sr.EndOfStream do
-            yield sr.ReadLine ()
-    }
-
+let initEdges lines =
     let graph = 
         Seq.map 
             (fun (a:string) -> 
@@ -176,12 +169,23 @@ let main argv =
     let iterations = if argv.Length > 0 then int (argv.[0]) else 1
     let bm = Benchmark(iterations)
 
-    let source: string = "257"
-    let destination: string = "5525"
-    heapInsert (source, 0)
-    let mutable edges = initEdges
+    let filePath = "benchmarks/dijkstra/graph.csv"
+    let lines = seq {
+        use sr = new StreamReader (filePath)
+        while not sr.EndOfStream do
+            yield sr.ReadLine ()
+    }
 
     bm.Run((fun () -> 
+        positions <- Dictionary<string, int>()
+        heap <- { Heap.array = (Array.zeroCreate 1024); Heap.maxSize = 1024; Heap.size = 0 }
+        distances <- new Dictionary<string, int>()
+        backtrack <- new Dictionary<string, string>()
+        let source: string = "257"
+        let destination: string = "5525"
+        heapInsert (source, 0)
+        let mutable edges = initEdges lines
+
         solveDijkstra source destination edges |> ignore
         doBacktrack source destination
     ), (fun(res) -> 
