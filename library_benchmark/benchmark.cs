@@ -36,7 +36,8 @@ namespace benchmark
             System.Console.SetOut(blackHole);
 
             this.iterations = iterations;
-            //this._rapl = new RAPL();
+            this._rapl = new RAPL();
+
         }
 
 
@@ -76,9 +77,11 @@ namespace benchmark
                     print(System.Console.Write, $"\r{i + 1} of {iterations}");
                 
                 //Actually performing benchmark and resulting IO
-                //start();
+                start();
+
                 R res = benchmark();
-                //end();
+                end();
+
                 benchmarkOutput(res);
                 
                 if (elapsedTime >= maxExecutionTime){
