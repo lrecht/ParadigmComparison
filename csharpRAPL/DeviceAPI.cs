@@ -65,13 +65,13 @@ namespace csharpRAPL
             }
 
             this._socketIds.Sort();
-            
             this._sysFiles = this.openRAPLFiles();
         }
 
         public abstract List<string> openRAPLFiles();
 
-        public virtual List<(string dirName, int raplId)> GetSocketDirectoryNames(){
+        public virtual List<(string dirName, int raplId)> GetSocketDirectoryNames()
+        {
             void addToResult((string dirName, int raplId) directoryInfo, List<(int, string, int)> result){
                 string pkgStr = File.ReadAllText(directoryInfo.dirName + "/name").Trim();
                 
@@ -102,14 +102,15 @@ namespace csharpRAPL
             return resultList.Select(t => (t.dirName, t.raplId)).ToList();
         }
         
-        public List<double> Energy(){
+        public List<double> Energy()
+        {
             var result = Enumerable.Range(0, this._socketIds.Count).Select(i => -1.0).ToList();
             for(int i = 0; i < _sysFiles.Count; i++){
                 var deviceFile = this._sysFiles[i];
                 //TODO: Test om der er mærkbar forskel ved at holde filen åben og læse linjen på ny
                 double energyVal = 0.0;
-                bool canConvert = Double.TryParse(File.ReadAllText(deviceFile), out energyVal);
-                result[this._socketIds[i]] = canConvert ? energyVal : -1.0;
+                if(Double.TryParse(File.ReadAllText(deviceFile), out energyVal))
+                    result[this._socketIds[i]] = energyVal;
             }
             return result;
         }
@@ -141,7 +142,8 @@ namespace csharpRAPL
         {
             List<(string, int)> socket_names = this.GetSocketDirectoryNames();
             
-            string getDramFile(string directoryName, int raplSocketId){
+            string getDramFile(string directoryName, int raplSocketId)
+            {
                 int rapl_device_id = 0;
                 while (Directory.Exists(directoryName + "/intel-rapl:" + raplSocketId + ":" + rapl_device_id))
                 {
@@ -156,7 +158,6 @@ namespace csharpRAPL
                 throw new Exception("PyRAPLCantInitDeviceAPI"); //TODO: Proper exceptions
             }
         
-            //LINE 167
             List<string> raplFiles = new List<string>();
             foreach(var (socketDirectoryName, raplSocketId) in socket_names) 
             {
@@ -169,7 +170,6 @@ namespace csharpRAPL
 
     public class TempAPI : DeviceAPI
     {
-
         override public List<string> openRAPLFiles()
         {
             string path = "/sys/class/thermal/";

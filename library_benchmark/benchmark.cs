@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Diagnostics;
 using System.Collections.Generic;
 using csharpRAPL;
 
@@ -31,9 +30,7 @@ namespace benchmark
 
         public Benchmark(int iterations) 
         {
-            //Sets console to write to null
             this.stdout = System.Console.Out;
-            System.Console.SetOut(blackHole);
 
             this.iterations = iterations;
             this._rapl = new RAPL();
@@ -68,6 +65,9 @@ namespace benchmark
         //Writes progress to stdout if there is more than one iteration
         public void Run<R>(Func<R> benchmark, Action<R> benchmarkOutput) 
         {
+            //Sets console to write to null
+            System.Console.SetOut(blackHole);
+
             elapsedTime = 0;
             _resultBuffer = new List<Measure>();
             for (int i = 0; i < iterations; i++)
@@ -91,6 +91,9 @@ namespace benchmark
                 print(System.Console.WriteLine);
                 
             saveResults();
+
+            //Resets console output
+            System.Console.SetOut(stdout);
         }
 
 
