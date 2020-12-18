@@ -11,9 +11,9 @@ namespace oop_c_
             var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
             var bm = new Benchmark(iterations);
 			
-			var initState = File.ReadAllText("benchmarks/game_of_life/state256.txt").Select(c => c == '1').ToArray();
-			
+			var file = File.ReadAllText("benchmarks/game_of_life/state256.txt");
 			bm.Run(() => {
+				var initState = file.Select(c => c == '1').ToArray();
 				Life gameOf = new Life(new GameRules(), 256, initState);
 				for (int i = 0; i < 100; i++)
 					gameOf.NextGeneration();

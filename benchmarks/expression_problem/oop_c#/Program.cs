@@ -14,6 +14,7 @@ namespace oop_c_
 			var bm = new Benchmark(iterations);
 
 			bm.Run(() => {
+				rand = new Random(2);
 				int printCount = 0;
 				int evalCount = 0;
 				for (int i = 0; i < 1000; i++)

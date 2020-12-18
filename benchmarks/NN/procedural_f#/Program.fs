@@ -3,7 +3,7 @@
 open System
 open benchmark
 
-let rand = Random(2)
+let mutable rand = Random(2)
 
 //global field stuff
 type Neuron = {
@@ -226,6 +226,7 @@ let main argv =
     let file = System.IO.File.ReadAllLines("benchmarks/NN/wheat-seeds.csv")
     
     bm.Run((fun () ->
+        rand <- Random(2)
         let dataset = getDataset file
         let nHidden = 5
         let learningRate = 0.3

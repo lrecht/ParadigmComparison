@@ -90,12 +90,12 @@ let main argv =
     let bm = Benchmark(iterations)
 
     let lines = System.IO.File.ReadAllLines("benchmarks/kmeans_concurrent/points.txt");
-    let points: Point array = Array.zeroCreate lines.Length
-    for i in 0 .. lines.Length-1 do
-        let split = lines.[i].Split(':')
-        points.[i] <- Point(Double.Parse(split.[0]), (Double.Parse(split.[1])))
-
     bm.Run((fun () ->
+        let points: Point array = Array.zeroCreate lines.Length
+        for i in 0 .. lines.Length-1 do
+            let split = lines.[i].Split(':')
+            points.[i] <- Point(Double.Parse(split.[0]), (Double.Parse(split.[1])))
+
         let clusters: Cluster array = Array.zeroCreate NUM_CLUSTERS
         for i in 0 .. NUM_CLUSTERS-1 do
             clusters.[i] <- Cluster(points.[i])

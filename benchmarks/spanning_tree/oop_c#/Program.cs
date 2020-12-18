@@ -14,10 +14,10 @@ namespace oop_c_
             var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
 			var bm = new Benchmark(iterations);
 
-			int i = 0;
             var file = File.ReadAllLines($"benchmarks/spanning_tree/graph.csv");
 
 			bm.Run(() => {
+				int i = 0;
 				var edges = file.Select(v => Edge.FromCsv(v, i++))
                                            .ToArray();
 				Graph graph = new Graph(edges, 5877);

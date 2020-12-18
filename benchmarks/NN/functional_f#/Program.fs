@@ -1,7 +1,7 @@
 ﻿open System
 open benchmark
 
-let rand = Random(2)
+let mutable rand = Random(2)
 
 type Neuron = {
     Weights: float[];
@@ -121,6 +121,7 @@ let main argv =
     let file = System.IO.File.ReadAllLines("benchmarks/NN/wheat-seeds.csv")
     
     bm.Run((fun () -> 
+        rand <- Random(2)
         let data = readFile file
         let hidden = 5
         let iterations = 500

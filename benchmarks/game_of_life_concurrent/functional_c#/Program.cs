@@ -19,12 +19,13 @@ namespace functional_c_
 			var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
 			var bm = new Benchmark(iterations);
 
-			var initialStateRep = System.IO.File.ReadAllText("benchmarks/game_of_life_concurrent/state256.txt")
-                .Select(x => x == '1')
-                .ToImmutableArray();
-
+			var file = System.IO.File.ReadAllText("benchmarks/game_of_life_concurrent/state256.txt");
+			
 			bm.Run(() =>
 			{
+				var initialStateRep = file
+					.Select(x => x == '1')
+					.ToImmutableArray();
 				var result = simulateSteps(initialStateRep, runs);
 				return result.Where(x => x).Count();
 			}, (res) =>

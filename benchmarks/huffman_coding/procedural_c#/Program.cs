@@ -16,6 +16,7 @@ namespace procedural_c_
 
 			bm.Run(() =>
 			{
+				heap = new Heap() { array = new (int, (char, string)[])[1024], maxSize = 1024, size = 0 };
 				var freq = CreateFrequencies(text);
 				var mappings = CreateMappings(freq);
 				var encodedString = Encode(mappings, text);

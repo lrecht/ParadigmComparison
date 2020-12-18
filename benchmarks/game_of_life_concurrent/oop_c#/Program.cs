@@ -12,15 +12,16 @@ namespace oop_c_
 			var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
 			var bm = new Benchmark(iterations);
 
-			var size = 256;
-			var initState = new bool[size, size];
-			var f = File.ReadAllText("benchmarks/game_of_life_concurrent/state256.txt").Select(c => c == '1').ToArray();
-			var len = f.Length;
-			for (int i = 0; i < len; i++)
-				initState[(i / size), (i % size)] = f[i];
+			var file = File.ReadAllText("benchmarks/game_of_life_concurrent/state256.txt");
+			
+			bm.Run(() => {
+				var size = 256;
+				var initState = new bool[size, size];
+				var f = file.Select(c => c == '1').ToArray();
+				var len = f.Length;
+				for (int i = 0; i < len; i++)
+					initState[(i / size), (i % size)] = f[i];
 
-			bm.Run(() =>
-			{
 				Life gameOf = new Life(new GameRules(), size, initState);
 				for (int i = 0; i < 100; i++)
 					gameOf.NextGeneration();

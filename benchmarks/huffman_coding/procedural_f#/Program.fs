@@ -13,7 +13,7 @@ type Heap = {
     mutable size: int
 }
 
-let heap: Heap = { Heap.array = (Array.zeroCreate 1024); Heap.maxSize = 1024; Heap.size = 0 }
+let mutable heap: Heap = { Heap.array = (Array.zeroCreate 1024); Heap.maxSize = 1024; Heap.size = 0 }
 
 
 let swap (index1: int) (index2: int) =
@@ -108,6 +108,15 @@ let encode (mappings: Dictionary<char, string>) (text: string) =
         encodedString <- encodedString.Append(mappings.[c])
     encodedString.ToString()
 
+let createFrequencies (text: string) =
+    let frequencies = new Dictionary<char, int>()
+    for c in text do
+        if frequencies.ContainsKey(c) then
+            frequencies.[c] <- frequencies.[c]+1
+        else
+            frequencies.Add(c, 1)
+    frequencies
+
 [<EntryPoint>]
 let main argv =
     let iterations = if argv.Length > 0 then int (argv.[0]) else 1
@@ -116,12 +125,8 @@ let main argv =
     let text = System.IO.File.ReadAllText "benchmarks/huffman_coding/lines.txt"
     
     bm.Run((fun () -> 
-        let frequencies: Dictionary<char, int> = new Dictionary<char, int>()
-        for c in text do
-            if frequencies.ContainsKey(c) then
-                frequencies.[c] <- frequencies.[c]+1
-            else
-                frequencies.Add(c, 1)
+        heap <- { Heap.array = (Array.zeroCreate 1024); Heap.maxSize = 1024; Heap.size = 0 }
+        let frequencies: Dictionary<char, int> = createFrequencies text
 
         let mappings = createMappings frequencies
         let encoded: string = encode mappings text

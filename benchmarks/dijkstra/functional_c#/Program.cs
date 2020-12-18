@@ -13,9 +13,10 @@ namespace functional_c_
             var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
             var bm = new Benchmark(iterations);
             
-            ImmutableArray<(string, string, int)> EDGES = getEdgesFromCsv($"benchmarks/dijkstra/graph.csv");
-
-            bm.Run(() => {
+			var file = System.IO.File.ReadAllLines("benchmarks/dijkstra/graph.csv");
+            
+			bm.Run(() => {
+            	ImmutableArray<(string, string, int)> EDGES = getEdgesFromCsv(file);
                 string START = "257";
                 string END = "5525";
 
@@ -26,9 +27,9 @@ namespace functional_c_
             });
         }
 
-        private static ImmutableArray<(string from, string to, int cost)> getEdgesFromCsv(string filePath)
+        private static ImmutableArray<(string from, string to, int cost)> getEdgesFromCsv(string[] file)
         {
-            return System.IO.File.ReadAllLines(filePath)
+            return file
                 .Select(line =>
                 {
                     var values = line.Split(',');

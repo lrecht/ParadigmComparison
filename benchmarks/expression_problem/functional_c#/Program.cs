@@ -13,6 +13,7 @@ namespace functional_c_
 			var bm = new Benchmark(iterations);
 
 			bm.Run(() => {
+				rand = new Random(2);
 				return run(1000);
 			}, (res) => {
             	System.Console.WriteLine(res);

@@ -32,16 +32,15 @@ let main argv =
     let bench = Benchmark(iterations)
 
     bm <- new Bitmap("benchmarks/hough_transform/Pentagon.png")
-    width <- bm.Width
-    height <- bm.Height
-
+    
     bench.Run((fun () ->
+        width <- bm.Width
+        height <- bm.Height
+
         let h = hough bm
         Array.fold (fun acc (k,v) -> acc+v) 0 h
     ), (fun (res) ->
         printfn "%i" res
     ))
     
-    
-
     0 // return an integer exit code

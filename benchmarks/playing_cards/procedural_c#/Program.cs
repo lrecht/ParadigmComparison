@@ -66,7 +66,7 @@ namespace procedural_c_
 
         void shuffle()
         {
-            var random = new Random();
+            var random = new Random(2);
             for (int i = 0; i < deckCount; i++)
             {
                 int r = random.Next(i, deckCount);

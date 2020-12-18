@@ -19,7 +19,6 @@ namespace procedural_c_
 			
 			var file = System.IO.File.ReadAllLines("benchmarks/spanning_tree/graph.csv");
 
-			
 			bm.Run(() => {
 				//Init the vertex groups
 				vertexGroups = new int[6005 + 1];

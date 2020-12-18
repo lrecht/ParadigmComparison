@@ -50,7 +50,7 @@ namespace oop_c_
         Random random { get; set; }
         public Deck()
         {
-            random = new Random();
+            random = new Random(2);
             foreach (Suit s in Enum.GetValues(typeof(Suit)))
                 foreach (Value v in Enum.GetValues(typeof(Value)))
                     deck.Add(new Card(s, v));

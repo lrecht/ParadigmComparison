@@ -23,10 +23,10 @@ let main argv =
     let iterations = if argv.Length > 0 then int (argv.[0]) else 1
     let bm = Benchmark(iterations)
 
-    let points = System.IO.File.ReadAllLines "benchmarks/kmeans/points.txt" 
-                 |> Array.map (fun s -> let arr = s.Split(":") in (float arr.[0],float arr.[1]))
+    let file = System.IO.File.ReadAllLines "benchmarks/kmeans/points.txt" 
     
     bm.Run((fun () -> 
+        let points = file |> Array.map (fun s -> let arr = s.Split(":") in (float arr.[0],float arr.[1]))
         let clusters = 10
         converge (Array.take clusters points) points
     ), (fun (res) ->

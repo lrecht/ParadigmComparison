@@ -28,7 +28,7 @@ let deckToString (deck: Deck) =
 
 let shuffle (deck: Deck) =
     // using Knuth Shuffle (see at http://rosettacode.org/wiki/Knuth_shuffle)
-    let random = new Random();
+    let random = new Random(2);
     for i in 0 .. (deck.Size-1) do
         let r: int = random.Next(i, deck.Size)
         let temp = deck.Cards.[i];
