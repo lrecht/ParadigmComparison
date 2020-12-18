@@ -108,6 +108,15 @@ let encode (mappings: Dictionary<char, string>) (text: string) =
         encodedString <- encodedString.Append(mappings.[c])
     encodedString.ToString()
 
+let createFreq text =
+    let frequencies = new Dictionary<char, int>()
+    for c in text do
+        if frequencies.ContainsKey(c) then
+            frequencies.[c] <- frequencies.[c]+1
+        else
+            frequencies.Add(c, 1)
+    frequencies
+
 [<EntryPoint>]
 let main argv =
     let iterations = if argv.Length > 0 then int (argv.[0]) else 1
@@ -117,12 +126,7 @@ let main argv =
     
     bm.Run((fun () -> 
         heap <- { Heap.array = (Array.zeroCreate 1024); Heap.maxSize = 1024; Heap.size = 0 }
-        let frequencies: Dictionary<char, int> = new Dictionary<char, int>()
-        for c in text do
-            if frequencies.ContainsKey(c) then
-                frequencies.[c] <- frequencies.[c]+1
-            else
-                frequencies.Add(c, 1)
+        let frequencies: Dictionary<char, int> = createFreq text
 
         let mappings = createMappings frequencies
         let encoded: string = encode mappings text
