@@ -25,12 +25,15 @@ namespace benchmark
         List<Measure> _resultBuffer = new List<Measure>();
         RAPL _rapl;
         TextWriter stdout;
-        StreamWriter blackHole = new StreamWriter(Stream.Null); // Prints everything to a null stream similar to /dev/null
+        TextWriter benchmarkOutputStream = new StreamWriter(Stream.Null); // Prints everything to a null stream similar to /dev/null
 
 
-        public Benchmark(int iterations) 
+        public Benchmark(int iterations, bool silenceBenchmarkOutput = true) 
         {
             this.stdout = System.Console.Out;
+
+            if(!silenceBenchmarkOutput)
+                benchmarkOutputStream = stdout;
 
             this.iterations = iterations;
             this._rapl = new RAPL();
@@ -66,7 +69,7 @@ namespace benchmark
         public void Run<R>(Func<R> benchmark, Action<R> benchmarkOutput) 
         {
             //Sets console to write to null
-            System.Console.SetOut(blackHole);
+            System.Console.SetOut(benchmarkOutputStream);
 
             elapsedTime = 0;
             _resultBuffer = new List<Measure>();
@@ -103,7 +106,7 @@ namespace benchmark
             System.Console.SetOut(stdout);
             printAction(value);
             System.Console.Out.Flush();
-            System.Console.SetOut(blackHole);
+            System.Console.SetOut(benchmarkOutputStream);
         }
 
         //Saves result to temporary file
