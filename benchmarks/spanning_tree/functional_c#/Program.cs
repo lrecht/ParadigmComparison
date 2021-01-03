@@ -12,7 +12,7 @@ namespace functional_c_
         static void Main(string[] args)
         {
             var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
-			var bm = new Benchmark(iterations);
+			var bm = new Benchmark(iterations, silenceBenchmarkOutput: true);
 
 			var file = System.IO.File.ReadAllLines("benchmarks/spanning_tree/graph.csv");
 			bm.Run(() => {
@@ -36,38 +36,39 @@ namespace functional_c_
         }
 
         static ImmutableList<int> getMinimumSpanningTree(ImmutableArray<(int, int, int, int)> edges)
-            => getMinimumSpanningTreeHelper(edges, 0, ImmutableList<int>.Empty, ImmutableDictionary<int, int>.Empty);
+            => getMinimumSpanningTreeHelper(edges, 0, new List<int>(), new Dictionary<int, int>(edges.Select(e => new KeyValuePair<int, int>(e.Item1, e.Item1))));
 
-        static ImmutableList<int> getMinimumSpanningTreeHelper(ImmutableArray<(int i, int v1, int v2, int)> edges, int i, ImmutableList<int> spanningTree, ImmutableDictionary<int, int> rootDict){
+        static ImmutableList<int> getMinimumSpanningTreeHelper(ImmutableArray<(int i, int v1, int v2, int)> edges, int i, List<int> spanningTree, Dictionary<int, int> rootDict){
             if(spanningTree.Count >= magicVertexCount - 1) //-1 as one less edge than vertex is required to complete graph
-                return spanningTree;
+                return spanningTree.ToImmutableList();
 
             var currentEdge = edges[i];
-            var (res, updatedDict) = union(currentEdge.v1, currentEdge.v2, rootDict);
+            var res = union(currentEdge.v1, currentEdge.v2, rootDict);
 
             if(res)
-                return getMinimumSpanningTreeHelper(edges, i + 1, spanningTree.Add(currentEdge.i), updatedDict);
-            else
-                return getMinimumSpanningTreeHelper(edges, i + 1, spanningTree, updatedDict);
+                spanningTree.Add(currentEdge.i);
+                    
+            return getMinimumSpanningTreeHelper(edges, i + 1, spanningTree, rootDict);
         }
 
-        private static (bool, ImmutableDictionary<int, int>) union(int v1, int v2, ImmutableDictionary<int, int> rootDict)
+        private static bool union(int v1, int v2, Dictionary<int, int> rootDict)
         {
             var group1Root = find(v1, rootDict);
             var group2Root = find(v2, rootDict);
             
-            var update1 = new KeyValuePair<int, int>(v1, group1Root);
-            var update2 = new KeyValuePair<int, int>(v2, group2Root);
-
-            var updatedDict = rootDict.SetItems(new[] {update1, update2});
+            rootDict[v1] = group1Root;
+            rootDict[v2] = group2Root;
 
             if(group1Root == group2Root)
-                return (false, updatedDict);
-            else
-                return (true, updatedDict.SetItem(group2Root, group1Root));
+                return false;
+            else{
+                rootDict[group2Root] = group1Root;
+                return true;
+            }
+                
         }
 
-        private static int find(int vertex, ImmutableDictionary<int, int> rootDict)
+        private static int find(int vertex, Dictionary<int, int> rootDict)
             => rootDict.ContainsKey(vertex) && rootDict[vertex] != vertex ? find(rootDict[vertex], rootDict) : vertex;
     }
 }
