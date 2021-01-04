@@ -13,7 +13,7 @@ namespace oop_c_
 		static void Main(string[] args)
 		{
 			var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
-			var bm = new Benchmark(iterations);
+			var bm = new Benchmark(iterations, silenceBenchmarkOutput: true);
 
 			var file = File.ReadAllLines($"benchmarks/kmeans/points.txt");
 
