@@ -8,7 +8,7 @@ public enum CollectionApproach
     DIFFERENCE
 }
 
-namespace csharpRAPL
+namespace CsharpRAPL
 {
     public class Sensor
     {

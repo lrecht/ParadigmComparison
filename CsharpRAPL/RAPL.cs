@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace csharpRAPL
+namespace CsharpRAPL
 {
     public class RAPL
     {

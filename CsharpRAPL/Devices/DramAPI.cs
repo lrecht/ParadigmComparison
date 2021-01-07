@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System;
 
-namespace csharpRAPL.devices {
+namespace CsharpRAPL.Devices {
     public class DramAPI : DeviceAPI
     {
         public DramAPI(List<int> socket_ids = null) : base(socket_ids) {}

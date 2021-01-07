@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\csharpRAPL\csharpRAPL.csproj" />
+    <ProjectReference Include="..\CsharpRAPL\CsharpRAPL.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

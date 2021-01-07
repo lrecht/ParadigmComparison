@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace csharpRAPL.devices {
+namespace CsharpRAPL.Devices {
     public class PackageAPI : DeviceAPI
     {
         public PackageAPI(List<int> socket_ids = null) : base(socket_ids) {}

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
-using csharpRAPL;
-using csharpRAPL.devices;
+using CsharpRAPL;
+using CsharpRAPL.Devices;
 
 struct Measure
 {
@@ -86,7 +86,7 @@ namespace benchmark
                 start();
                 R res = benchmark();
                 end();
-                
+
                 if (benchmarkOutputStream.Equals(stdout))
                     print(System.Console.WriteLine, "");
                 benchmarkOutput(res);

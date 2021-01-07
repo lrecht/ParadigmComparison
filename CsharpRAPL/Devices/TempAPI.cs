@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System;
 
-namespace csharpRAPL.devices {
+namespace CsharpRAPL.Devices {
     public class TempAPI : DeviceAPI
     {
         override public List<string> openRAPLFiles()

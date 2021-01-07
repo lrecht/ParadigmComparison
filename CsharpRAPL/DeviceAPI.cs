@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 
-namespace csharpRAPL
+namespace CsharpRAPL
 {
     public abstract class DeviceAPI
     {

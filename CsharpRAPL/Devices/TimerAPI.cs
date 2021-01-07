@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace csharpRAPL.devices {
+namespace CsharpRAPL.Devices {
     public class TimerAPI : DeviceAPI {
         private Stopwatch sw = new Stopwatch();
         
