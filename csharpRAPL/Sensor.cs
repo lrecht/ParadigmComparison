@@ -26,14 +26,11 @@ namespace csharpRAPL
             _approach = approach;
         }
 
-        public void Start()
-        {
-            startValue = _api.Energy();
-        }
+        public void Start() => startValue = _api.Collect();
 
         public void End()
         {
-            endValue = _api.Energy();
+            endValue = _api.Collect();
             updateDelta();
         }
 

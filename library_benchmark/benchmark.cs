@@ -2,15 +2,16 @@
 using System.IO;
 using System.Collections.Generic;
 using csharpRAPL;
+using csharpRAPL.devices;
 
 struct Measure
 {
-    public TimeSpan duration;
+    public double duration;
     public List<(string apiName, double apiValue)> apis;
     
-    public Measure((TimeSpan, List<(string, double)>) raplResult){
-        this.duration = raplResult.Item1;
-        this.apis = raplResult.Item2;
+    public Measure(List<(string, double)> raplResult){
+        this.duration = raplResult.Find(res => res.Item1.Equals("timer")).Item2;
+        this.apis = raplResult;
     }
 }
 
@@ -36,15 +37,18 @@ namespace benchmark
                 benchmarkOutputStream = stdout;
 
             this.iterations = iterations;
-            this._rapl = new RAPL();
+
+            this._rapl = new RAPL(
+                new List<Sensor>() {
+                    new Sensor("timer", new TimerAPI(), CollectionApproach.DIFFERENCE),
+                    new Sensor("package", new PackageAPI(), CollectionApproach.DIFFERENCE),
+                    new Sensor("dram", new DramAPI(), CollectionApproach.DIFFERENCE),
+                    new Sensor("temp", new TempAPI(), CollectionApproach.AVERAGE)
+                }
+            );
         }
 
-
-        private void start() 
-        {
-            _rapl.Start();
-        }
-
+        private void start() => _rapl.Start();
 
         private void end()
         {
@@ -53,9 +57,9 @@ namespace benchmark
             //Result only valid if all results are valid
             //Only then is the result added and duration is incremented
             if (_rapl.IsValid()) {
-                Measure mes = new Measure(_rapl.GetResult());
+                Measure mes = new Measure(_rapl.GetResults());
                 _resultBuffer.Add(mes);
-                elapsedTime += mes.duration.TotalSeconds;
+                elapsedTime += mes.duration / 1_000;
             } 
         }
         
@@ -82,6 +86,9 @@ namespace benchmark
                 start();
                 R res = benchmark();
                 end();
+                
+                if (benchmarkOutputStream.Equals(stdout))
+                    print(System.Console.WriteLine, "");
                 benchmarkOutput(res);
                 
                 if (elapsedTime >= maxExecutionTime){
@@ -118,15 +125,16 @@ namespace benchmark
             
             foreach (Measure m in _resultBuffer)
             {
-                result += m.duration.TotalMilliseconds;
                 foreach (var res in m.apis)
                 {
                     //Temperature api
                     if (res.apiName.Equals("temp"))
-                        result += ";" + ((double)res.apiValue / 1000);
+                        result += ((double)res.apiValue / 1000);
                     //All other apis
+                    else if (res.apiName.Equals("timer"))
+                        result += $"{res.apiValue,0:N3};";
                     else
-                        result += ";" + res.apiValue;
+                        result += res.apiValue + ";";
                 }
                 result += "\n";
             }

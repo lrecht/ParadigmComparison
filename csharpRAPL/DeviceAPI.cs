@@ -102,7 +102,7 @@ namespace csharpRAPL
             return resultList.Select(t => (t.dirName, t.raplId)).ToList();
         }
         
-        public List<double> Energy()
+        virtual public List<double> Collect()
         {
             var result = Enumerable.Range(0, this._socketIds.Count).Select(i => -1.0).ToList();
             for(int i = 0; i < _sysFiles.Count; i++){
@@ -112,76 +112,6 @@ namespace csharpRAPL
                     result[this._socketIds[i]] = energyVal;
             }
             return result;
-        }
-    }
-
-    public class PackageAPI : DeviceAPI
-    {
-        public PackageAPI(List<int> socket_ids = null) : base(socket_ids) {}
-
-        override public List<string> openRAPLFiles()
-        {
-            List<(string, int)> socket_names = this.GetSocketDirectoryNames();
-            List<string> rapl_files = new List<string>();
-
-            foreach (var (dir, id) in socket_names)
-            {
-                rapl_files.Add(dir + "/energy_uj");
-            }
-
-            return rapl_files;
-        }
-    }
-
-    public class DramAPI : DeviceAPI
-    {
-        public DramAPI(List<int> socket_ids = null) : base(socket_ids) {}
-
-        override public List<string> openRAPLFiles()
-        {
-            List<(string, int)> socket_names = this.GetSocketDirectoryNames();
-            
-            string getDramFile(string directoryName, int raplSocketId)
-            {
-                int rapl_device_id = 0;
-                while (Directory.Exists(directoryName + "/intel-rapl:" + raplSocketId + ":" + rapl_device_id))
-                {
-                    var dirName = directoryName + "/intel-rapl:" + raplSocketId + ":" + rapl_device_id;
-                    var content = File.ReadAllText(dirName + "/name").Trim();
-                    if (content.Equals("dram"))
-                        return dirName + "/energy_uj";
-                    
-                    rapl_device_id += 1;
-                }
-                
-                throw new Exception("PyRAPLCantInitDeviceAPI"); //TODO: Proper exceptions
-            }
-        
-            List<string> raplFiles = new List<string>();
-            foreach(var (socketDirectoryName, raplSocketId) in socket_names) 
-            {
-                raplFiles.Add(getDramFile(socketDirectoryName, raplSocketId));
-            }
-
-            return raplFiles;
-        }
-    }
-
-    public class TempAPI : DeviceAPI
-    {
-        override public List<string> openRAPLFiles()
-        {
-            string path = "/sys/class/thermal/";
-            int thermal_id = 0;
-            while(Directory.Exists(path + "/thermal_zone" + thermal_id))
-            {
-                string dirname = path + "/thermal_zone" + thermal_id;
-                string type = File.ReadAllText(dirname + "/type").Trim();
-                if (type.Contains("pkg_temp"))
-                    return new List<string>() {dirname + "/temp"};
-                thermal_id++;
-            }
-            throw new Exception("No thermal zone found for the package");
         }
     }
 }
