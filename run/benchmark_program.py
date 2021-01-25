@@ -15,18 +15,18 @@ class Program:
 
 class Dotnet_Program(Program):
     def get_build_command(self):
-        return "dotnet build --configuration Release --nologo --verbosity quiet " + self.path
+        return "dotnet publish -c Release -r linux-x64 --nologo --verbosity quiet -p:PublishReadyToRun=true " + self.path
 
 
 class C_Sharp_Program(Dotnet_Program):
     def get_run_command(self):
-        command = self.path + '/bin/Release/net5.0/'
+        command = self.path + '/bin/Release/net5.0/linux-x64/publish/'
         return command + self.paradigm + "_c#"
 
 
 class F_Sharp_Program(Dotnet_Program):
     def get_run_command(self):
-        command = self.path + '/bin/Release/net5.0/'
+        command = self.path + '/bin/Release/net5.0/linux-x64/publish'
         return command + self.paradigm + "_f#"
 
 
