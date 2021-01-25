@@ -4,6 +4,7 @@ open System
 open System.IO
 open System.Collections.Immutable
 open System.Collections.Generic
+open benchmark
 
 let filePath = "benchmarks/huffman_coding/lines.txt"
 let input = File.ReadAllText filePath
@@ -67,5 +68,13 @@ let huffman str =
 
 [<EntryPoint>]
 let main argv =
-    printfn "%i" (String.length (huffman input))
+    let iterations = if argv.Length > 0 then int (argv.[0]) else 1
+    let bm = Benchmark(iterations)
+    let initState = input
+    
+    bm.Run((fun () ->
+        String.length (huffman initState)
+    ), (fun (res) ->
+        printfn "%i" res
+    ))
     0 // return an integer exit code

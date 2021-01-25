@@ -1,4 +1,6 @@
-﻿type Expr = Add of Expr * Expr
+﻿open benchmark
+
+type Expr = Add of Expr * Expr
           | Var of int
           | Neg of Expr
           | Mul of Expr * Expr
@@ -20,7 +22,7 @@ let rec eval e =
       | Mul(expr1,expr2) -> (eval expr1) * (eval expr2)
       | Min(expr1,expr2) -> (eval expr1) - (eval expr2)
 
-let rand = System.Random(2)
+let mutable rand = System.Random(2)
 let rec generateRandomExpression count = 
     if count <= 0 then Var (rand.Next(0, 100))
     else 
@@ -41,5 +43,13 @@ let run digit =
 
 [<EntryPoint>]
 let main argv =
-    printfn "%O" (run 1000)
+    let iterations = if argv.Length > 0 then int (argv.[0]) else 1
+    let bm = Benchmark(iterations)
+
+    bm.Run((fun () ->
+        rand <- System.Random(2)
+        run 1000
+    ), (fun (res) ->
+        printfn "%O" res
+    ))    
     0 // return an integer exit code

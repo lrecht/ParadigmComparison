@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Collections.Immutable;
 using System.Collections.Generic;
+using benchmark;
 
 namespace functional_c_
 {
@@ -10,21 +11,28 @@ namespace functional_c_
         static readonly int magicVertexCount = 5877;
         static void Main(string[] args)
         {
-            var edgesRep = System.IO.File.ReadAllLines("benchmarks/spanning_tree/graph.csv")
-                            .Select(l => l.Split(','))
-                            .Select((val, i) => (i, Convert.ToInt32(val[0]), Convert.ToInt32(val[1]), Convert.ToInt32(val[2])));
+            var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
+			var bm = new Benchmark(iterations);
 
-            var edges = edgesRep.OrderBy(e => e.Item4).ToImmutableArray();
-            var edgesDict = edgesRep.ToImmutableDictionary(e => e.i);
+			var file = System.IO.File.ReadAllLines("benchmarks/spanning_tree/graph.csv");
+			bm.Run(() => {
+				var edgesRep = file
+								.Select(l => l.Split(','))
+								.Select((val, i) => (i, Convert.ToInt32(val[0]), Convert.ToInt32(val[1]), Convert.ToInt32(val[2])));
 
-            var spanningTreeEdges = getMinimumSpanningTree(edges);
-            var resultEdges = spanningTreeEdges.Select(i => edgesDict[i]).ToImmutableArray();
+				var edges = edgesRep.OrderBy(e => e.Item4).ToImmutableArray();
+				var edgesDict = edgesRep.ToImmutableDictionary(e => e.i);
 
-            var totalweight = resultEdges.Sum(e => e.Item4);
-            var totalEdges = resultEdges.Length;
-            
-            System.Console.WriteLine(totalEdges);
-            System.Console.WriteLine(totalweight);
+				var spanningTreeEdges = getMinimumSpanningTree(edges);
+				var resultEdges = spanningTreeEdges.Select(i => edgesDict[i]).ToImmutableArray();
+
+				var totalweight = resultEdges.Sum(e => e.Item4);
+				var totalEdges = resultEdges.Length;
+				return (totalEdges, totalweight);
+			}, (res) => {
+				System.Console.WriteLine(res.Item1);
+				System.Console.WriteLine(res.Item2);
+			});
         }
 
         static ImmutableList<int> getMinimumSpanningTree(ImmutableArray<(int, int, int, int)> edges)

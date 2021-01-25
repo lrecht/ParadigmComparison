@@ -1,6 +1,7 @@
 ﻿open System
+open benchmark
 
-let rand = Random(2)
+let mutable rand = Random(2)
 
 type Neuron = {
     Weights: float[];
@@ -14,8 +15,8 @@ let makeNeuron bias delta output weights =
       Neuron.Bias = bias;
       Neuron.Weights = weights }
 
-let readFile file =
-    System.IO.File.ReadAllLines(file)
+let readFile (file: string[]) =
+    file
     |> Array.map (fun line -> 
                 let elms = line.Split(',')
                 let len = elms.Length
@@ -115,19 +116,29 @@ let accuracy (guess:int[]) (truth:int[]) =
 
 [<EntryPoint>]
 let main argv =
-    let hidden = 5
-    let iterations = 500
-    let learnRate = 0.3
-    let data = readFile "benchmarks/NN/wheat-seeds.csv"
-    let ndata = normaliseColumns data |> Array.sortBy (fun _ -> rand.Next()) 
-    let splitAt = (int)(ndata.Length / 10)
-    let trainData = ndata.[splitAt+1..ndata.Length-1]
-    let testData = ndata.[0..splitAt]
-    let nInput = Array.length data.[0] - 1
-    let nOutput = Array.distinct (Array.map (fun (a:float[]) -> a.[a.Length-1]) data) |> Array.length
-    let init = initialiseNetwork nInput hidden nOutput
-    let learnNet = train init trainData learnRate iterations nOutput
-    let dataNoRes = Array.map (fun (a:float[]) -> a.[0..a.Length-2]) testData
-    let res = Array.map (fun (a:float[]) -> (int)a.[a.Length-1]) testData
-    printfn "%f" (accuracy (Array.map (predict learnNet) dataNoRes) res)
+    let iterations = if argv.Length > 0 then int (argv.[0]) else 1
+    let bm = Benchmark(iterations)
+    let file = System.IO.File.ReadAllLines("benchmarks/NN/wheat-seeds.csv")
+    
+    bm.Run((fun () -> 
+        rand <- Random(2)
+        let data = readFile file
+        let hidden = 5
+        let iterations = 500
+        let learnRate = 0.3
+        let ndata = normaliseColumns data |> Array.sortBy (fun _ -> rand.Next()) 
+        let splitAt = (int)(ndata.Length / 10)
+        let trainData = ndata.[splitAt+1..ndata.Length-1]
+        let testData = ndata.[0..splitAt]
+        let nInput = Array.length data.[0] - 1
+        let nOutput = Array.distinct (Array.map (fun (a:float[]) -> a.[a.Length-1]) data) |> Array.length
+        let init = initialiseNetwork nInput hidden nOutput
+        let learnNet = train init trainData learnRate iterations nOutput
+        let dataNoRes = Array.map (fun (a:float[]) -> a.[0..a.Length-2]) testData
+        let res = Array.map (fun (a:float[]) -> (int)a.[a.Length-1]) testData
+        accuracy (Array.map (predict learnNet) dataNoRes) res
+    ), (fun(res) ->
+        printfn "%f" res
+    ))
+    
     0 // return an integer exit code

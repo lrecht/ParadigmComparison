@@ -1,5 +1,6 @@
 ﻿open System
 open System.Drawing
+open benchmark
 
 let weak = 100
 let kernelHor = Array.mapi (fun index v -> (index%3-1,index/3-1,v)) [|-1.0; 0.0; 1.0; -2.0; 0.0; 2.0; -1.0; 0.0; 1.0|]
@@ -121,8 +122,16 @@ let cannyBoi image =
 
 [<EntryPoint>]
 let main argv =
+    let iterations = if argv.Length > 0 then int (argv.[0]) else 1
+    let bm = Benchmark(iterations)
+
     let image = new Bitmap("benchmarks/canny_edge_detector/download.jpg")
-    let res = cannyBoi (toRgbArray image)
-    //(res |> toBitmap).Save("Final.png")
-    printfn "%i" (Array.fold (fun acc (_,_,w) -> if w > 0 then acc + 1 else acc) 0 res)
+    
+    bm.Run((fun () ->
+        let res = cannyBoi (toRgbArray image)
+        Array.fold (fun acc (_,_,w) -> if w > 0 then acc + 1 else acc) 0 res
+    ), (fun (res) ->
+        printfn "%i" res
+    ))
+    
     0 // return an integer exit code

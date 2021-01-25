@@ -3,6 +3,7 @@ using System.Text;
 using System.Drawing;
 using System.Text.RegularExpressions;
 using System.IO;
+using benchmark;
 
 namespace oop_c_
 {
@@ -11,11 +12,20 @@ namespace oop_c_
         static string TEST_STRING = File.ReadAllText("benchmarks/playfair_cipher/lines.txt");
         static void Main(string[] args)
         {
-            PlayFairCipher p = new PlayFairCipher("this is a great keyword");
-            string encrypt = p.Encrypt(TEST_STRING);
-            string decrypt = p.Decrypt(encrypt);
-            System.Console.WriteLine(encrypt.Length);
-            System.Console.WriteLine(decrypt.Length);
+            var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
+            var bm = new Benchmark(iterations);
+
+			var initState = TEST_STRING;
+
+			bm.Run(() => {
+				PlayFairCipher p = new PlayFairCipher("this is a great keyword");
+				string encrypt = p.Encrypt(initState);
+				string decrypt = p.Decrypt(encrypt);
+				return (encrypt.Length, decrypt.Length);
+			}, (res) => {
+				System.Console.WriteLine(res.Item1);
+				System.Console.WriteLine(res.Item2);
+			});
         }
     }
 

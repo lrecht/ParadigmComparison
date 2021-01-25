@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Linq;
+using benchmark;
 
 namespace oop_c_
 {
@@ -7,10 +8,19 @@ namespace oop_c_
     {
         static void Main(string[] args)
         {
-            Life gameOf = new Life(new GameRules(), 256);
-            for (int i = 0; i < 100; i++)
-                gameOf.NextGeneration();
-            System.Console.WriteLine(gameOf.GetLiveCount());
+            var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
+            var bm = new Benchmark(iterations);
+			
+			var file = File.ReadAllText("benchmarks/game_of_life/state256.txt");
+			bm.Run(() => {
+				var initState = file.Select(c => c == '1').ToArray();
+				Life gameOf = new Life(new GameRules(), 256, initState);
+				for (int i = 0; i < 100; i++)
+					gameOf.NextGeneration();
+				return gameOf.GetLiveCount();
+			}, (res) => {
+				System.Console.WriteLine(res);
+			});
         }
     }
 
@@ -35,10 +45,10 @@ namespace oop_c_
         {
             Size = size;
         }
-        public void Initialise()
+        public void Initialise(bool[] initState)
         {
             _board = new bool[Size, Size];
-            var f = File.ReadAllText("benchmarks/game_of_life/state256.txt").Select(c => c == '1').ToArray();
+            var f = initState;
             var len = f.Length;
             for (int i = 0; i < len; i++)
                 _board[(i / Size), (i % Size)] = f[i];
@@ -54,10 +64,10 @@ namespace oop_c_
     {
         Board board;
         IRules _gameRules;
-        public Life(IRules gameRules, int boardsize)
+        public Life(IRules gameRules, int boardsize, bool[] initState)
         {
             board = new Board(boardsize);
-            board.Initialise();
+            board.Initialise(initState);
             _gameRules = gameRules;
         }
 

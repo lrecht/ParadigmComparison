@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using benchmark;
 
 namespace oop_c_
 {
@@ -7,20 +8,27 @@ namespace oop_c_
     {
         static void Main(string[] args)
         {
-            int count = 0;
-            for (int i = 0; i < 1000; i++)
-            {
-                Deck d = new Deck();
-                while (d.Count > 0)
-                {
-                    string deck = d.ShowDeck();
-                    d.Shuffle();
-                    d.Deal();
-                    // Count variable is to make sure ShowDeck() is not optimised away
-                    count += deck.Length;
-                }
-            }
-            System.Console.WriteLine(count);
+            var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
+			var bm = new Benchmark(iterations);
+
+			bm.Run(() => {
+				int count = 0;
+				for (int i = 0; i < 1000; i++)
+				{
+					Deck d = new Deck();
+					while (d.Count > 0)
+					{
+						string deck = d.ShowDeck();
+						d.Shuffle();
+						d.Deal();
+						// Count variable is to make sure ShowDeck() is not optimised away
+						count += deck.Length;
+					}
+				}
+				return count;
+			}, (res) => {
+            	System.Console.WriteLine(res);
+			});
         }
     }
 
@@ -42,7 +50,7 @@ namespace oop_c_
         Random random { get; set; }
         public Deck()
         {
-            random = new Random();
+            random = new Random(2);
             foreach (Suit s in Enum.GetValues(typeof(Suit)))
                 foreach (Value v in Enum.GetValues(typeof(Value)))
                     deck.Add(new Card(s, v));

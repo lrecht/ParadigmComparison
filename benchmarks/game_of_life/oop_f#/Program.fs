@@ -2,6 +2,7 @@
 
 open System
 open System.IO
+open benchmark
 
 type IRules =
     abstract member Apply : bool -> int -> bool
@@ -25,14 +26,11 @@ type Board(size) =
                 if _board.[i, j] then count <- count + 1
         count
 
-    member __.Initialize =
+    member __.Initialize (initState: bool[,])=
         _board <- Array2D.zeroCreate size size
-        let stateMap = File.ReadAllText("benchmarks/game_of_life/state256.txt")
-        for index in 0 .. (stateMap.Length - 1) do
-            _board.[index / size, index % size] <- stateMap.[index] = '1'
+        _board <- initState
 
-
-type Life (gameRules: IRules, boardSize) =
+type Life (gameRules: IRules, boardSize, initState: bool[,]) =
     let board = Board(boardSize)
     let (%%) x y = (x % y + y) % y // The real mod
     let countLiveNeighbours x y =
@@ -44,7 +42,7 @@ type Life (gameRules: IRules, boardSize) =
                 value <- value + if board.GetCell h k then 1 else 0
         value - (if board.GetCell x y then 1 else 0)
     do
-        board.Initialize
+        board.Initialize initState
 
     member __.GetLiveCount = board.GetLiveCount
     member __.NextGeneration =
@@ -59,8 +57,22 @@ type Life (gameRules: IRules, boardSize) =
 
 [<EntryPoint>]
 let main argv =
-    let gameOf = Life(GameRules(), 256)
-    for i in 0 .. 99 do
-        gameOf.NextGeneration
-    printfn "%d" gameOf.GetLiveCount
+    let iterations = if argv.Length > 0 then int (argv.[0]) else 1
+    let bm = Benchmark(iterations)
+    
+    let stateMap = File.ReadAllText("benchmarks/game_of_life/state256.txt")
+    
+    bm.Run((fun () ->
+        let size = 256
+        let initState = Array2D.zeroCreate size size
+        for index in 0 .. (stateMap.Length - 1) do
+            initState.[index / size, index % size] <- stateMap.[index] = '1'
+        let gameOf = Life(GameRules(), size, initState)
+        for i in 0 .. 99 do
+            gameOf.NextGeneration
+        gameOf.GetLiveCount
+    ), (fun(res) ->
+        printfn "%d" res
+    ))
+    
     0 // return an integer exit code

@@ -3,6 +3,7 @@
 open System
 open System.Collections.Generic
 open System.IO
+open benchmark
 open System.Globalization
 
 
@@ -36,7 +37,7 @@ type AccuracyPercentage() =
 
 type Neuron(nInputs, activation : IActivationStrategy) as this =
     let weights : double[] = Array.zeroCreate nInputs
-    let rnd = Random()
+    let rnd = Random(2)
     do
         for i in 0 .. nInputs - 1 do
             weights.[i] <- rnd.NextDouble()
@@ -174,7 +175,7 @@ type Utils private() =
     static let shuffle (array : double[,]) = 
         let mutable shuffledArray = Array2D.zeroCreate (array.GetLength(0)) (array.GetLength(1))
         let numRows = array.GetLength(0)
-        let rnd = Random()
+        let rnd = Random(2)
         for i in 0 .. numRows - 1 do
             let randIndex = rnd.Next(0, numRows)
             let tempCol = array.[i, *]
@@ -183,8 +184,8 @@ type Utils private() =
         shuffledArray
 
 
-    static member LoadCSV filepath =
-        let file = File.ReadAllLines(filepath)
+    static member LoadCSV (file: string[]) =
+        let file = file
         let mutable dataset: double[,] = Array2D.zeroCreate file.Length (file.[0].Split(',').Length)
         for i in 0 .. file.Length - 1 do
             let values = file.[i].Split(',')
@@ -232,19 +233,27 @@ let N_HIDDEN = 5
 
 [<EntryPoint>]
 let main argv =
-    let mutable dataset = Utils.LoadCSV("benchmarks/NN/wheat-seeds.csv")
-    dataset <- Utils.NormaliseColumns(dataset)
-    let (test : double[,], train : double[,]) = Utils.GetTestTrainSplit dataset TRAIN_TEST_SPLIT
+    let iterations = if argv.Length > 0 then int (argv.[0]) else 1
+    let bm = Benchmark(iterations)
+    let file = File.ReadAllLines("benchmarks/NN/wheat-seeds.csv")
+    
+    bm.Run((fun () ->
+        let dataset = Utils.NormaliseColumns(Utils.LoadCSV(file))
+        let (test : double[,], train : double[,]) = Utils.GetTestTrainSplit dataset TRAIN_TEST_SPLIT
 
-    let column = test.GetLength(1) - 1
-    let (testData, testActual) = test.[*, 0 .. column], test.[*, column]
-    let (trainData, trainActual) = train.[*, 0 .. column], train.[*, column]
+        let column = test.GetLength(1) - 1
+        let (testData, testActual) = test.[*, 0 .. column], test.[*, column]
+        let (trainData, trainActual) = train.[*, 0 .. column], train.[*, column]
 
-    let nInputs = train.GetLength(1)
-    let nOutputs = Utils.CountDistinct(trainActual)
+        let nInputs = train.GetLength(1)
+        let nOutputs = Utils.CountDistinct(trainActual)
 
-    let network = NeuralNetwork(AccuracyPercentage()).InitialiseLayers nInputs N_HIDDEN nOutputs
-    network.Train train trainActual LEARNING_RATE N_EPOCHS
-    let (predictions, accuracy) = network.Predict test testActual
-    printfn "%f" accuracy
+        let network = NeuralNetwork(AccuracyPercentage()).InitialiseLayers nInputs N_HIDDEN nOutputs
+        network.Train train trainActual LEARNING_RATE N_EPOCHS
+        let (predictions, accuracy) = network.Predict test testActual
+        accuracy
+    ), (fun (res) ->
+        printfn "%f" res
+    ))
+    
     0 // return an integer exit code

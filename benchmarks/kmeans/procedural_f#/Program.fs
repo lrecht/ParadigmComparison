@@ -1,9 +1,9 @@
 ﻿// Learn more about F# at http://fsharp.org
 
 open System
+open benchmark
 
 let numKlusters = 10
-let rand = Random(2)
 let numValues = 200000
 
 type Point = {
@@ -12,17 +12,18 @@ type Point = {
 }
 
 let mutable allData: Point array = Array.create numValues ({ Point.Kluster = 0; Point.Data = (0.0, 0.0) })
-let klusters: (float * float) array = Array.create numKlusters (0.0, 0.0)
+let mutable klusters: (float * float) array = Array.create numKlusters (0.0, 0.0)
 
-let generateData() =
-    let lines = System.IO.File.ReadAllLines("benchmarks/kmeans/points.txt")
+let generateData (lines: string[]) =
+    let initData = Array.create numValues ({ Point.Kluster = 0; Point.Data = (0.0, 0.0) })
     let mutable i = 0
     for line in lines do
         let split = line.Split(':')
         let num1 = split.[0]
         let num2 = split.[1]
-        allData.[i] <- { Point.Kluster = 1; Point.Data = ((float)num1, (float)num2) }
+        initData.[i] <- { Point.Kluster = 1; Point.Data = ((float)num1, (float)num2) }
         i <- i+1
+    initData
 
 let printKlusters() = 
     for i in 0..numKlusters-1 do
@@ -72,14 +73,23 @@ let setCenter() =
 
 [<EntryPoint>]
 let main argv =
-    generateData()
-    setKlusters()
-    let mutable hasMoved = true
-    
-    while hasMoved do
-        assignPointsToKluster()
-        hasMoved <- setCenter()
+    let iterations = if argv.Length > 0 then int (argv.[0]) else 1
+    let bm = Benchmark(iterations)
 
-    printKlusters()
+    let lines = System.IO.File.ReadAllLines("benchmarks/kmeans/points.txt")
+    bm.Run((fun () ->
+        klusters <- Array.create numKlusters (0.0, 0.0)
+        allData <- generateData lines
+        setKlusters()
+        let mutable hasMoved = true
+        
+        while hasMoved do
+            assignPointsToKluster()
+            hasMoved <- setCenter()
+        true
+    ), (fun (res) ->
+        printKlusters()
+    ))
+    
 
     0 // return an integer exit code

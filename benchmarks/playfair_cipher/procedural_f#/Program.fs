@@ -3,12 +3,13 @@
 open System
 open System.Text
 open System.Text.RegularExpressions
+open benchmark
 
 let alphabet: string = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 let dimension1: int = 5
 let dimension2: int = 5
-let table: char[,] = Array2D.zeroCreate dimension1 dimension2
-let positions: (int*int)[] = Array.create 26 (0, 0)
+let mutable table: char[,] = Array2D.zeroCreate dimension1 dimension2
+let mutable positions: (int*int)[] = Array.create 26 (0, 0)
 
 let charValue (value: char) =
     ((int value) - (int 'A'))
@@ -80,15 +81,24 @@ let decrypt (text: string) =
 
 [<EntryPoint>]
 let main argv =
+    let iterations = if argv.Length > 0 then int (argv.[0]) else 1
+    let bm = Benchmark(iterations)
+    
     let text = System.IO.File.ReadAllText("benchmarks/playfair_cipher/lines.txt")
-    let keyword = "This is a great keyword"
-
-    populateTable (preprocessText (keyword + alphabet))
-    let processedText = preprocessText text
     
-    let encryption: string = encrypt processedText
-    let decryption: string = decrypt encryption
+    bm.Run((fun () ->
+        table <- Array2D.zeroCreate dimension1 dimension2
+        positions <- Array.create 26 (0, 0)
+        let keyword = "This is a great keyword"
+        populateTable (preprocessText (keyword + alphabet))
+        let processedText = preprocessText text
+        
+        let encryption: string = encrypt processedText
+        let decryption: string = decrypt encryption
+        (encryption.Length, decryption.Length)
+    ), (fun (en, de) ->
+        printfn "%i" en
+        printfn "%i" de
+    ))
     
-    printfn "%i" encryption.Length
-    printfn "%i" decryption.Length
     0 // return an integer exit code

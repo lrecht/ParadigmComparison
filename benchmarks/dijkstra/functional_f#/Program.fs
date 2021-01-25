@@ -3,18 +3,14 @@
 open System.Collections.Immutable
 open System.Collections.Generic
 open System.IO
+open benchmark
 
-let filePath = "benchmarks/dijkstra/graph.csv"
-let lines = seq {
-    use sr = new StreamReader (filePath)
-    while not sr.EndOfStream do
-        yield sr.ReadLine ()
-}
-let graph = Seq.map 
-                (fun (a:string) -> 
-                    let words = (a.Split ',') 
-                    in (words.[0],words.[1],(words.[2] |> int))) 
-                lines
+let graph (lines: seq<string>) = 
+    Seq.map 
+        (fun (a:string) -> 
+            let words = (a.Split ',') 
+            in (words.[0],words.[1],(words.[2] |> int))) 
+        lines
 
 let getNewMoves (edgeMap:Map<string,(string*string*int) list>) (moves:ImmutableSortedSet<(string*string*int)>) position cost =
     List.fold 
@@ -55,8 +51,24 @@ let dijkstraPath edgeMap start dest =
 
 [<EntryPoint>]
 let main argv =
-    let edgeMap = Seq.fold (fun (acc:Map<string,(string*string*int) list>) (from,dest,cost) -> 
-        if acc.ContainsKey from then acc.Add(from,((from,dest,cost)::(acc.[from])))
-        else acc.Add(from,[from,dest,cost])) Map.empty graph in
-    let meh = List.map (fun a -> printfn "%O" a) (dijkstraPath edgeMap "257" "5525")
+    
+    let iterations = if argv.Length > 0 then int (argv.[0]) else 1
+    let bm = Benchmark(iterations)
+
+    let filePath = "benchmarks/dijkstra/graph.csv"
+    let lines = seq {
+        use sr = new StreamReader (filePath)
+        while not sr.EndOfStream do
+            yield sr.ReadLine ()
+    }
+
+    bm.Run((fun () ->
+        let input = graph lines
+        let edgeMap = Seq.fold (fun (acc:Map<string,(string*string*int) list>) (from,dest,cost) -> 
+            if acc.ContainsKey from then acc.Add(from,((from,dest,cost)::(acc.[from])))
+            else acc.Add(from,[from,dest,cost])) Map.empty input
+        dijkstraPath edgeMap "257" "5525"
+    ), (fun res ->        
+        List.map (fun a -> printfn "%O" a) res |> ignore)
+    )
     0 // return an integer exit code

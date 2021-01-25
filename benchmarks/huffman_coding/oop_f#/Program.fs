@@ -4,6 +4,7 @@ open System
 open System.IO
 open System.Text
 open System.Collections.Generic
+open benchmark
 
 [<AbstractClass>]
 type IHuffmanTree(id, freq) =
@@ -74,12 +75,20 @@ type Huffman(stringToEncode) as this =
         for ch in stringToEncode do
             encodedString.Append(symbolTable.[ch]) |> ignore
         encodedString.ToString()
-    
 
 [<EntryPoint>]
 let main argv =
+    let iterations = if argv.Length > 0 then int (argv.[0]) else 1
+    let bm = Benchmark(iterations)
+
     let testString = File.ReadAllText("benchmarks/huffman_coding/lines.txt")
-    let huffman = Huffman(testString)
-    let encodedString = huffman.Encode testString
-    printfn "The length is: %d" encodedString.Length
+    
+    bm.Run((fun () ->
+        let huffman = Huffman(testString)
+        let encodedString = huffman.Encode testString
+        encodedString.Length
+    ), (fun (res) ->
+        printfn "The length is: %d" res
+    ))
+    
     0 // return an integer exit code

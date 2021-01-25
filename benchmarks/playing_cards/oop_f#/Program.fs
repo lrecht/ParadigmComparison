@@ -2,7 +2,7 @@
 
 open System
 open System.Collections.Generic
-
+open benchmark
 
 // Value is necessary to make it ENUM and not UNION
 let Value = [ "Two";"Three";"Four";"Five";"Six";"Seven";"Eight";"Nine";"Ten";"Jack";"Queen";"King";"Ace" ]
@@ -19,7 +19,7 @@ type Card(suit, value) =
 // The type of a whole deck
 type Deck() =
     let _cards = new List<Card>()
-    let _rand = Random()
+    let _rand = Random(2)
     do
         for _suit in Suit do
             for _value in Value do
@@ -48,13 +48,21 @@ type Deck() =
 
 [<EntryPoint>]
 let main argv =
-    let mutable count = 0
-    for index in 0 .. 999 do // 1000 runs - [0 to and including 999]
-        let d = Deck()
-        while d.Count > 0 do
-            let deck = d.ShowDeck
-            d.Shuffle
-            d.Deal |> ignore
-            count <- count + deck.Length
-    printf "%d" count
+    let iterations = if argv.Length > 0 then int (argv.[0]) else 1
+    let bm = Benchmark(iterations)
+
+    bm.Run((fun () ->
+        let mutable count = 0
+        for index in 0 .. 999 do // 1000 runs - [0 to and including 999]
+            let d = Deck()
+            while d.Count > 0 do
+                let deck = d.ShowDeck
+                d.Shuffle
+                d.Deal |> ignore
+                count <- count + deck.Length
+        count
+    ), (fun (res) ->
+        printf "%d" res
+    ))
+    
     0

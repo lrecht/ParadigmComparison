@@ -1,4 +1,5 @@
 ﻿using System;
+using benchmark;
 
 namespace procedural_c_
 {
@@ -6,7 +7,15 @@ namespace procedural_c_
     {
         static void Main(string[] args)
         {
-            PlayingCards p = new PlayingCards();
+            var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
+			var bm = new Benchmark(iterations);
+
+			bm.Run(() => {
+				PlayingCards p = new PlayingCards();
+				return p.Start();
+			}, (res) => {
+				System.Console.WriteLine(res);
+			});
         }
     }
 
@@ -17,9 +26,10 @@ namespace procedural_c_
         string[] deck = new string[52];
         int deckCount = 0;
 
-        public PlayingCards()
-        {
-            int count = 0;
+        public PlayingCards(){}
+
+		public int Start(){
+			int count = 0;
             for (int i = 0; i < 1000; i++)
             {
                 createDeck();
@@ -33,8 +43,8 @@ namespace procedural_c_
 
                 }
             }
-            System.Console.WriteLine(count);
-        }
+            return count;
+		}
 
         void createDeck()
         {
@@ -56,7 +66,7 @@ namespace procedural_c_
 
         void shuffle()
         {
-            var random = new Random();
+            var random = new Random(2);
             for (int i = 0; i < deckCount; i++)
             {
                 int r = random.Next(i, deckCount);

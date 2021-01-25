@@ -1,6 +1,7 @@
 ﻿// Learn more about F# at http://fsharp.org
 
 open System
+open benchmark
 
 type Edge = 
     {
@@ -44,8 +45,8 @@ let rec QuickSort (arr: Edge []) (left:int) (right:int) =
         if (pivot + 1 < right) then
             QuickSort arr (pivot + 1) right
 
-let readFileToArr() =
-    let lines = System.IO.File.ReadAllLines("benchmarks/spanning_tree/graph.csv");
+let readFileToArr (file: string[]) =
+    let lines = file
     let c = lines.Length
     let mutable arr : Edge array = Array.zeroCreate c
     for i in 0 .. (c-1) do
@@ -53,7 +54,7 @@ let readFileToArr() =
         arr.[i] <- { Edge.Start = Int32.Parse(elms.[0]); Edge.End = Int32.Parse(elms.[1]); Edge.Weight = Int32.Parse(elms.[2]) }
     arr
 
-let vertexGroup : int array = Array.create (6005 + 1) -1
+let mutable vertexGroup : int array = Array.create (6005 + 1) -1
 let rec unionFind (node: int) =
     if vertexGroup .[node] < 0 then
         node
@@ -91,10 +92,17 @@ let computeMinSpanTree (arr: Edge array) =
 
 [<EntryPoint>]
 let main argv =
-    let arr = readFileToArr()
-    QuickSort arr 0 (arr.Length - 1)
-    let (totalWeight, totalEdges) = computeMinSpanTree arr
+    let iterations = if argv.Length > 0 then int (argv.[0]) else 1
+    let bm = Benchmark(iterations)
+    let file = System.IO.File.ReadAllLines("benchmarks/spanning_tree/graph.csv");
 
-    printfn "Total weight: %i" totalWeight
-    printfn "Total Edges: %i" totalEdges
+    bm.Run((fun () ->
+        vertexGroup <- Array.create (6005 + 1) -1
+        let arr = readFileToArr(file)
+        QuickSort arr 0 (arr.Length - 1)
+        computeMinSpanTree arr
+    ), (fun (totalWeight, totalEdges) ->
+        printfn "Total weight: %i" totalWeight
+        printfn "Total Edges: %i" totalEdges
+    ))
     0 // return an integer exit code

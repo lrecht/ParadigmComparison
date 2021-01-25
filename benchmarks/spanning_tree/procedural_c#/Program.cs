@@ -1,4 +1,5 @@
 ﻿using System;
+using benchmark;
 
 namespace procedural_c_
 {
@@ -13,25 +14,32 @@ namespace procedural_c_
 
 		static void Main(string[] args)
 		{
-			//Init the vertex groups
-			vertexGroups = new int[6005 + 1];
-			for (int i = 0; i < vertexGroups.Length; i++)
-			{
-				vertexGroups[i] = -1;
-			}
+			var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
+			var bm = new Benchmark(iterations);
+			
+			var file = System.IO.File.ReadAllLines("benchmarks/spanning_tree/graph.csv");
 
-			//Do the spanning
-			var arr = ReadFileToArr();
-			Quick_Sort(arr,0,arr.Length-1);
-			var (weight, edges) = computeMinspanTree(arr);
+			bm.Run(() => {
+				//Init the vertex groups
+				vertexGroups = new int[6005 + 1];
+				for (int i = 0; i < vertexGroups.Length; i++)
+				{
+					vertexGroups[i] = -1;
+				}
 
-			Console.WriteLine("Total weight: " + weight);
-			Console.WriteLine("Total Edges: " + edges);
+				//Do the spanning
+				var arr = ReadFileToArr(file);
+				Quick_Sort(arr,0,arr.Length-1);
+				return computeMinspanTree(arr);
+			}, (res) => {
+				Console.WriteLine("Total weight: " + res.Item1);
+				Console.WriteLine("Total Edges: " + res.Item2);
+			});
 		}
 
-		public static Edge[] ReadFileToArr()
+		public static Edge[] ReadFileToArr(string[] file)
 		{
-			var lines = System.IO.File.ReadAllLines("benchmarks/spanning_tree/graph.csv");
+			var lines = file;
 			var c = lines.Length;
 			Edge[] arr = new Edge[c];
 			for (int i = 0; i < c;i++)

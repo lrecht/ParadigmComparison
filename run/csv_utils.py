@@ -1,27 +1,21 @@
-from .temperature import Temperature_Summary
-from pyRAPL import Result
-
-
+from .result import Result
 class CsvLine():
     """
     A class representing a single line in a CSV file
     """
 
-    def __init__(self, result: Result, temp: Temperature_Summary):
+    def __init__(self, result: Result):
         self.label = result.label
-        self.timestamp = result.timestamp
         self.duration = result.duration
-        self.pkg = result.pkg[0]
-        self.dram = result.dram[0]
-        self.temp = temp
+        self.pkg = result.pkg
+        self.dram = result.dram
+        self.temp = result.temp
 
     def print(self):
         """
         Takes all of the values in a single CSV line and joins them with ';' 
         """
-        temp_before = self.temp.before if self.temp else None
-        temp_after = self.temp.after if self.temp else None
-        return "{0};{1};{2};{3};{4};{5};{6}".format(self.label, self.timestamp, self.duration, self.pkg, self.dram, temp_before, temp_after)
+        return "{0};{1};{2};{3};{4}".format(self.label, self.duration, self.pkg, self.dram, self.temp)
 
 
 class CSV_Output():
@@ -30,15 +24,15 @@ class CSV_Output():
     """
     def __print_header__(self):
         with open(self.filepath, "w+") as csvfile:
-            csvfile.write("label;timestamp;duration;pkg;ram;temp before;temp after\n")
+            csvfile.write("label;duration;pkg;ram;temp\n")
 
     def __init__(self, filepath: str):
         self.filepath = filepath
         self.measurements = []
         self.__print_header__()
 
-    def add(self, result: Result, temp_result: Temperature_Summary = None):
-        measure = CsvLine(result, temp_result)
+    def add(self, result: Result):
+        measure = CsvLine(result)
         self.measurements.append(measure)
 
     def save(self):

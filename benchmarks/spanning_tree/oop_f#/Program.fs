@@ -3,7 +3,7 @@
 open System
 open System.Collections.Generic
 open System.IO
-
+open benchmark
 
 type ISpanningTree =
         abstract member ComputeSpanningTree : unit -> int * int
@@ -81,12 +81,19 @@ type Graph(edges:Edge[], vertexCount) =
 
 [<EntryPoint>]
 let main argv =
+    let iterations = if argv.Length > 0 then int (argv.[0]) else 1
+    let bm = Benchmark(iterations)
+
     let edgesFile = File.ReadAllLines("benchmarks/spanning_tree/graph.csv")
-    let mutable edges : Edge array = Array.zeroCreate edgesFile.Length
-    for index in 0 .. edgesFile.Length - 1 do
-        edges.[index] <- Edge.FromCsv edgesFile.[index] (index + 1)
-    let graph = Graph(edges, 5877)
-    let (totalW, totalE) = graph.ComputeSpanningTree()
-    printfn "%d" totalE
-    printfn "%d" totalW
+
+    bm.Run((fun () ->
+        let mutable edges : Edge array = Array.zeroCreate edgesFile.Length
+        for index in 0 .. edgesFile.Length - 1 do
+            edges.[index] <- Edge.FromCsv edgesFile.[index] (index + 1)
+        let graph = Graph(edges, 5877)
+        graph.ComputeSpanningTree()
+    ), (fun (totalW, totalE) ->
+        printfn "%d" totalE
+        printfn "%d" totalW
+    ))
     0 // return an integer exit code

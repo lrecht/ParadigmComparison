@@ -1,4 +1,5 @@
 ﻿using System;
+using benchmark;
 using System.Globalization;
 
 namespace procedural_c_
@@ -22,15 +23,26 @@ namespace procedural_c_
 
 		static void Main(string[] args)
 		{
-			var dataset = getDataset();
-			var nHidden = 5;
-			var learningRate = 0.3f;
-			var epochs = 500;
+			var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
+			var bm = new Benchmark(iterations);
+			var file = System.IO.File.ReadAllLines("benchmarks/NN/wheat-seeds.csv");
 
-			normalizeDataset(dataset);
+			bm.Run(() =>
+			{
+				rand = new Random(2);
+				var initState = getDataset(file);
+				var dataset = initState;
+				var nHidden = 5;
+				var learningRate = 0.3f;
+				var epochs = 500;
 
-			var score = evaluateAlgorithm(dataset, learningRate, epochs, nHidden);
-			Console.WriteLine("Score:" + score);
+				normalizeDataset(dataset);
+
+				return evaluateAlgorithm(dataset, learningRate, epochs, nHidden);
+			}, (res) =>
+			{
+				Console.WriteLine("Score:" + res);
+			});
 		}
 
 		// ---- Initilizers
@@ -218,10 +230,10 @@ namespace procedural_c_
 			return numOut;
 		}
 
-		public static double[,] getDataset()
+		public static double[,] getDataset(string[] file)
 		{
 			//Create a dataset from the file
-			string[] dataStrings = System.IO.File.ReadAllLines("benchmarks/NN/wheat-seeds.csv");
+			string[] dataStrings = file;
 			double[,] dataset = new double[dataStrings.Length, (dataStrings[0].Split(',').Length)];
 			for (int line = 0; line < dataStrings.Length; line++)
 			{
@@ -229,7 +241,7 @@ namespace procedural_c_
 				//Insert all values except for the last
 				for (int elm = 0; elm < elms.Length - 1; elm++)
 					dataset[line, elm] = double.Parse(elms[elm], CultureInfo.InvariantCulture);
-				
+
 				//The last value (the result)
 				dataset[line, (elms.Length - 1)] = double.Parse(elms[elms.Length - 1]) - 1.0;
 			}

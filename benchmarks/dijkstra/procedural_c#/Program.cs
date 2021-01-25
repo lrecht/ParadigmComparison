@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-
+using benchmark;
 
 namespace procedural_c_
 {
@@ -9,7 +9,7 @@ namespace procedural_c_
     {
         static void Main(string[] args)
         {
-            Procedural p = new Procedural("257","5525",$"benchmarks/dijkstra/graph.csv");
+            Procedural p = new Procedural("257","5525",$"benchmarks/dijkstra/graph.csv", args);
         }
     }
 
@@ -21,39 +21,50 @@ namespace procedural_c_
 
     class Procedural
     {
-        Dictionary<string,int> positions = new Dictionary<string, int>();
-        Dictionary<string,List<(string,int)>> edgeMap = new Dictionary<string, List<(string, int)>>();
-        Dictionary<string,string> backtrack = new Dictionary<string, string>();
-        Dictionary<string,int> distances = new Dictionary<string, int>();
+        Dictionary<string,int> positions;
+        Dictionary<string,List<(string,int)>> edgeMap;
+        Dictionary<string,string> backtrack;
+        Dictionary<string,int> distances;
         Heap heap;
         string position;
 
-        public Procedural(string start, string dest, string filepath)
+        public Procedural(string start, string dest, string filepath, string[] args)
         {
-            string[] file = File.ReadAllLines(filepath);
-            int startSize = 2^10;
+            var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
+            var bm = new Benchmark(iterations);
+			
+			string[] file = File.ReadAllLines(filepath);
+			
+            bm.Run(() => {
+                positions = new Dictionary<string, int>();
+                edgeMap = new Dictionary<string, List<(string, int)>>();
+                backtrack = new Dictionary<string, string>();
+                distances = new Dictionary<string, int>();
+                int startSize = 2^10;
 
-            heap.array = new (string, int)[startSize];
-            heap.maxSize = startSize;
-            heap.size = 0;
+                heap.array = new (string, int)[startSize];
+                heap.maxSize = startSize;
+                heap.size = 0;
 
-            foreach (string edge in file)
-            {
-                string[] line = edge.Split(",");
-                string from = line[0], to = line[1];
-                int weight = Convert.ToInt32(line[2]);
-                if (edgeMap.ContainsKey(from))
-                    edgeMap[from].Add((to,weight));
-                else
-                    edgeMap.Add(from, new List<(string,int)>{(to,weight)});
+                foreach (string edge in file)
+                {
+                    string[] line = edge.Split(",");
+                    string from = line[0], to = line[1];
+                    int weight = Convert.ToInt32(line[2]);
+                    if (edgeMap.ContainsKey(from))
+                        edgeMap[from].Add((to,weight));
+                    else
+                        edgeMap.Add(from, new List<(string,int)>{(to,weight)});
 
-            }
+                }
 
-            dijkstra(start,dest);
-            var bt = doBacktrack();
-            foreach(string line in bt)
-                System.Console.Write(line+" ");
-            System.Console.WriteLine();
+				dijkstra(start,dest);
+            	return doBacktrack();
+			}, (res) => {
+				foreach(string line in res)
+					System.Console.Write(line+" ");
+				System.Console.WriteLine();
+			});
         }
 
         void dijkstra(string start, string dest)

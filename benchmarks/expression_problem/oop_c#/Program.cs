@@ -1,4 +1,5 @@
 ﻿using System;
+using benchmark;
 
 namespace oop_c_
 {
@@ -9,17 +10,25 @@ namespace oop_c_
 
         static void Main(string[] args)
         {
-            int printCount = 0;
-            int evalCount = 0;
-            for (int i = 0; i < 1000; i++)
-            {
-                number = 0;
-                IExpression expr = generateRandomExpression(1000);
-                printCount += expr.PrettyPrint().Length;
-                evalCount += expr.Eval();
-            }
-            System.Console.WriteLine(printCount);
-            System.Console.WriteLine(evalCount);
+            var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
+			var bm = new Benchmark(iterations);
+
+			bm.Run(() => {
+				rand = new Random(2);
+				int printCount = 0;
+				int evalCount = 0;
+				for (int i = 0; i < 1000; i++)
+				{
+					number = 0;
+					IExpression expr = generateRandomExpression(1000);
+					printCount += expr.PrettyPrint().Length;
+					evalCount += expr.Eval();
+				}
+				return (evalCount, printCount);
+			}, (res) => {
+				System.Console.WriteLine(res.Item1);
+				System.Console.WriteLine(res.Item2);
+			});
         }
 
         static IExpression generateRandomExpression(int max)

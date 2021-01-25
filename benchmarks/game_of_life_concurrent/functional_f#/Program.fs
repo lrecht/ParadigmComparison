@@ -1,4 +1,6 @@
-﻿let size = 256
+﻿open benchmark
+
+let size = 256
 let neighbours = List.except [(0,0)] [for x in [-1;0;1] do for y in [-1;0;1] do (x,y)]
 
 let wrap x =
@@ -20,7 +22,7 @@ let updateCells arr =
     Array.Parallel.mapi (fun index cell -> (rules cell (count index arr))) arr
 
 let readFile file =
-    (Seq.map (fun c -> c = '1') (System.IO.File.ReadAllText file) |> Seq.toArray)
+    (Seq.map (fun c -> c = '1') (file) |> Seq.toArray)
     
 let rec run arr number =
     if number > 0 
@@ -29,8 +31,15 @@ let rec run arr number =
 
 [<EntryPoint>]
 let main argv =
-    let arr = readFile "benchmarks/game_of_life_concurrent/state256.txt"
+    let iterations = if argv.Length > 0 then int (argv.[0]) else 1
+    let bm = Benchmark(iterations)
 
-    printfn "%i" (run arr 100)
+    let file = System.IO.File.ReadAllText "benchmarks/game_of_life_concurrent/state256.txt";
+    bm.Run(( fun () ->
+        let arr = readFile file
+        run arr 100
+    ),( fun(res) -> 
+        printfn "%i" res
+    ))
 
     0 // return an integer exit code

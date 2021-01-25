@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Collections.Generic;
 using System.Linq;
+using benchmark;
 
 namespace functional_c_
 {
@@ -9,18 +10,26 @@ namespace functional_c_
         static Comparer<(string, int, string)> vertexComparer = Comparer<(string, int, string)>.Create((x, y) => x.Item2 > y.Item2 ? 1 : x.Item2 < y.Item2 ? -1 : string.Compare(x.Item1, y.Item1));
         static void Main(string[] args)
         {
-            var EDGES = getEdgesFromCsv($"benchmarks/dijkstra/graph.csv");
-            string START = "257";
-            string END = "5525";
+            var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
+            var bm = new Benchmark(iterations);
+            
+			var file = System.IO.File.ReadAllLines("benchmarks/dijkstra/graph.csv");
+            
+			bm.Run(() => {
+            	ImmutableArray<(string, string, int)> EDGES = getEdgesFromCsv(file);
+                string START = "257";
+                string END = "5525";
 
-            var graph = getGraphFromEdges(EDGES);
-            var shortestPath = dijkstra(graph, START, END);
-            System.Console.WriteLine(string.Join(' ', shortestPath));
+                ImmutableDictionary<string, ImmutableArray<(string, string, int)>> graph = getGraphFromEdges(EDGES);
+                return dijkstra(graph, START, END);
+            }, (res) => {
+                System.Console.WriteLine(string.Join(' ', res));
+            });
         }
 
-        private static ImmutableArray<(string from, string to, int cost)> getEdgesFromCsv(string filePath)
+        private static ImmutableArray<(string from, string to, int cost)> getEdgesFromCsv(string[] file)
         {
-            return System.IO.File.ReadAllLines(filePath)
+            return file
                 .Select(line =>
                 {
                     var values = line.Split(',');

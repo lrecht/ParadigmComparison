@@ -9,4 +9,8 @@
     <Compile Include="Program.fs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\library_benchmark\benchmark.csproj" />
+  </ItemGroup>
+
 </Project>

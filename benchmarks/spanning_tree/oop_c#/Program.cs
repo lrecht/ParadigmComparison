@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using benchmark;
 
 namespace oop_c_
 {
@@ -10,14 +11,21 @@ namespace oop_c_
     {
         static void Main(string[] args)
         {
-            int i = 0;
-            Edge[] edges = File.ReadAllLines($"benchmarks/spanning_tree/graph.csv")
-                                           .Select(v => Edge.FromCsv(v, i++))
+            var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
+			var bm = new Benchmark(iterations);
+
+            var file = File.ReadAllLines($"benchmarks/spanning_tree/graph.csv");
+
+			bm.Run(() => {
+				int i = 0;
+				var edges = file.Select(v => Edge.FromCsv(v, i++))
                                            .ToArray();
-            Graph graph = new Graph(edges, 5877);
-            (int totalweight, int totaledges) = graph.ComputeSpanningTree();
-            System.Console.WriteLine(totaledges);
-            System.Console.WriteLine(totalweight);
+				Graph graph = new Graph(edges, 5877);
+            	return graph.ComputeSpanningTree();
+			}, (res) => {
+				System.Console.WriteLine(res.Item1);
+            	System.Console.WriteLine(res.Item2);
+			});
         }
     }
 

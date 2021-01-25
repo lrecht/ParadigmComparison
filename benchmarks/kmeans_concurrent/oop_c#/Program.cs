@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using benchmark;
 
 namespace oop_c_
 {
@@ -14,17 +15,23 @@ namespace oop_c_
         private static Cluster[] clusters;
         static void Main(string[] args)
         {
-            points = File.ReadAllLines($"benchmarks/kmeans_concurrent/points.txt")
-                                .Select(l => new Point(Convert.ToDouble(l.Split(':')[0]), Convert.ToDouble(l.Split(':')[1])))
-                                .ToArray();
-            clusters = new Cluster[NUM_CLUSTERS];
-            for (int i = 0; i < NUM_CLUSTERS; i++)
-                clusters[i] = new Cluster(points[i]);
-            KMeans kmeans = new KMeans(points, clusters);
-            var res = kmeans.Compute();
-            
-            foreach (Cluster c in res)
-                System.Console.WriteLine(c.Centroid);
+            var iterations = args.Length > 0 ? int.Parse(args[0]) : 1;
+            var bm = new Benchmark(iterations);
+
+			var file = File.ReadAllLines($"benchmarks/kmeans_concurrent/points.txt");
+			
+			bm.Run(() => {
+				points = file.Select(l => new Point(Convert.ToDouble(l.Split(':')[0]), Convert.ToDouble(l.Split(':')[1])))
+                             .ToArray();
+				clusters = new Cluster[NUM_CLUSTERS];
+				for (int i = 0; i < NUM_CLUSTERS; i++)
+					clusters[i] = new Cluster(points[i]);
+				KMeans kmeans = new KMeans(points, clusters);
+				return kmeans.Compute();
+			}, (res) => {
+				foreach (Cluster c in res)
+                	System.Console.WriteLine(c.Centroid);
+			});
         }
     }
 
