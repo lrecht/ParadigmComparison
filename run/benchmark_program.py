@@ -20,13 +20,13 @@ class Dotnet_Program(Program):
 
 class C_Sharp_Program(Dotnet_Program):
     def get_run_command(self):
-        command = self.path + '/bin/Release/netcoreapp3.1/'
+        command = self.path + '/bin/Release/net5.0/'
         return command + self.paradigm + "_c#"
 
 
 class F_Sharp_Program(Dotnet_Program):
     def get_run_command(self):
-        command = self.path + '/bin/Release/netcoreapp3.1/'
+        command = self.path + '/bin/Release/net5.0/'
         return command + self.paradigm + "_f#"
 
 
