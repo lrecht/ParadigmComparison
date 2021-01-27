@@ -26,7 +26,7 @@ class C_Sharp_Program(Dotnet_Program):
 
 class F_Sharp_Program(Dotnet_Program):
     def get_run_command(self):
-        command = self.path + '/bin/Release/net5.0/linux-x64/publish'
+        command = self.path + '/bin/Release/net5.0/linux-x64/publish/'
         return command + self.paradigm + "_f#"
 
 
